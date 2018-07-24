@@ -1,8 +1,24 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
-project(GPProto)
+project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
+
+# Prevent in-source build
+get_filename_component(GP_REAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+get_filename_component(GP_REAL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+
+if (GP_REAL_BINARY_DIR STREQUAL GP_REAL_SOURCE_DIR)
+    message("  Out-of-source build should be used to build GPProto.")
+    message("  You need to remove the files already created by CMake and")
+    message("  rerun CMake from a new directory:")
+    message("  rm -rf CMakeFiles CMakeCache.txt")
+    message("  mkdir build")
+    message("  cd build")
+    message("  cmake ..")
+    message(FATAL_ERROR "In-source build failed.")
+endif()
+
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     set(GCC 1)
@@ -40,5 +56,29 @@ if (NOT ANDROID) # _FILE_OFFSET_BITS is broken in ndk r15 and r15b and doesn't w
     add_definitions(-D_FILE_OFFSET_BITS=64)
 endif()
 
+if (NOT DEFINED CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH "")
+endif()
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" "${CMAKE_MODULE_PATH}")
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Configure CCache if available
+find_program(CCACHE_FOUND ccache)
+#set(CCACHE_FOUND 0)
+if (CCACHE_FOUND)
+    message(STATUS "Found ccache")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+else()
+    message(STATUS "Could NOT find ccache")
+endif()
+
+enable_testing()
+
 add_subdirectory(gpnet)
+
 add_subdirectory(gputils)
+
