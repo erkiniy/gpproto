@@ -1,1 +1,20 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+
+set(GPNET_SOURCE
+        gp/net/NetworkSocket.cpp
+        gp/net/NetworkSocket.h
+
+        gp/net/os/posix/NetworkSocketPosix.cpp
+        gp/net/os/posix/NetworkSocketPosix.h
+
+        gp/net/os/windows/NetworkSocketWinsock.cpp
+        gp/net/os/windows/NetworkSocketWinsock.h)
+
+add_library(gpnet STATIC ${GPNET_SOURCE})
+target_include_directories(gpnet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+install(TARGETS gpnet EXPORT GPTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
