@@ -41,5 +41,4 @@ if (NOT ANDROID) # _FILE_OFFSET_BITS is broken in ndk r15 and r15b and doesn't w
 endif()
 
 add_subdirectory(gpnet)
-
 add_subdirectory(gputils)

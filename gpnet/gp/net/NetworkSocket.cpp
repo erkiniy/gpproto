@@ -4,7 +4,7 @@
 
 #include "NetworkSocket.h"
 #if defined(_WIN32)
-#include "../os/windows/NetworkSocketWinsock.h"
+#include "os/windows/NetworkSocketWinsock.h"
 #include "winsock2.h"
 #else
 #include "os/posix/NetworkSocketPosix.h"
