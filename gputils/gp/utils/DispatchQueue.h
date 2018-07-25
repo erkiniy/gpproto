@@ -18,7 +18,7 @@ class DispatchQueue {
     typedef std::function<void()> DispatchWork;
 public:
 
-    DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _thread(&DispatchQueue::threadWorker, this) {
+    DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(), _runningSynchronous(false), _thread(&DispatchQueue::threadWorker, this) {
         this->jobs = std::list<DispatchWork>();
         this->_threadId = _thread.get_id();
     }
@@ -46,7 +46,9 @@ private:
     std::mutex _mutex;
 
     bool _finished;
+    bool _runningSynchronous;
     Semaphore _semaphore;
+    Semaphore _syncSemaphore;
 
     void threadWorker() {
         printf("DispatchQueue began");
@@ -62,16 +64,33 @@ private:
     void maybeDispatchWorker() {
         printf("maybeDispatchWorker");
 
-        _mutex.lock();
+        bool isEmpty = false;
 
-        while (!jobs.empty())
+        _mutex.lock();
+        isEmpty = jobs.empty();
+        _mutex.unlock();
+
+        while (!isEmpty)
         {
+            _mutex.lock();
             auto f = jobs.front();
-            f();
             jobs.pop_front();
+            isEmpty = jobs.empty();
+            _mutex.unlock();
+
+            f();
         }
 
+        bool sync = false;
+
+        _mutex.lock();
+        sync = _runningSynchronous;
+        _runningSynchronous = false;
         _mutex.unlock();
+
+        if (sync) {
+            _syncSemaphore.notify();
+        }
 
         _semaphore.wait();
     }

@@ -20,6 +20,12 @@ void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
         work();
     }
     else {
+        _mutex.lock();
+        _runningSynchronous = true;
+        jobs.push_back(work);
+        _mutex.unlock();
 
+        _semaphore.notify();
+        _syncSemaphore.wait();
     }
 }
