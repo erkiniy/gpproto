@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(GPNET_SOURCE
         gp/net/NetworkSocket.cpp
         gp/net/NetworkSocket.h

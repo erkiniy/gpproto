@@ -19,6 +19,7 @@ if (GP_REAL_BINARY_DIR STREQUAL GP_REAL_SOURCE_DIR)
     message(FATAL_ERROR "In-source build failed.")
 endif()
 
+message("Compiling with ${CMAKE_CXX_COMPILER_ID}")
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     set(GCC 1)
