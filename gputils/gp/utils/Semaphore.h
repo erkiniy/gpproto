@@ -24,7 +24,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(mtx);
 
-        while(count == 0) {
+        while(count <= 0) {
             cv.wait(lock);
         }
         count--;

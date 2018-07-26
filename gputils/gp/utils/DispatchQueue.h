@@ -14,86 +14,88 @@
 
 #include "Semaphore.h"
 
-class DispatchQueue {
-    typedef std::function<void()> DispatchWork;
-public:
+namespace gpproto {
+    class DispatchQueue {
+        typedef std::function<void()> DispatchWork;
+    public:
 
-    DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(), _runningSynchronous(false), _thread(&DispatchQueue::threadWorker, this) {
-        this->jobs = std::list<DispatchWork>();
-        this->_threadId = _thread.get_id();
-    }
-
-    ~DispatchQueue() {
-        printf("DispatchQueue %s deallocated", this->_name.c_str());
-        _finished = true;
-        jobs.clear();
-        _semaphore.notify();
-        _thread.join();
-    }
-
-    void sync(const DispatchWork& work);
-    void async(const DispatchWork work);
-
-    bool isCurrentQueue() {
-        return std::this_thread::get_id() == this->_threadId;
-    }
-
-private:
-    std::string _name;
-    std::list<DispatchWork> jobs;
-    std::thread _thread;
-    std::thread::id _threadId;
-    std::mutex _mutex;
-
-    bool _finished;
-    bool _runningSynchronous;
-    Semaphore _semaphore;
-    Semaphore _syncSemaphore;
-
-    void threadWorker() {
-        printf("DispatchQueue began");
-
-        while (!_finished)
-        {
-            maybeDispatchWorker();
+        DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(),
+                                          _runningSynchronous(false), _thread(&DispatchQueue::threadWorker, this) {
+            this->jobs = std::list<DispatchWork>();
+            this->_threadId = _thread.get_id();
+            printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
 
-        printf("DispatchQueue finished");
-    }
+        ~DispatchQueue() {
+            printf("DispatchQueue %s deallocated\n", this->_name.c_str());
+            _finished = true;
+            jobs.clear();
+            _semaphore.notify();
+            _thread.join();
+        }
 
-    void maybeDispatchWorker() {
-        printf("maybeDispatchWorker");
+        void sync(const DispatchWork &work);
 
-        bool isEmpty = false;
+        void async(const DispatchWork work);
 
-        _mutex.lock();
-        isEmpty = jobs.empty();
-        _mutex.unlock();
+        void asyncForce(const DispatchWork work);
 
-        while (!isEmpty)
-        {
+        bool isCurrentQueue() {
+            return std::this_thread::get_id() == this->_threadId;
+        }
+
+    private:
+        std::string _name;
+        std::list<DispatchWork> jobs;
+        std::thread _thread;
+        std::thread::id _threadId;
+        std::mutex _mutex;
+
+        bool _finished;
+        bool _runningSynchronous;
+        Semaphore _semaphore;
+        Semaphore _syncSemaphore;
+
+        void _async(const DispatchWork work, bool force);
+
+        void threadWorker() {
+
+            while (!_finished) {
+                maybeDispatchWorker();
+            }
+
+        }
+
+        void maybeDispatchWorker() {
+
             _mutex.lock();
-            auto f = jobs.front();
-            jobs.pop_front();
-            isEmpty = jobs.empty();
+            bool isEmpty = jobs.empty();
             _mutex.unlock();
 
-            f();
+            while (!isEmpty) {
+                _mutex.lock();
+                auto f = jobs.front();
+                jobs.pop_front();
+                isEmpty = jobs.empty();
+                _mutex.unlock();
+
+                f();
+            }
+
+            bool sync = false;
+
+            _mutex.lock();
+            sync = _runningSynchronous;
+            _runningSynchronous = false;
+            _mutex.unlock();
+
+            if (sync) {
+                _syncSemaphore.notify();
+            }
+
+            _semaphore.wait();
         }
 
-        bool sync = false;
-
-        _mutex.lock();
-        sync = _runningSynchronous;
-        _runningSynchronous = false;
-        _mutex.unlock();
-
-        if (sync) {
-            _syncSemaphore.notify();
-        }
-
-        _semaphore.wait();
-    }
-
-};
+    };
+}
 #endif //GPPROTO_DISPATCHQUEUE_H
