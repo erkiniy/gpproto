@@ -21,6 +21,10 @@ endif()
 
 message("Compiling with ${CMAKE_CXX_COMPILER_ID}")
 
+if (POLICY CMP0025)
+    cmake_policy(SET CMP0025 NEW)
+endif()
+
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     set(GCC 1)
 elseif (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
