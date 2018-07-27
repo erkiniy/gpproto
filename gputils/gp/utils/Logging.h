@@ -54,13 +54,13 @@ void gp_log_file_write_header(FILE* file);
 
 #include <stdio.h>
 
-#define _GP_LOG_PRINT(verb, msg ...) { printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); }
+#define GP_LOG_PRINT(verb, msg, ...) { printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); }
 
-#define LOGV(msg, ...) _GP_LOG_PRINT('V', msg, ##__VA_ARGS__)
-#define LOGD(msg, ...) _GP_LOG_PRINT('D', msg, ##__VA_ARGS__)
-#define LOGI(msg, ...) _GP_LOG_PRINT('I', msg, ##__VA_ARGS__)
-#define LOGW(msg, ...) _GP_LOG_PRINT('W', msg, ##__VA_ARGS__)
-#define LOGE(msg, ...) _GP_LOG_PRINT('E', msg, ##__VA_ARGS__)
+#define LOGV(msg, ...) GP_LOG_PRINT('V', msg, ##__VA_ARGS__)
+#define LOGD(msg, ...) GP_LOG_PRINT('D', msg, ##__VA_ARGS__)
+#define LOGI(msg, ...) GP_LOG_PRINT('I', msg, ##__VA_ARGS__)
+#define LOGW(msg, ...) GP_LOG_PRINT('W', msg, ##__VA_ARGS__)
+#define LOGE(msg, ...) GP_LOG_PRINT('E', msg, ##__VA_ARGS__)
 
 #endif
 

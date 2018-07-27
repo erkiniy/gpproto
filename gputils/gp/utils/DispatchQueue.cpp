@@ -3,9 +3,12 @@
 //
 
 #include "DispatchQueue.h"
+#include "gp/utils/Logging.h"
+
 using namespace gpproto;
 
 void DispatchQueue::async(const DispatchQueue::DispatchWork work) {
+    LOGV("Jaloldooooo");
     _async(work, false);
 }
 

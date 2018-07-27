@@ -41,6 +41,7 @@ void gp_log_file_printf(char level, const char* msg, ...) {
     fprintf(gplogFile, "\n");
     fflush(gplogFile);
 }
+
 void gp_log_file_write_header(FILE* file) {
 
 }

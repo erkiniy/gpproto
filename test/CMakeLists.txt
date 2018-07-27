@@ -16,8 +16,7 @@ target_link_libraries(TestExecutable
                       ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 
-add_test(NAME TestUtils COMMAND TestExecutable -l message)
-
+add_test(NAME TestUtils COMMAND TestExecutable -l message ${CMAKE_COMMAND} --build . --target TestExecutable --config $<CONFIGURATION>)
 
 
 add_executable(Logging Logging.cpp)
@@ -27,4 +26,4 @@ target_link_libraries(Logging
                       ${Boost_SYSTEM_LIBRARY}
                       ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
-add_test(NAME Logging COMMAND Logging -l message)
+add_test(NAME Logging COMMAND ${CMAKE_COMMAND} --build . --target Logging --config $<CONFIGURATION>)
