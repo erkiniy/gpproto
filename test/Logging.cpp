@@ -7,7 +7,7 @@
 #include "gp/utils/Logging.h"
 
 BOOST_AUTO_TEST_CASE(log_verbose) {
-    //LOGV("Verbose log with number %d = 5", 23);
+    LOGV("Verbose log with number %d = 5", 23);
     BOOST_ASSERT(true);
 };
 

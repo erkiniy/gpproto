@@ -7,7 +7,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 
 add_definitions (-DBOOST_TEST_DYN_LINK)
 
-
 add_executable(TestExecutable mytest.cpp mytest.h)
 target_link_libraries(TestExecutable
                       gputils
@@ -16,8 +15,8 @@ target_link_libraries(TestExecutable
                       ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 
-add_test(NAME TestUtils COMMAND TestExecutable -l message ${CMAKE_COMMAND} --build . --target TestExecutable --config $<CONFIGURATION>)
-
+add_test(NAME TestUtils COMMAND TestExecutable -l message)
+#add_test(NAME TestUtils COMMAND ${CMAKE_COMMAND} --build . --target TestUtils --config $<CONFIGURATION>)
 
 add_executable(Logging Logging.cpp)
 target_link_libraries(Logging
@@ -26,4 +25,5 @@ target_link_libraries(Logging
                       ${Boost_SYSTEM_LIBRARY}
                       ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
-add_test(NAME Logging COMMAND ${CMAKE_COMMAND} --build . --target Logging --config $<CONFIGURATION>)
+add_test(NAME Logging COMMAND Logging -l message)
+#add_test(NAME Logging COMMAND ${CMAKE_COMMAND} --config $<CONFIGURATION>)
