@@ -38,9 +38,9 @@ public:
 
     virtual bool isReadOnly() const = 0;
 
-    virtual void Open(FileMode mode) = 0;
+    virtual void Open(int mode) = 0;
 
-    virtual void close() = 0;
+    virtual void Close() = 0;
 
     virtual bool isOpened() const = 0;
 
@@ -50,7 +50,7 @@ public:
 
     virtual uint64_t Read(uint8_t* buffer, uint64_t size) = 0;
 
-    virtual uint64_t Write(const uint64_t* buffer, uint64_t size) = 0;
+    virtual uint64_t Write(const uint8_t* buffer, uint64_t size) = 0;
 
     template<typename T>
     bool Read(T& value) {

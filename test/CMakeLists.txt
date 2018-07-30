@@ -27,3 +27,15 @@ target_link_libraries(Logging
 
 add_test(NAME Logging COMMAND Logging -l message)
 #add_test(NAME Logging COMMAND ${CMAKE_COMMAND} --config $<CONFIGURATION>)
+
+
+add_executable(Filesystem Filesystem.cpp)
+target_link_libraries(Filesystem
+                      gputils
+                      ${Boost_FILESYSTEM_LIBRARY}
+                      ${Boost_SYSTEM_LIBRARY}
+                      ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+add_test(NAME Filesystem COMMAND Filesystem -l message)
+
+

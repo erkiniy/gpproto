@@ -7,6 +7,9 @@
 
 #include <string>
 
+#define CLASS_PTR(_class) typedef std::shared_ptr<class _class> _class##Ptr;\
+                          typedef std::weak_ptr<class _class> _class##Weak;
+
 namespace gpproto {
 
     class FileInfo final {

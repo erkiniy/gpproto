@@ -12,7 +12,20 @@ set(GPUTILS_SOURCE
         gp/utils/os/darwin/GPLogWrapperDarwin.cpp
 
         gp/utils/Logging.h
-        gp/utils/Logging.cpp gp/utils/File.h gp/utils/FileInfo.h)
+        gp/utils/Logging.cpp
+
+        gp/utils/filesystem/File.h
+        gp/utils/filesystem/FileInfo.h
+        gp/utils/filesystem/FileSystem.h
+        gp/utils/filesystem/FileInfo.cpp
+
+        gp/utils/filesystem/NativeFile.cpp
+        gp/utils/filesystem/NativeFile.h
+        gp/utils/filesystem/NativeFileSystem.cpp
+        gp/utils/filesystem/NativeFileSystem.h
+
+        gp/utils/StringUtils.cpp
+        gp/utils/StringUtils.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
