@@ -36,8 +36,6 @@ void NativeFileSystem::Initialize() {
     SDir* dir = static_cast<SDir*>(opendir(BasePath().c_str()));
     if (dir)
     {
-        printf("Directory opened %s\n", BasePath().c_str());
-
         BuildFileList(dir, BasePath(), _fileList);
         _isInitialized = true;
 
@@ -205,6 +203,7 @@ bool NativeFileSystem::IsDir(const FileInfo &filePath) const {
 }
 
 FilePtr NativeFileSystem::FindFile(const FileInfo &fileInfo) const {
+
     auto it = std::find_if(_fileList.begin(), _fileList.end(), [&](FilePtr file) {
         return file->fileInfo() == fileInfo;
     });
@@ -216,7 +215,7 @@ FilePtr NativeFileSystem::FindFile(const FileInfo &fileInfo) const {
 }
 
 
-void NativeFileSystem::BuildFileList(SDir *dir, std::string basePath, gpproto::FileSystem::TFileList &outFileList) {
+void NativeFileSystem::BuildFileList(SDir *dir, std::string basePath, FileSystem::TFileList &outFileList) {
 
     if (!StringUtils::EndsWith(basePath, "/"))
         basePath += "/";
@@ -235,6 +234,7 @@ void NativeFileSystem::BuildFileList(SDir *dir, std::string basePath, gpproto::F
             fileName += "/";
 
         FileInfo fileInfo(basePath, fileName, childDir != NULL);
+
         if (!FindFile(fileInfo))
         {
             FilePtr file(new NativeFile(fileInfo));

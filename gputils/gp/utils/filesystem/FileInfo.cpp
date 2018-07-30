@@ -30,7 +30,7 @@ FileInfo::FileInfo(const std::string &filePath) {
         const std::string basePath = filePath.substr(0, found + 1);
         std::string fileName;
         if (found != filePath.length())
-            fileName = filePath.substr(found + 1, filePath.length() - found + 1);
+            fileName = filePath.substr(found + 1, filePath.length() - found - 1);
 
         Initialize(basePath, fileName, false);
     }
@@ -46,6 +46,9 @@ void FileInfo::Initialize(const std::string &basePath, const std::string &fileNa
         _basePath += "/";
 
     if (isDir && !StringUtils::EndsWith(_name, "/"))
+        _name += "/";
+
+    if (StringUtils::StartsWith(_name, "/"))
         _name = _name.substr(1, _name.length() - 1);
 
     _absolutePath = _basePath + _name;

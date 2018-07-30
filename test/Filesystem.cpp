@@ -12,66 +12,10 @@
 
 using namespace gpproto;
 
-BOOST_AUTO_TEST_CASE(file_path_init) {
-
-    std::string rootHomeDir(getenv("HOME"));
-    rootHomeDir += "/MyDir";
-
-    {
-        auto fs = new NativeFileSystem(rootHomeDir);
-
-        fs->Initialize();
-
-        LOGV("Base path for this is %s", fs->BasePath().c_str());
-
-        auto fileInfo = FileInfo("/jalol.txt");
-
-        auto nativeFile = fs->OpenFile(fileInfo, File::FileMode::readWrite);
-        char buffer[] = "Jaloliddin";
-
-        auto size = nativeFile->Write(reinterpret_cast<uint8_t*>(buffer), sizeof(buffer));
-
-        LOGV("Written file size is %lld", size);
-
-        fs->Shutdown();
-        delete fs;
-    }
-
-
-    {
-        auto fs = new NativeFileSystem(rootHomeDir);
-
-        fs->Initialize();
-        fs->BasePath();
-
-        LOGV("Base path for this is %s", fs->BasePath().c_str());
-
-        auto fileInfo = FileInfo("jalol.txt");
-
-        auto nativeFile = fs->OpenFile(fileInfo, File::FileMode::readWrite);
-
-        char buffer[1024];
-
-        auto size = nativeFile->Read(reinterpret_cast<uint8_t*>(buffer), 1024);
-
-        LOGV("Read file size is %lld", size);
-
-        if (size > 0)
-            LOGV("Read file = %s", buffer);
-
-
-        fs->Shutdown();
-        delete fs;
-    }
-
-
-    BOOST_ASSERT(true);
-};
-
 BOOST_AUTO_TEST_CASE(create_folder) {
 
     std::string rootHomeDir(getenv("HOME"));
-    rootHomeDir += "/MyDir";
+    rootHomeDir += "/Documents/MyDir/AnotherDir/YourDir/";
 
     std::string path(rootHomeDir);
 
@@ -80,7 +24,7 @@ BOOST_AUTO_TEST_CASE(create_folder) {
     }
     else {
         printf("Boost dir doesn't exist %s\n", path.c_str());
-        boost::filesystem::create_directory(path);
+        boost::filesystem::create_directories(rootHomeDir);
     }
 
     try {
@@ -91,3 +35,56 @@ BOOST_AUTO_TEST_CASE(create_folder) {
     }
 
 };
+
+BOOST_AUTO_TEST_CASE(file_path_init) {
+
+    std::string rootHomeDir(getenv("HOME"));
+    rootHomeDir += "/Documents/MyDir/AnotherDir/";
+
+    if (true) {
+        auto fs = new NativeFileSystem(rootHomeDir);
+
+        fs->Initialize();
+
+        LOGV("Base path for this is %s", fs->BasePath().c_str());
+
+        auto fileInfo = FileInfo("/jalol.txt");
+
+        auto nativeFile = fs->OpenFile(fileInfo, File::FileMode::readWrite);
+        char buffer[] = "Jaloliliddin Erkiniy asdasa";
+
+        auto size = nativeFile->Write(reinterpret_cast<uint8_t*>(buffer), sizeof(buffer));
+
+        LOGV("Written file size is %lld", size);
+        fs->CloseFile(nativeFile);
+
+        fs->Shutdown();
+        delete fs;
+    }
+
+    {
+        auto fs = new NativeFileSystem(rootHomeDir);
+
+        fs->Initialize();
+
+        auto fileInfo = FileInfo("/jalol.txt");
+
+        auto nativeFile = fs->OpenFile(fileInfo, File::FileMode::readWrite);
+
+        char buffer[1024];
+
+        auto size = nativeFile->Read(reinterpret_cast<uint8_t*>(buffer), sizeof(buffer));
+
+        LOGV("Read file size is %lld", size);
+
+        if (size > 0)
+            LOGV("Read file = %s", buffer);
+
+        fs->Shutdown();
+        delete fs;
+    }
+
+
+    BOOST_ASSERT(true);
+};
+

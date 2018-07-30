@@ -71,7 +71,6 @@ void NativeFile::Open(int mode)
     if (mode & File::truncate)
         openMode |= std::fstream::trunc;
 
-    printf("Opening file %s\n", fileInfo().AbsolutePath().c_str());
 
     _stream.open(fileInfo().AbsolutePath().c_str(), openMode);
 
@@ -109,6 +108,7 @@ uint64_t NativeFile::Tell() {
 }
 
 uint64_t NativeFile::Read(uint8_t *buffer, uint64_t size) {
+
     if (!isOpened())
         return 0;
 
@@ -117,11 +117,12 @@ uint64_t NativeFile::Read(uint8_t *buffer, uint64_t size) {
     if (_stream)
         return size;
 
-    return static_cast<uint64_t>(_stream.gcount());
+    auto s = static_cast<uint64_t>(_stream.gcount());
+
+    return s;
 }
 
 uint64_t NativeFile::Write(const uint8_t *buffer, uint64_t size) {
-    printf("Opened %d, readOnly %d\n", isOpened(), isReadOnly());
 
     if (!isOpened() || isReadOnly())
         return 0;
