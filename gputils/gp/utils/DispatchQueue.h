@@ -21,9 +21,10 @@ namespace gpproto {
     public:
 
         DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(),
-                                          _runningSynchronous(false), _thread(&DispatchQueue::threadWorker, this) {
-            this->_jobs = std::list<DispatchWork>();
+                                          _runningSynchronous(false) {
+            this->_thread = std::thread(&DispatchQueue::threadWorker, this);
             this->_threadId = _thread.get_id();
+            this->_jobs = std::list<DispatchWork>();
             printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
 
@@ -71,6 +72,7 @@ namespace gpproto {
             auto l = std::list<DispatchWork>();
 
             _mutex.lock();
+
             do {
                 if (!_jobs.empty())
                 {
@@ -94,12 +96,13 @@ namespace gpproto {
 
             _mutex.lock();
             sync = _runningSynchronous;
-            _runningSynchronous = false;
-            _mutex.unlock();
 
-            if (sync) {
+            if (sync && _jobs.empty())
+            {
+                _runningSynchronous = false;
                 _syncSemaphore.notify();
             }
+            _mutex.unlock();
 
             _semaphore.wait();
         }
