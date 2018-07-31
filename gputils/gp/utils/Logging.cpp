@@ -20,6 +20,7 @@ void gp_log_file_set_path(const char* path) {
     if ((int)strlen(path)) {
         gplogFile = fopen(path, "a");
         gp_log_file_write_header(gplogFile);
+        printf("Setting log file with path %s\n", path);
     }
     else {
         gplogFile = NULL;

@@ -33,7 +33,7 @@ bool NetworkSocket::isFailed() {
 
 NetworkSocket* NetworkSocket::Create(gpproto::NetworkProtocol protocol, NetworkAddress* address) {
 #ifdef _WIN32
-    return NetworkSocketWinsock
+    return NetworkSocketWinsock()
 #else
     return new NetworkSocketPosix(protocol, address);
 #endif

@@ -10,6 +10,7 @@
 #include <list>
 #include <thread>
 #include <mutex>
+#include <vector>
 #include <condition_variable>
 
 #include "Semaphore.h"
@@ -21,7 +22,7 @@ namespace gpproto {
 
         DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(),
                                           _runningSynchronous(false), _thread(&DispatchQueue::threadWorker, this) {
-            this->jobs = std::list<DispatchWork>();
+            this->_jobs = std::list<DispatchWork>();
             this->_threadId = _thread.get_id();
             printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
@@ -29,7 +30,7 @@ namespace gpproto {
         ~DispatchQueue() {
             printf("DispatchQueue %s deallocated\n", this->_name.c_str());
             _finished = true;
-            jobs.clear();
+            _jobs.clear();
             _semaphore.notify();
             _thread.join();
         }
@@ -46,7 +47,7 @@ namespace gpproto {
 
     private:
         std::string _name;
-        std::list<DispatchWork> jobs;
+        std::list<DispatchWork> _jobs;
         std::thread _thread;
         std::thread::id _threadId;
         std::mutex _mutex;
@@ -67,18 +68,25 @@ namespace gpproto {
         }
 
         void maybeDispatchWorker() {
+            auto l = std::list<DispatchWork>();
 
             _mutex.lock();
-            bool isEmpty = jobs.empty();
+            do {
+                if (!_jobs.empty())
+                {
+                    auto f = _jobs.front();
+                    _jobs.pop_front();
+                    l.push_back(f);
+                }
+            }
+            while (!_jobs.empty());
+
             _mutex.unlock();
 
-            while (!isEmpty) {
-                _mutex.lock();
-                auto f = jobs.front();
-                jobs.pop_front();
-                isEmpty = jobs.empty();
-                _mutex.unlock();
-
+            while (!l.empty())
+            {
+                auto f = l.front();
+                l.pop_front();
                 f();
             }
 

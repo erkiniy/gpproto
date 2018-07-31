@@ -8,7 +8,7 @@
 using namespace gpproto;
 
 void DispatchQueue::async(const DispatchQueue::DispatchWork work) {
-    LOGV("Jaloldooooo");
+    printf("Starting Async\n");
     _async(work, false);
 }
 
@@ -25,7 +25,7 @@ void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
 
         _runningSynchronous = true;
 
-        jobs.push_back(work);
+        _jobs.push_back(work);
 
         _mutex.unlock();
 
@@ -42,7 +42,7 @@ void DispatchQueue::_async(const DispatchQueue::DispatchWork work, bool force) {
     {
         _mutex.lock();
 
-        jobs.push_back(work);
+        _jobs.push_back(work);
 
         _mutex.unlock();
 

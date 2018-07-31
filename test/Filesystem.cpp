@@ -39,7 +39,11 @@ BOOST_AUTO_TEST_CASE(create_folder) {
 BOOST_AUTO_TEST_CASE(file_path_init) {
 
     std::string rootHomeDir(getenv("HOME"));
-    rootHomeDir += "/Documents/MyDir/AnotherDir/";
+    rootHomeDir += "/Documents/MyDir/";
+
+    auto logFilePath = rootHomeDir + "log.txt";
+
+    gp_log_file_set_path(logFilePath.c_str());
 
     if (true) {
         auto fs = new NativeFileSystem(rootHomeDir);
@@ -73,17 +77,24 @@ BOOST_AUTO_TEST_CASE(file_path_init) {
 
         char buffer[1024];
 
-        auto size = nativeFile->Read(reinterpret_cast<uint8_t*>(buffer), sizeof(buffer));
+        uint64_t size = 0;
 
-        LOGV("Read file size is %lld", size);
+        do {
+            size = nativeFile->Read(reinterpret_cast<uint8_t*>(buffer), 5);
 
-        if (size > 0)
-            LOGV("Read file = %s", buffer);
+            LOGV("Read file size is %lld", size);
+
+            if (size > 0)
+            {
+                buffer[size] = '\0';
+                LOGV("Read file = %s", buffer);
+            }
+        }
+        while (size > 0);
 
         fs->Shutdown();
         delete fs;
     }
-
 
     BOOST_ASSERT(true);
 };

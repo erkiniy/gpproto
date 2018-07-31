@@ -20,8 +20,6 @@ BOOST_AUTO_TEST_CASE(test_test) {
 BOOST_AUTO_TEST_CASE(dispatch_test) {
     BOOST_TEST_MESSAGE("Running dispatch_test");
 
-    auto semaphore = new Semaphore(-2);
-
     {
         auto queue = std::make_unique<DispatchQueue>("uz.gpproto.testQueue");
 

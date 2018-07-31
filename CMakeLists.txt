@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 # Prevent in-source build
 get_filename_component(GP_REAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
