@@ -20,7 +20,7 @@ namespace gpproto {
         typedef std::function<void()> DispatchWork;
     public:
 
-        DispatchQueue(std::string name) : _name(name), _finished(false), _semaphore(), _syncSemaphore(),
+        DispatchQueue(std::string name) : _name(name), _finished(false), _asyncSemaphore(), _syncSemaphore(),
                                           _runningSynchronous(false) {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
             this->_threadId = _thread.get_id();
@@ -32,7 +32,7 @@ namespace gpproto {
             printf("DispatchQueue %s deallocated\n", this->_name.c_str());
             _finished = true;
             _jobs.clear();
-            _semaphore.notify();
+            _asyncSemaphore.notify();
             _thread.join();
         }
 
@@ -55,7 +55,7 @@ namespace gpproto {
 
         bool _finished;
         bool _runningSynchronous;
-        Semaphore _semaphore;
+        Semaphore _asyncSemaphore;
         Semaphore _syncSemaphore;
 
         void _async(const DispatchWork work, bool force);
@@ -104,7 +104,7 @@ namespace gpproto {
             }
             _mutex.unlock();
 
-            _semaphore.wait();
+            _asyncSemaphore.wait();
         }
 
     };

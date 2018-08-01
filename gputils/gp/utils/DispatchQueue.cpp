@@ -29,7 +29,7 @@ void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
 
         _mutex.unlock();
 
-        _semaphore.notify();
+        _asyncSemaphore.notify();
         _syncSemaphore.wait();
     }
 }
@@ -46,6 +46,6 @@ void DispatchQueue::_async(const DispatchQueue::DispatchWork work, bool force) {
 
         _mutex.unlock();
 
-        _semaphore.notify();
+        _asyncSemaphore.notify();
     }
 }
