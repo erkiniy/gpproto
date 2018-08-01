@@ -51,12 +51,7 @@ std::shared_ptr<StreamSlice> InputStream::currentBytes() const {
     if (currentSize == 0)
         return nullptr;
 
-    size_t size = currentSize;
-    char* result = (char*)malloc(size);
-
-    memcpy(result, bytes, size);
-
-    return std::make_shared<StreamSlice>(result, size);
+    return std::make_shared<StreamSlice>(bytes, currentSize);
 }
 
 size_t InputStream::remainingSize() const {
