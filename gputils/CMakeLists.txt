@@ -25,7 +25,21 @@ set(GPUTILS_SOURCE
         gp/utils/filesystem/NativeFileSystem.h
 
         gp/utils/StringUtils.cpp
-        gp/utils/StringUtils.h)
+        gp/utils/StringUtils.h
+
+        gp/utils/ByteOrder.h
+
+        gp/utils/InputStream.h
+        gp/utils/InputStream.cpp
+
+        gp/utils/Buffer.cpp
+        gp/utils/Buffer.h
+
+        gp/utils/StreamNode.cpp
+        gp/utils/StreamNode.h
+
+        gp/utils/StreamSlice.cpp
+        gp/utils/StreamSlice.h gp/utils/CustomStringConvertable.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
