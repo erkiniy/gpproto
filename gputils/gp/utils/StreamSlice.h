@@ -22,14 +22,15 @@ namespace gpproto {
         static const uint32_t TLBoolFalse = 0xbc799737;
 
         StreamSlice(char *bytes, size_t size) {
-            this->bytes = bytes;
             this->size = size;
+            this->bytes = (char *)malloc(size);
+            memcpy(this->bytes, bytes, size);
         }
 
         ~StreamSlice() {
             printf("Destructed StreamSlice with size %lu\n", this->size);
-//            if (bytes)
-//                free(bytes);
+            if (bytes)
+                free(bytes);
         }
 
         virtual std::string description() const;
@@ -37,7 +38,7 @@ namespace gpproto {
         char* toLittleEndian() const;
 
     private:
-        char* byteSwapped();
+        char* byteSwapped() const;
         };
 }
 

@@ -15,7 +15,7 @@ namespace gpproto {
     class InputStream final {
 
     public:
-        static const size_t kChunkSize = 12;
+        static const size_t kChunkSize = 48;
 
         InputStream() : currentSize(0), numberOfChunks(0) {
             bytes = (char*)malloc(1);

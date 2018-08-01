@@ -15,15 +15,15 @@ BOOST_AUTO_TEST_CASE(input_streams) {
 
     {
         auto iS = std::make_unique<InputStream>();
-        printf("First\n");
-        iS->writeInt8(5);
-        printf("second\n");
-        iS->writeInt32(231);
-        iS->writeBool(true);
-        iS->writeInt64(1);
-        iS->writeInt8(34);
+        iS->writeInt8(5);       // 0x5
+        iS->writeInt32(231);    // 0x000000e7
+        iS->writeBool(true);    // 0x997275b5
+        iS->writeInt64(1);      // 0x0000000000000001
+        iS->writeInt8(34);      // 0x22
 
         auto bytes = iS->currentBytes();
-        bytes->description();
+        auto bytesString = bytes->description();
+
+        printf("Bytes = %s\n", bytesString.c_str());
     }
 };
