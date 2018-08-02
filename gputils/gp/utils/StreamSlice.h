@@ -38,6 +38,7 @@ namespace gpproto {
         virtual std::string description() const;
 
         char* toLittleEndian() const;
+        char* toSystemEndian() const;
 
     private:
         char* byteSwapped() const;

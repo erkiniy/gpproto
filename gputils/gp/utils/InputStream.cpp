@@ -42,7 +42,7 @@ void InputStream::writeDouble(double number) {
 }
 
 void InputStream::writeNumber(const char *number, size_t size) {
-    StreamSlice s = StreamSlice(number, size);
+    StreamSlice s = StreamSlice(number, size, true);
     addSlice(s);
 }
 
@@ -73,7 +73,7 @@ void InputStream::writeString(const std::string &string) {
 }
 
 void InputStream::writeBytes(const StreamSlice &data) {
-    int extraBytes = 0;
+    int8_t extraBytes = 0;
 
     if (data.size <= 253) {
         writeUInt8((uint8_t)data.size);

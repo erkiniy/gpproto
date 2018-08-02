@@ -33,6 +33,17 @@ char* StreamSlice::toLittleEndian() const {
     return result;
 }
 
+char* StreamSlice::toSystemEndian() const {
+    char* result = bytes;
+
+#if GP_IS_BIG_ENDIAN && !GP_IS_LITTLE_ENDIAN
+    if (number)
+        result = byteSwapped();
+#endif
+
+    return result;
+}
+
 std::string StreamSlice::description() const {
     auto s = std::string("");
 
