@@ -26,7 +26,8 @@ char* StreamSlice::toLittleEndian() const {
     char* result = bytes;
 
 #if GP_IS_BIG_ENDIAN && !GP_IS_LITTLE_ENDIAN
-    result = byteSwapped();
+    if (number)
+        result = byteSwapped();
 #endif
 
     return result;

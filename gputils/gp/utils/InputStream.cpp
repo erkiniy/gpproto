@@ -109,11 +109,11 @@ void InputStream::addSlice(const StreamSlice& slice) {
     while (remainingSize() < slice.size)
     {
         size_t targetChunks = 1 + (size_t)(ceil((double)(slice.size - remainingSize()) / kChunkSize)) + numberOfChunks;
-        LOGV("Slice target chunks %lu", targetChunks);
+        //LOGV("Slice target chunks %lu", targetChunks);
         bytes = (char *)realloc(reinterpret_cast<void *>(bytes), kChunkSize * targetChunks);
         numberOfChunks = (int)targetChunks;
-        LOGV("Slice enlarged to new size %d", (int)(kChunkSize * numberOfChunks));
-        LOGV("RemainingSize = %lu, slizeSize = %lu", remainingSize(), slice.size);
+        //LOGV("Slice enlarged to new size %d", (int)(kChunkSize * numberOfChunks));
+        //LOGV("RemainingSize = %lu, slizeSize = %lu", remainingSize(), slice.size);
     }
 
     memcpy(bytes + currentSize, slice.toLittleEndian(), slice.size);
@@ -124,6 +124,8 @@ void InputStream::addSlice(const StreamSlice& slice) {
 std::shared_ptr<StreamSlice> InputStream::currentBytes() const {
     if (currentSize == 0)
         return nullptr;
+
+    LOGV("Total allocated slice is = %lu, when useful one is = %lu", kChunkSize * numberOfChunks, currentSize);
 
     return std::make_shared<StreamSlice>(bytes, currentSize);
 }

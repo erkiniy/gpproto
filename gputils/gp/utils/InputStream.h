@@ -15,10 +15,10 @@ namespace gpproto {
     class InputStream final {
 
     public:
-        static const size_t kChunkSize = 4;
+        static const size_t kChunkSize = 16;
 
-        InputStream() : currentSize(0), numberOfChunks(0) {
-            bytes = (char*)malloc(1);
+        InputStream() : currentSize(0), numberOfChunks(1) {
+            bytes = (char*)malloc(kChunkSize);
             printf("Input Stream allocated\n");
         }
 

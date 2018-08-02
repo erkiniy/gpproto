@@ -35,9 +35,6 @@ set(GPUTILS_SOURCE
         gp/utils/Buffer.cpp
         gp/utils/Buffer.h
 
-        gp/utils/StreamNode.cpp
-        gp/utils/StreamNode.h
-
         gp/utils/StreamSlice.cpp
         gp/utils/StreamSlice.h gp/utils/CustomStringConvertable.h gp/utils/OutputStream.cpp gp/utils/OutputStream.h gp/utils/OutputStreamException.cpp gp/utils/OutputStreamException.h)
 

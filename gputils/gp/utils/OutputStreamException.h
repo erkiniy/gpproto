@@ -8,15 +8,15 @@
 #include <exception>
 #include <string>
 
-class OutputStreamException : public std::exception {
-public:
-    const std::string message;
-    const int code;
+namespace gpproto {
+    class OutputStreamException : public std::exception {
+    public:
+        const std::string message;
+        const int code;
 
-    OutputStreamException(const std::string& message, int code) : message(message), code(code) {
+        OutputStreamException(const std::string &message, int code) : message(message), code(code) {
 
-    }
-};
-
-
+        }
+    };
+}
 #endif //GPPROTO_OUTPUTSTREAMEXCEPTION_H
