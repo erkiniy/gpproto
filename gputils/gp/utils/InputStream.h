@@ -15,7 +15,7 @@ namespace gpproto {
     class InputStream final {
 
     public:
-        static const size_t kChunkSize = 48;
+        static const size_t kChunkSize = 4;
 
         InputStream() : currentSize(0), numberOfChunks(0) {
             bytes = (char*)malloc(1);
@@ -32,6 +32,7 @@ namespace gpproto {
 
         void writeBool(bool value);
 
+        void writeUInt8(uint8_t number);
         void writeInt8(int8_t number);
         void writeInt16(int16_t number);
         void writeInt32(int32_t number);
@@ -40,8 +41,8 @@ namespace gpproto {
 
         void writeDouble(double number);
 
-        void writeData(const Buffer& data);
-        void writeBytes(const Buffer& data);
+        void writeData(const StreamSlice& data);
+        void writeBytes(const StreamSlice& data);
 
         void writeRawString(const std::string& string);
         void writeString(const std::string& string);
@@ -53,7 +54,7 @@ namespace gpproto {
         int numberOfChunks;
         char* bytes;
 
-        void writeNumber(char* number, size_t size);
+        void writeNumber(const char* number, size_t size);
 
         void addSlice(const StreamSlice& slice);
         size_t remainingSize() const;

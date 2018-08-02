@@ -21,7 +21,7 @@ namespace gpproto {
         static const uint32_t TLBoolTrue = 0x997275b5;
         static const uint32_t TLBoolFalse = 0xbc799737;
 
-        StreamSlice(char *bytes, size_t size) {
+        StreamSlice(const char *bytes, size_t size) {
             this->size = size;
             this->bytes = (char *)malloc(size);
             memcpy(this->bytes, bytes, size);
