@@ -59,5 +59,6 @@ namespace gpproto {
         void checkSize(size_t size, std::string message) const;
     };
 
+
 }
 #endif //GPPROTO_OUTPUTSTREAM_H
