@@ -11,44 +11,44 @@
 using namespace gpproto;
 
 uint8_t OutputStream::readUInt8() const {
-    checkSize(1, __PRETTY_FUNCTION__);
-    return(uint8_t)*(readSlice(1, true)->bytes);
+    uint8_t result;
+    memcpy(&result, readSlice(1, true)->toSystemEndian(), 1);
+    return result;
 }
 
 int8_t OutputStream::readInt8() const {
     checkSize(1, __PRETTY_FUNCTION__);
-    return (int8_t)*(readSlice(1, true)->bytes);
+    int8_t result;
+    memcpy(&result, readSlice(1, true)->toSystemEndian(), 1);
+    return result;
 }
 
 int16_t OutputStream::readInt16() const {
     checkSize(2, __PRETTY_FUNCTION__);
-    auto s = readSlice(2, true);
-    auto bytes = s->toSystemEndian();
-    return (int16_t)((int16_t)(bytes[0] & 0xff) | (int16_t)(bytes[1] & 0xff) << (int16_t)8);
+    int16_t result;
+    memcpy(&result, readSlice(2, true)->toSystemEndian(), 2);
+    return result;
 }
 
 uint32_t OutputStream::readUInt32() const {
     checkSize(4, __PRETTY_FUNCTION__);
-    auto s = readSlice(4, true);
-    auto bytes = s->toSystemEndian();
-    return (uint32_t)((bytes[0] & 0xff) | (uint32_t)(bytes[1] & 0xff) << (uint32_t)8 | (uint32_t)(bytes[2] & 0xff) << (uint32_t)16 | (uint32_t)(bytes[3] & 0xff) << (uint32_t)24);
+    uint32_t result;
+    memcpy(&result, readSlice(4, true)->toSystemEndian(), 4);
+    return result;
 }
 
 int32_t OutputStream::readInt32() const {
     checkSize(4, __PRETTY_FUNCTION__);
-    auto s = readSlice(4, true);
-    auto bytes = s->toSystemEndian();
-    return (int32_t)((bytes[0] & 0xff) | (int32_t)(bytes[1] & 0xff) << (int32_t)8 | (int32_t)(bytes[2] & 0xff) << (int32_t)16 | (int32_t)(bytes[3] & 0xff) << (int32_t)24);
+    int32_t result;
+    memcpy(&result, readSlice(4, true)->toSystemEndian(), 4);
+    return result;
 }
 
 int64_t OutputStream::readInt64() const {
     checkSize(8, __PRETTY_FUNCTION__);
-    auto s = readSlice(8, true);
-    auto bytes = s->toSystemEndian();
     int64_t result;
-    memcpy(&result, bytes, 8);
+    memcpy(&result, readSlice(8, true)->toSystemEndian(), 8);
     return result;
-    // (int64_t)((int64_t)(bytes[0] & 0xff) | (int64_t)(bytes[1] & 0xff) << (int64_t)8 | (int64_t)(bytes[2] & 0xff) << (int64_t)16 | (int64_t)(bytes[3] & 0xff) << (int64_t)24 | (int64_t)(bytes[4] & 0xff) << (int64_t)32 | (int64_t)(bytes[5] & 0xff) << (int64_t)40 | (int64_t)(bytes[6] & 0xff) << (int64_t)48 | (int64_t)(bytes[7] & 0xff) << (int64_t)56);
 }
 
 bool OutputStream::readBool() const {
@@ -120,9 +120,8 @@ std::shared_ptr<StreamSlice> OutputStream::readBytes() const {
         extraBytes = 1;
     else if (lengthMarker == 254) {
         checkSize(3, __PRETTY_FUNCTION__);
-        length = (int32_t)(readUInt8());
-        length |= (((int32_t)readUInt8()) >> 8);
-        length |= (((int32_t)readUInt8()) >> 16);
+        length = 0;
+        memcpy(&length, readSlice(3, true)->toSystemEndian(), 3);
         extraBytes = 4;
     }
     else {
@@ -159,5 +158,5 @@ size_t OutputStream::remainingSize() const {
 
 void OutputStream::checkSize(size_t size, std::string message) const {
     if (remainingSize() < size)
-        throw OutputStreamException(message, 400);
+        throw OutputStreamException("Size not enough when revoking " + message, 400);
 }

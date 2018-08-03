@@ -33,6 +33,12 @@ namespace gpproto {
         uint32_t readUInt32() const;
         int64_t readInt64() const;
 
+        template <class T> T readNumber() const {
+            T result;
+            memcpy(&result, readSlice(sizeof(T), true)->toSystemEndian(), sizeof(T));
+            return result;
+        }
+
         double readDouble() const;
         bool readBool() const;
 

@@ -80,18 +80,10 @@ void InputStream::writeBytes(const StreamSlice &data) {
         extraBytes = 1;
     }
     else {
-        int32_t sizeInt = (int32_t)data.size;
+        int32_t sizeInt = ((int32_t)data.size & (0x00ffffff));
         writeUInt8((uint8_t)254);
-
-#if GP_IS_LITTLE_ENDIAN
-        writeUInt8((uint8_t)((sizeInt >> 24) & 0xFF));
-        writeUInt8((uint8_t)((sizeInt >> 16) & 0xFF));
-        writeUInt8((uint8_t)((sizeInt >> 8) & 0xFF));
-#else
-        writeUInt8((uint8_t)((sizeInt) & 0xFF));
-        writeUInt8((uint8_t)((sizeInt >> 8) & 0xFF));
-        writeUInt8((uint8_t)((sizeInt >> 16) & 0xFF));
-#endif
+        auto lengthData = StreamSlice(reinterpret_cast<const char*>(&sizeInt), 3, true);
+        writeData(lengthData);
         extraBytes = 4;
     }
 
@@ -100,7 +92,7 @@ void InputStream::writeBytes(const StreamSlice &data) {
     while ((extraBytes + data.size) % 4) {
         writeInt8(0);
         extraBytes++;
-        LOGV("Adding null padding");
+        //LOGV("Adding null padding");
     }
 }
 
