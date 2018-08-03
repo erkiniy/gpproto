@@ -122,8 +122,8 @@ void InputStream::addSlice(const StreamSlice& slice) {
 }
 
 std::shared_ptr<StreamSlice> InputStream::currentBytes() const {
-    if (currentSize == 0)
-        return nullptr;
+//    if (currentSize == 0)
+//        return nullptr;
 
     LOGV("Total allocated slice is = %lu, when useful one is = %lu", kChunkSize * numberOfChunks, currentSize);
 

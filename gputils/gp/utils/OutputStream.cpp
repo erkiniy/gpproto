@@ -22,22 +22,33 @@ int8_t OutputStream::readInt8() const {
 
 int16_t OutputStream::readInt16() const {
     checkSize(2, __PRETTY_FUNCTION__);
-    return (int16_t)*(readSlice(2, true)->toSystemEndian());
+    auto s = readSlice(2, true);
+    auto bytes = s->toSystemEndian();
+    return (int16_t)((int16_t)(bytes[0] & 0xff) | (int16_t)(bytes[1] & 0xff) << (int16_t)8);
 }
 
 uint32_t OutputStream::readUInt32() const {
     checkSize(4, __PRETTY_FUNCTION__);
-    return (uint32_t)*(readSlice(4, true)->toSystemEndian());
+    auto s = readSlice(4, true);
+    auto bytes = s->toSystemEndian();
+    return (uint32_t)((bytes[0] & 0xff) | (uint32_t)(bytes[1] & 0xff) << (uint32_t)8 | (uint32_t)(bytes[2] & 0xff) << (uint32_t)16 | (uint32_t)(bytes[3] & 0xff) << (uint32_t)24);
 }
 
 int32_t OutputStream::readInt32() const {
     checkSize(4, __PRETTY_FUNCTION__);
-    return (int32_t)*(readSlice(4, true)->toSystemEndian());
+    auto s = readSlice(4, true);
+    auto bytes = s->toSystemEndian();
+    return (int32_t)((bytes[0] & 0xff) | (int32_t)(bytes[1] & 0xff) << (int32_t)8 | (int32_t)(bytes[2] & 0xff) << (int32_t)16 | (int32_t)(bytes[3] & 0xff) << (int32_t)24);
 }
 
 int64_t OutputStream::readInt64() const {
     checkSize(8, __PRETTY_FUNCTION__);
-    return (int64_t)*(readSlice(8, true)->toSystemEndian());
+    auto s = readSlice(8, true);
+    auto bytes = s->toSystemEndian();
+    int64_t result;
+    memcpy(&result, bytes, 8);
+    return result;
+    // (int64_t)((int64_t)(bytes[0] & 0xff) | (int64_t)(bytes[1] & 0xff) << (int64_t)8 | (int64_t)(bytes[2] & 0xff) << (int64_t)16 | (int64_t)(bytes[3] & 0xff) << (int64_t)24 | (int64_t)(bytes[4] & 0xff) << (int64_t)32 | (int64_t)(bytes[5] & 0xff) << (int64_t)40 | (int64_t)(bytes[6] & 0xff) << (int64_t)48 | (int64_t)(bytes[7] & 0xff) << (int64_t)56);
 }
 
 bool OutputStream::readBool() const {
@@ -48,7 +59,11 @@ bool OutputStream::readBool() const {
 
 double OutputStream::readDouble() const {
     checkSize(8, __PRETTY_FUNCTION__);
-    return (double)*(readSlice(8, true)->toSystemEndian());
+    auto s = readSlice(8, true);
+    auto bytes = s->toSystemEndian();
+    double result;
+    memcpy(&result, bytes, 8);
+    return result;
 }
 
 std::shared_ptr<StreamSlice> OutputStream::readData(size_t length) const {
@@ -78,13 +93,13 @@ std::string OutputStream::readStringRaw() const {
     checkSize(size, __PRETTY_FUNCTION__);
 
     auto slice = readSlice(size, false);
-    return slice->size == 0 ? "" : std::string(slice->bytes, slice->size);
+    return slice->size == 0 ? "" : std::string(static_cast<char *>(slice->bytes), slice->size);
 }
 
 std::string OutputStream::readString() const {
     try {
         auto slice = readBytes();
-        return slice->size ==0 ? "" : std::string(slice->bytes, slice->size);
+        return slice->size ==0 ? "" : std::string(static_cast<char *>(slice->bytes), slice->size);
     }
     catch (OutputStreamException& e) {
         throw e;
@@ -134,7 +149,6 @@ std::shared_ptr<StreamSlice> OutputStream::readBytes() const {
 
 std::shared_ptr<StreamSlice> OutputStream::readSlice(size_t size, bool number) const {
     auto s = std::make_shared<StreamSlice>(bytes + currentPosition, size, number);
-    LOGV("Read slice %s", s->description().c_str());
     currentPosition += size;
     return s;
 }

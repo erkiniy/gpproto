@@ -39,9 +39,9 @@ namespace gpproto {
 
         char* toLittleEndian() const;
         char* toSystemEndian() const;
+        char* byteSwapped() const;
 
     private:
-        char* byteSwapped() const;
         };
 }
 
