@@ -44,7 +44,7 @@ set(GPUTILS_SOURCE
         gp/utils/OutputStream.h
 
         gp/utils/OutputStreamException.cpp
-        gp/utils/OutputStreamException.h)
+        gp/utils/OutputStreamException.h gp/utils/Timer.cpp gp/utils/Timer.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
