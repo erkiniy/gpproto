@@ -6,7 +6,7 @@
 using namespace gpproto;
 
 std::shared_ptr<DispatchQueue> DispatchQueuePool::getQueue() {
-    mtx.lock();
+    std::unique_lock<std::mutex> lock(mtx);
 
     if (pool.empty())
     {
@@ -22,14 +22,11 @@ std::shared_ptr<DispatchQueue> DispatchQueuePool::getQueue() {
     auto queue = pool.front();
     pool.pop_front();
 
-    mtx.unlock();
-
     return queue;
 }
 
 void DispatchQueuePool::releaseQueue(std::shared_ptr<DispatchQueue> queue) {
-    mtx.lock();
+    std::unique_lock<std::mutex> lock(mtx);
     pool.push_back(queue);
     printf("Storing back to queue %lu\n", pool.size());
-    mtx.unlock();
 }
