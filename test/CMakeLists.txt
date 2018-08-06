@@ -47,3 +47,11 @@ target_link_libraries(Streams
 
 add_test(NAME Streams COMMAND Streams -l message)
 
+add_executable(Timers Timers.cpp)
+target_link_libraries(Timers
+        gputils
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+add_test(NAME Timers COMMAND Timers -l message)

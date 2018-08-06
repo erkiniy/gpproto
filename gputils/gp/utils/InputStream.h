@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <string>
-#include "Buffer.h"
 #include "StreamSlice.h"
 
 namespace gpproto {
