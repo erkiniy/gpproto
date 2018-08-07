@@ -1,0 +1,8 @@
+//
+// Created by Jaloliddin Erkiniy on 8/7/18.
+//
+
+#ifndef GPPROTO_NETWORKSOCKETDELEGATE_H
+#define GPPROTO_NETWORKSOCKETDELEGATE_H
+
+#endif //GPPROTO_NETWORKSOCKETDELEGATE_H
