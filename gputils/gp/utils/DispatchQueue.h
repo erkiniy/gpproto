@@ -46,8 +46,12 @@ namespace gpproto {
             return std::this_thread::get_id() == this->_threadId;
         }
 
+        const std::string& name() const {
+            return _name;
+        }
+
     private:
-        std::string _name;
+        const std::string _name;
         std::list<DispatchWork> _jobs;
         std::thread _thread;
         std::thread::id _threadId;

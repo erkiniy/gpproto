@@ -24,7 +24,9 @@ void Timer::start() {
 
     std::weak_ptr<Timer> weakSelf = shared_from_this();
 
-    this->timerQueue->async([duration, token, weakSelf] {
+    auto queueName = timerQueue->name();
+
+    this->timerQueue->async([duration, token, weakSelf, queueName] {
 
         std::this_thread::sleep_for(std::chrono::microseconds(duration));
 
@@ -34,6 +36,7 @@ void Timer::start() {
 
         if (token != strongSelf->timerToken) {
             LOGV("Timer tokens are different");
+            strongSelf->releaseInvalidatedQueue(queueName);
             return;
         }
         else {
@@ -60,6 +63,13 @@ void Timer::invalidate() {
 
     timerToken ++;
     started = false;
+
+    mtx.lock();
+    if (timerQueue)
+        invalidatedQueues[timerQueue->name()] = timerQueue;
+    mtx.unlock();
+
+    timerQueue = nullptr;
  }
 
  void Timer::resetTimeout(float timeout) {
@@ -70,4 +80,18 @@ void Timer::invalidate() {
     mtx.unlock();
 
     start();
+}
+
+void Timer::releaseInvalidatedQueue(const std::string &name) {
+    mtx.lock();
+    auto it = invalidatedQueues.find(name);
+
+    if (it != invalidatedQueues.end())
+    {
+        auto queue = it->second;
+        invalidatedQueues.erase(it);
+        DispatchQueuePool::instance().releaseQueue(queue);
+        LOGV("Releasing queue to the pool with name %s", name.c_str());
+    }
+    mtx.unlock();
 }

@@ -11,10 +11,13 @@
 namespace gpproto {
     class NetworkSocketPosix : public NetworkSocket {
     public:
+        std::shared_ptr<NetworkSocketPosix> shared_from_this() {
+            return std::static_pointer_cast<NetworkSocketPosix>(NetworkSocket::shared_from_this());
+        }
         NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress* address);
         virtual ~NetworkSocketPosix();
-        virtual void Send(NetworkPacket* packet);
-        virtual void Receive(NetworkPacket* packet);
+        virtual size_t Send(NetworkPacket* packet);
+        virtual size_t Receive(NetworkPacket* packet);
 
         virtual void Open();
         virtual void Close();
@@ -30,6 +33,8 @@ namespace gpproto {
         static uint32_t StringToV4Adress(std::string address);
 
         static IPv4Address* ResolveDomainName(std::string name);
+
+        virtual bool Connected();
 
     private:
         static int GetDescriptorFromSocket(NetworkSocket* socket);

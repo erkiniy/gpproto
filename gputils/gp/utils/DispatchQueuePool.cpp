@@ -28,5 +28,4 @@ std::shared_ptr<DispatchQueue> DispatchQueuePool::getQueue() {
 void DispatchQueuePool::releaseQueue(std::shared_ptr<DispatchQueue> queue) {
     std::unique_lock<std::mutex> lock(mtx);
     pool.push_back(queue);
-    printf("Storing back to queue %lu\n", pool.size());
 }

@@ -14,6 +14,8 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 
+#include "gp/utils/Logging.h"
+
 using namespace gpproto;
 
 NetworkSocketPosix::NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress* address) : NetworkSocket(protocol, address) {
@@ -21,7 +23,7 @@ NetworkSocketPosix::NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress*
     tcpConnectedAddress = NULL;
     tcpConnectedPort = 0;
 
-    printf("NetworkSocketPosix allocated\n");
+    LOGV("NetworkSocketPosix allocated");
 }
 
 NetworkSocketPosix::~NetworkSocketPosix() {
@@ -29,143 +31,203 @@ NetworkSocketPosix::~NetworkSocketPosix() {
         delete tcpConnectedAddress;
     }
 
-    printf("NetworkSocketPosix deallocated\n");
+    LOGV("NetworkSocketPosix deallocated");
 
 }
 
 void NetworkSocketPosix::Open() {
 
-    if (protocol == PROTO_UDP) {
-        return;
-    }
+    std::weak_ptr<NetworkSocketPosix> weakSelf = shared_from_this();
 
-    fd = socket(AF_INET, SOCK_STREAM, 0);
+    NetworkSocket::queue()->async([weakSelf]{
+        auto strongSelf = weakSelf.lock();
 
-    timeval timeout;
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
+        if (!strongSelf)
+            return;
 
-    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
-        printf("setsockopt error SO_SNDTIMEO\n");
-        return;
-    }
+        if (strongSelf->protocol == PROTO_UDP) {
+            return;
+        }
 
-    timeout.tv_sec=60;
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-        printf("setsockopt error SO_RCVTIMEO\n");
-        return;
-    }
+        strongSelf->fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    int nosigpipe = 1;
-    setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
+        timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
 
-    int flag = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
-        printf("setsockopt error SO_REUSEADDR\n");
-        return;
-    }
+        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+            LOGE("setsockopt error SO_SNDTIMEO");
+            return;
+        }
 
-    if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
-        printf("setsockopt error SO_KEEPALIVE\n");
-        return;
-    }
+        timeout.tv_sec = 60;
+        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+            LOGE("setsockopt error SO_RCVTIMEO");
+            return;
+        }
 
-    if (setsockopt(fd, SOL_SOCKET, TCP_NODELAY, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
-        printf("setsockopt error TCP_NODELAY\n");
-        return;
-    }
+        int nosigpipe = 1;
+        setsockopt(strongSelf->fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
 
+        int flag = 1;
+        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+            LOGE("setsockopt error SO_REUSEADDR");
+            return;
+        }
+
+        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+            LOGE("setsockopt error SO_KEEPALIVE");
+            return;
+        }
+
+        if (setsockopt(strongSelf->fd, SOL_SOCKET, TCP_NODELAY, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+            LOGE("setsockopt error TCP_NODELAY");
+            return;
+        }
+    });
 }
 
 void NetworkSocketPosix::Close() {
-    closing = true;
-    failed = true;
+    std::weak_ptr<NetworkSocketPosix> weakSelf = shared_from_this();
 
-    if (fd >= 0) {
-        shutdown(fd, SHUT_RDWR);
-        close(fd);
-        fd = -1;
-    }
+    NetworkSocket::queue()->async([weakSelf] {
+        auto strongSelf = weakSelf.lock();
+
+        if (!strongSelf)
+            return;
+
+        strongSelf->closing = true;
+        strongSelf->failed = true;
+
+        if (strongSelf->fd >= 0)
+        {
+            shutdown(strongSelf->fd, SHUT_RDWR);
+            close(strongSelf->fd);
+            strongSelf->fd = -1;
+
+            auto delegate = strongSelf->delegate.lock();
+            if (delegate)
+                delegate->networkSocketDidDisconnectFromHost(strongSelf, *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
+        }
+    });
 }
 
-void NetworkSocketPosix::Send(NetworkPacket *packet) {
+bool NetworkSocketPosix::Connected() {
+    bool connected = false;
+
+    NetworkSocket::queue()->sync([&] {
+        connected = fd >= 0;
+    });
+
+    return connected;
+}
+
+size_t NetworkSocketPosix::Send(NetworkPacket *packet) {
+
     if (!packet || (protocol == PROTO_UDP && !packet->address)) {
-        printf("Tried to send null packet\n");
-        return;
+        LOGE("Tried to send null packet");
+        return 0;
     }
-
-    int res = -1;
 
     if (protocol == PROTO_UDP) {
 
     }
     else {
-        res = send(fd, packet->data, packet->length, 0);
-    }
+        ssize_t res = send(fd, packet->slice->bytes, packet->slice->size, 0);
 
-    if (res < 0) {
-        printf("Error sending packet\n");
-    }
-    else {
-        printf("Did send packet with length %d\n", (int)packet->length);
-    }
-
-}
-
-void NetworkSocketPosix::Receive(NetworkPacket *packet) {
-    if (protocol == PROTO_UDP) {
-
-    }
-    else {
-        int res = recv(fd, packet->data, packet->length, 0);
         if (res <= 0) {
-            printf("Error receiving TCP packet\n");
+            LOGE("Error sending packet");
             failed = true;
+            Close();
         }
         else {
-            packet->length =  (size_t)res;
+            LOGV("Did send packet with length %d bytes", (int)packet->slice->size);
+            maybeDequeueWrite();
+        }
+    }
+
+    return 0;
+}
+
+size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
+
+    if (protocol == PROTO_UDP) {
+
+    }
+    else {
+        ssize_t res = recv(fd, packet->slice->bytes, packet->slice->size, 0);
+        if (res <= 0) {
+            LOGE("Error receiving TCP packet");
+            failed = true;
+            Close();
+            return 0;
+        }
+        else {
+            packet->slice->size = (size_t)res;
             packet->address = tcpConnectedAddress;
             packet->port = tcpConnectedPort;
             packet->protocol = protocol;
+
+            maybeDequeueRead();
+
+            return (size_t)res;
         }
     }
+
+    return 0;
 }
 
 void NetworkSocketPosix::Connect(NetworkAddress *address, uint16_t port) {
-    IPv4Address* v4address = dynamic_cast<IPv4Address*>(address);
-    sockaddr_in v4;
-    sockaddr* addr = NULL;
-    size_t addrLen = 0;
+    std::weak_ptr<NetworkSocketPosix> weakSelf = shared_from_this();
 
-    if (v4address) {
-        v4.sin_family = AF_INET;
-        v4.sin_addr.s_addr = v4address->GetAddress();
-        v4.sin_port = htons(port);
-        addr = reinterpret_cast<sockaddr*>(&v4);
-        addrLen = sizeof(v4);
-    }
+    NetworkSocket::queue()->async([weakSelf, address, port] {
+        auto strongSelf = weakSelf.lock();
 
-    if (fd < 0) {
-        this->Open();
-    }
+        if (!strongSelf)
+            return;
 
-    if (fd < 0) {
-        printf("Socket TCP create error\n");
-        return;
-    }
+        IPv4Address* v4address = dynamic_cast<IPv4Address*>(address);
+        sockaddr_in v4;
+        sockaddr* addr = nullptr;
+        size_t addrLen = 0;
 
-    int result = connect(fd, (const sockaddr*) addr, addrLen);
-    if (result != 0) {
-        printf("Connect error\n");
-        close(fd);
-        this->failed = true;
-        return;
-    }
+        if (v4address) {
+            v4.sin_family = AF_INET;
+            v4.sin_addr.s_addr = v4address->GetAddress();
+            v4.sin_port = htons(port);
+            addr = reinterpret_cast<sockaddr*>(&v4);
+            addrLen = sizeof(v4);
+        }
 
-    tcpConnectedAddress = (NetworkAddress*)new IPv4Address(*v4address);
-    tcpConnectedPort = port;
+        if (strongSelf->fd < 0) {
+            strongSelf->Open();
+        }
 
-    printf("Sucessfully connected\n");
+        if (strongSelf->fd < 0) {
+            LOGE("Socket TCP create error");
+            return;
+        }
+
+        int result = connect(strongSelf->fd, (const sockaddr*) addr, addrLen);
+        if (result != 0) {
+            LOGE("Connect error %d", result);
+            close(strongSelf->fd);
+            strongSelf->failed = true;
+            return;
+        }
+
+        strongSelf->tcpConnectedAddress = (NetworkAddress*)new IPv4Address(*v4address);
+        strongSelf->tcpConnectedPort = port;
+
+        LOGV("Posix socket sucessfully connected");
+
+        auto delegate = strongSelf->delegate.lock();
+        if (delegate)
+            delegate->networkSocketDidConnectToHost(strongSelf, *address, port);
+
+        strongSelf->maybeDequeueRead();
+        strongSelf->maybeDequeueWrite();
+    });
 }
 
 uint16_t NetworkSocketPosix::GetLocalPort() {
@@ -221,7 +283,7 @@ IPv4Address* NetworkSocketPosix::ResolveDomainName(std::string name) {
 
     int res = getaddrinfo(name.c_str(), NULL, NULL, &addr0);
     if (res != 0) {
-        printf("Error resolving address:%s", name.c_str());
+        LOGE("Error resolving address:%s", name.c_str());
     }
     else {
         addrinfo* addrPtr;

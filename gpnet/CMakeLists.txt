@@ -10,10 +10,21 @@ set(GPNET_SOURCE
         gp/net/os/posix/NetworkSocketPosix.h
 
         gp/net/os/windows/NetworkSocketWinsock.cpp
-        gp/net/os/windows/NetworkSocketWinsock.h)
+        gp/net/os/windows/NetworkSocketWinsock.h
+
+        gp/net/Connection.h
+
+        gp/net/ConnectionDelegate.h
+
+        gp/net/TcpConnection.cpp
+        gp/net/TcpConnection.h
+
+        gp/net/NetworkSocketDelegate.h)
 
 add_library(gpnet STATIC ${GPNET_SOURCE})
 target_include_directories(gpnet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+target_link_libraries(gpnet gputils)
 
 install(TARGETS gpnet EXPORT GPTargets
         LIBRARY DESTINATION lib

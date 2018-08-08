@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <atomic>
+#include <map>
 #include "DispatchQueuePool.h"
 
 namespace gpproto {
@@ -21,7 +22,8 @@ class Timer : public std::enable_shared_from_this<Timer> {
                   queue(queue),
                   timerQueue(nullptr),
                   started(false),
-                  timerToken(0) {}
+                  timerToken(0),
+                  invalidatedQueues() {}
 
         ~Timer() {
             if (timerQueue) {
@@ -41,6 +43,9 @@ class Timer : public std::enable_shared_from_this<Timer> {
         std::shared_ptr<DispatchQueue> timerQueue;
         mutable std::atomic_int timerToken;
         std::mutex mtx;
+        std::map<std::string, std::shared_ptr<DispatchQueue>> invalidatedQueues;
+
+        void releaseInvalidatedQueue(const std::string& name);
     };
 }
 
