@@ -20,7 +20,7 @@ using namespace gpproto;
 
 NetworkSocketPosix::NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress* address) : NetworkSocket(protocol, address) {
     fd = -1;
-    tcpConnectedAddress = NULL;
+    tcpConnectedAddress = nullptr;
     tcpConnectedPort = 0;
 
     LOGV("NetworkSocketPosix allocated");
@@ -50,6 +50,7 @@ void NetworkSocketPosix::Open() {
         }
 
         strongSelf->fd = socket(AF_INET, SOCK_STREAM, 0);
+        strongSelf->reading = false;
 
         timeval timeout;
         timeout.tv_sec = 5;
@@ -98,6 +99,7 @@ void NetworkSocketPosix::Close() {
 
         strongSelf->closing = true;
         strongSelf->failed = true;
+        strongSelf->reading = false;
 
         if (strongSelf->fd >= 0)
         {
@@ -122,6 +124,12 @@ bool NetworkSocketPosix::Connected() {
     return connected;
 }
 
+bool NetworkSocketPosix::Reading() {
+    bool reading_ = false;
+    reading_ = reading.load();
+    return reading_;
+}
+
 size_t NetworkSocketPosix::Send(NetworkPacket *packet) {
 
     if (!packet || (protocol == PROTO_UDP && !packet->address)) {
@@ -137,7 +145,6 @@ size_t NetworkSocketPosix::Send(NetworkPacket *packet) {
 
         if (res <= 0) {
             LOGE("Error sending packet");
-            failed = true;
             Close();
         }
         else {
@@ -150,15 +157,15 @@ size_t NetworkSocketPosix::Send(NetworkPacket *packet) {
 }
 
 size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
-
     if (protocol == PROTO_UDP) {
 
     }
     else {
+        reading = true;
         ssize_t res = recv(fd, packet->slice->bytes, packet->slice->size, 0);
+        reading = false;
         if (res <= 0) {
             LOGE("Error receiving TCP packet");
-            failed = true;
             Close();
             return 0;
         }
@@ -186,7 +193,10 @@ void NetworkSocketPosix::Connect(NetworkAddress *address, uint16_t port) {
         if (!strongSelf)
             return;
 
-        IPv4Address* v4address = dynamic_cast<IPv4Address*>(address);
+        strongSelf->failed = false;
+        strongSelf->closing = false;
+
+        auto v4address = dynamic_cast<IPv4Address*>(address);
         sockaddr_in v4;
         sockaddr* addr = nullptr;
         size_t addrLen = 0;

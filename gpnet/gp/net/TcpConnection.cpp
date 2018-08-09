@@ -12,8 +12,8 @@ void TcpConnection::start() {
 
         socket = std::unique_ptr<NetworkSocket>(NetworkSocket::Create(NetworkProtocol::PROTO_TCP, &address));
         socket->Connect(&address, port);
-        socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
         socket->setDelegate(shared_from_this());
+        socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
     });
 }
 
@@ -53,30 +53,31 @@ void TcpConnection::closeAndNotify() {
     });
 }
 
-void TcpConnection::networkSocketDidConnectToHost(std::shared_ptr<const NetworkSocket> socket,
-                                                  const gpproto::NetworkAddress &address, uint16_t port) {
+void TcpConnection::networkSocketDidConnectToHost(std::shared_ptr<NetworkSocket> socket,
+                                                  const NetworkAddress &address, uint16_t port) {
     LOGV("TcpConnection did connect to host");
 
 }
 
-void TcpConnection::networkSocketDidDisconnectFromHost(std::shared_ptr<const NetworkSocket> socket,
-                                                       const gpproto::NetworkAddress &address, uint16_t port,
+void TcpConnection::networkSocketDidDisconnectFromHost(std::shared_ptr<NetworkSocket> socket,
+                                                       const NetworkAddress &address, uint16_t port,
                                                        uint8_t reasonCode) {
-    LOGV("TcpConnection did disconnect to host");
+    LOGV("TcpConnection did disconnect from host");
 }
 
-void TcpConnection::networkSocketDidReadData(std::shared_ptr<const NetworkSocket> socket,
-                                             std::shared_ptr<gpproto::StreamSlice> data, uint8_t tag) {
+void TcpConnection::networkSocketDidReadData(std::shared_ptr<NetworkSocket> socket,
+                                             std::shared_ptr<StreamSlice> data, uint8_t tag) {
     LOGV("TcpConnection did read data with %zu and tag %u", data->size, tag);
+    socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
 }
 
 
-void TcpConnection::networkSocketDidSendData(std::shared_ptr<const NetworkSocket> socket, size_t length,
+void TcpConnection::networkSocketDidSendData(std::shared_ptr<NetworkSocket> socket, size_t length,
                                              uint8_t tag) {
     LOGV("TcpConnection did send data with %zu and tag %u", length, tag);
 }
 
-void TcpConnection::networkSocketDidReadPartialData(std::shared_ptr<const NetworkSocket> socket,
-                                                    std::shared_ptr<gpproto::StreamSlice> data, uint8_t tag) {
+void TcpConnection::networkSocketDidReadPartialData(std::shared_ptr<NetworkSocket> socket,
+                                                    std::shared_ptr<StreamSlice> data, uint8_t tag) {
 
 }

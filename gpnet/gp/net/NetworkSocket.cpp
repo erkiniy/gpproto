@@ -143,19 +143,33 @@ void NetworkSocket::maybeDequeueRead() {
         if (!strongSelf)
             return;
 
-        if (!strongSelf->readBufferQueue.empty() && strongSelf->Connected())
+        if (!strongSelf->readBufferQueue.empty() && strongSelf->Connected() && !strongSelf->Reading())
         {
             auto packet = strongSelf->readBufferQueue.front();
             strongSelf->readBufferQueue.pop_front();
 
-            if (!strongSelf->Receive(packet.get()))
-            {
-                auto weakDelegate = strongSelf->delegate;
-                auto strongDelegate = weakDelegate.lock();
+            NetworkSocket::receiveQueue()->async([packet, weakSelf] {
+                auto strongSelf_ = weakSelf.lock();
 
-                if (strongDelegate)
-                    strongDelegate->networkSocketDidReadData(strongSelf, packet->slice, packet->tag);
-            }
+                if (!strongSelf_)
+                    return;
+
+                if (!strongSelf_->Receive(packet.get()))
+                {
+                    NetworkSocket::queue()->async([packet, weakSelf] {
+
+                        auto strongSelf__ = weakSelf.lock();
+                        if (!strongSelf__)
+                            return;
+
+                        auto weakDelegate = strongSelf__->delegate;
+                        auto strongDelegate = weakDelegate.lock();
+
+                        if (strongDelegate)
+                            strongDelegate->networkSocketDidReadData(strongSelf__, packet->slice, packet->tag);
+                    });
+                }
+            });
         }
 
         if (strongSelf->isFailed())

@@ -86,6 +86,7 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
         virtual void SetTimeouts(int sendTimeout, int receiveTimeout) {};
 
         virtual bool Connected() = 0;
+        virtual bool Reading() = 0;
 
         virtual bool isFailed();
 

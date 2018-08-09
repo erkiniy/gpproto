@@ -35,11 +35,13 @@ namespace gpproto {
         static IPv4Address* ResolveDomainName(std::string name);
 
         virtual bool Connected();
+        virtual bool Reading();
 
     private:
         static int GetDescriptorFromSocket(NetworkSocket* socket);
         int fd;
         bool closing;
+        std::atomic_bool reading;
         NetworkAddress* tcpConnectedAddress;
         uint16_t tcpConnectedPort;
     };

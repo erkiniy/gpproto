@@ -84,7 +84,5 @@ endif()
 enable_testing()
 
 add_subdirectory(gpnet)
-
 add_subdirectory(gputils)
-
 add_subdirectory(test)
