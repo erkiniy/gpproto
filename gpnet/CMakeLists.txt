@@ -21,7 +21,7 @@ set(GPNET_SOURCE
 
         gp/net/NetworkSocketDelegate.h)
 
-add_library(gpnet STATIC ${GPNET_SOURCE})
+add_library(gpnet SHARED ${GPNET_SOURCE})
 target_include_directories(gpnet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 target_link_libraries(gpnet gputils)

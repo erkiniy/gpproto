@@ -49,7 +49,7 @@ set(GPUTILS_SOURCE
         gp/utils/DispatchQueuePool.cpp
         gp/utils/DispatchQueuePool.h)
 
-add_library(gputils STATIC ${GPUTILS_SOURCE})
+add_library(gputils SHARED ${GPUTILS_SOURCE})
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 install(TARGETS gputils EXPORT GPTargets
