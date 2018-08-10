@@ -86,3 +86,23 @@ endif()
 add_subdirectory(gpnet)
 add_subdirectory(gputils)
 # add_subdirectory(test)
+
+set(GPCLIENT_SOURCE
+        gp/proto/Proto.h
+        gp/proto/Proto.cpp)
+
+add_library(gpclient SHARED ${GPCLIENT_SOURCE})
+target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(gpclient PRIVATE gpnet)
+
+add_library(GPStatic INTERFACE)
+target_link_libraries(GPStatic INTERFACE gpclient)
+
+
+install(TARGETS gpclient GPStatic EXPORT GPTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
+
+install(FILES gp/proto/Proto.h DESTINATION include/gp/proto)
