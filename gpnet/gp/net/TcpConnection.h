@@ -5,9 +5,9 @@
 #ifndef GPPROTO_TCPCONNECTION_H
 #define GPPROTO_TCPCONNECTION_H
 
+#include <list>
 #include "Connection.h"
 #include "NetworkSocket.h"
-#include <list>
 #include "gp/utils/Timer.h"
 #include "gp/utils/Logging.h"
 

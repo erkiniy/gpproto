@@ -98,7 +98,6 @@ target_link_libraries(gpclient PRIVATE gpnet)
 add_library(GPStatic INTERFACE)
 target_link_libraries(GPStatic INTERFACE gpclient)
 
-
 install(TARGETS gpclient GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
