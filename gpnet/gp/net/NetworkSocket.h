@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include "NetworkSocketDelegate.h"
+#include "NetworkAddress.h"
 #include "gp/utils/DispatchQueue.h"
 #include "gp/utils/StreamSlice.h"
 
@@ -17,25 +18,6 @@ namespace gpproto {
     enum NetworkProtocol {
         PROTO_UDP = 0,
         PROTO_TCP
-    };
-
-    class NetworkAddress {
-    public:
-        virtual std::string ToString() = 0;
-        virtual ~NetworkAddress() = default;
-        bool operator == (const NetworkAddress& other);
-        bool operator != (const NetworkAddress& other);
-    };
-
-    class IPv4Address : public NetworkAddress {
-    public:
-        IPv4Address(std::string addr);
-        IPv4Address(uint32_t addr);
-        virtual std::string ToString();
-        virtual bool isEmpty();
-        uint32_t GetAddress();
-    private:
-        uint32_t address;
     };
 
     struct NetworkPacket {

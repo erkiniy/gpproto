@@ -19,9 +19,9 @@ set(GPNET_SOURCE
         gp/net/TcpConnection.cpp
         gp/net/TcpConnection.h
 
-        gp/net/NetworkSocketDelegate.h)
+        gp/net/NetworkSocketDelegate.h gp/net/NetworkAddress.cpp gp/net/NetworkAddress.h)
 
-add_library(gpnet SHARED ${GPNET_SOURCE})
+add_library(gpnet STATIC ${GPNET_SOURCE})
 target_include_directories(gpnet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 target_link_libraries(gpnet gputils)

@@ -15,7 +15,7 @@ namespace gpproto {
     public:
         virtual void connectionOpened(Connection& connection) = 0;
         virtual void connectionClosed(Connection& connection) = 0;
-        virtual void connectionDidReceiveData(std::shared_ptr<StreamSlice>) = 0;
+        virtual void connectionDidReceiveData(std::shared_ptr<StreamSlice> slice) = 0;
     };
 }
 

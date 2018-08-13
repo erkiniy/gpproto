@@ -7,7 +7,6 @@
 
 #include "../../NetworkSocket.h"
 
-
 namespace gpproto {
     class NetworkSocketPosix : public NetworkSocket {
     public:

@@ -115,7 +115,7 @@ void NetworkSocketPosix::Close() {
 }
 
 bool NetworkSocketPosix::Connected() {
-    bool connected = false;
+    bool connected;
 
     NetworkSocket::queue()->sync([&] {
         connected = fd >= 0;
@@ -125,7 +125,7 @@ bool NetworkSocketPosix::Connected() {
 }
 
 bool NetworkSocketPosix::Reading() {
-    bool reading_ = false;
+    bool reading_;
     reading_ = reading.load();
     return reading_;
 }

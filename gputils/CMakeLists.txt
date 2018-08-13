@@ -40,7 +40,6 @@ set(GPUTILS_SOURCE
         gp/utils/OutputStream.cpp
         gp/utils/OutputStream.h
 
-        gp/utils/OutputStreamException.cpp
         gp/utils/OutputStreamException.h
 
         gp/utils/Timer.cpp
@@ -49,7 +48,7 @@ set(GPUTILS_SOURCE
         gp/utils/DispatchQueuePool.cpp
         gp/utils/DispatchQueuePool.h)
 
-add_library(gputils SHARED ${GPUTILS_SOURCE})
+add_library(gputils STATIC ${GPUTILS_SOURCE})
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 install(TARGETS gputils EXPORT GPTargets

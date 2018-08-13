@@ -81,27 +81,64 @@ else()
     message(STATUS "Could NOT find ccache")
 endif()
 
+if (MSVC)
+    if (CMAKE_CXX_FLAGS_DEBUG MATCHES "/RTC1")
+        string(REPLACE "/RTC1" " " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    endif()
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /W4 /wd4100 /wd4127 /wd4324 /wd4505 /wd4702")
+elseif (CLANG OR GCC)
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG} -fno-omit-frame-pointer -fno-exceptions -fno-rtti")
+    if (APPLE)
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S,-all_load")
+    else()
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,--exclude-libs,ALL")
+    endif()
+
+    if (MEMPROF)
+        CHECK_CXX_COMPILER_FLAG(-no-pie CXX_NO_PIE_FLAG)
+        if (CXX_NO_PIE_FLAG)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
+        elseif (APPLE)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-no_pie")
+        endif()
+    endif()
+elseif (INTEL)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG}")
+endif()
+
 # enable_testing()
 
 add_subdirectory(gpnet)
 add_subdirectory(gputils)
 # add_subdirectory(test)
 
+set(GPCORE_SOURCE
+        gp/proto/Core.cpp
+        gp/proto/Core.h)
+
+add_library(gpcore STATIC ${GPCORE_SOURCE})
+target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(gpcore PUBLIC gputils gpnet)
+
 set(GPCLIENT_SOURCE
         gp/proto/Proto.h
         gp/proto/Proto.cpp)
 
-add_library(gpclient SHARED ${GPCLIENT_SOURCE})
-target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-target_link_libraries(gpclient PRIVATE gpnet)
+add_library(gpproto SHARED ${GPCLIENT_SOURCE})
+target_include_directories(gpproto PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(gpproto PRIVATE gpcore)
 
 add_library(GPStatic INTERFACE)
-target_link_libraries(GPStatic INTERFACE gpclient)
+target_link_libraries(GPStatic INTERFACE gpproto)
 
-install(TARGETS gpclient GPStatic EXPORT GPTargets
+install(TARGETS gpproto gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
 
 install(FILES gp/proto/Proto.h DESTINATION include/gp/proto)
+install(FILES gpnet/gp/net/NetworkAddress.h DESTINATION include/gp/net)

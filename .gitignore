@@ -94,6 +94,7 @@ out/
 # Gradle files
 .gradle/
 build/
+install/
 
 # Local configuration file (sdk path, etc)
 local.properties

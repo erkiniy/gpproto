@@ -28,8 +28,8 @@ class TcpConnection final : public Connection, std::enable_shared_from_this<Netw
         }
 
         TcpConnection(IPv4Address& address, uint16_t port) : socket(nullptr), address(address), port(port) {
-            this->closed = false;
-        };
+            closed = false;
+        }
 
         ~TcpConnection() {
             LOGV("TcpConnection deinitialized");
