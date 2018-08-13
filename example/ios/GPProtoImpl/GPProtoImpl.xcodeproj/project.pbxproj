@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		925F98F72121D736000F00F3 /* libgpproto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 925F98F62121D736000F00F3 /* libgpproto.dylib */; settings = {ATTRIBUTES = (Weak, ); }; };
-		9286F54F2121D6C500E6D351 /* include in Resources */ = {isa = PBXBuildFile; fileRef = 9286F54D2121D6C500E6D351 /* include */; };
-		9286F5502121D6C500E6D351 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 9286F54E2121D6C500E6D351 /* lib */; };
 		92C143E9211C6A8B0030CFEA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143E8211C6A8B0030CFEA /* AppDelegate.swift */; };
 		92C143EB211C6A8B0030CFEA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143EA211C6A8B0030CFEA /* ViewController.swift */; };
 		92C143F0211C6A8B0030CFEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92C143EF211C6A8B0030CFEA /* Assets.xcassets */; };
@@ -17,6 +14,8 @@
 		92C143FE211C6A8C0030CFEA /* GPProtoImplTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143FD211C6A8C0030CFEA /* GPProtoImplTests.swift */; };
 		92C14409211C6A8C0030CFEA /* GPProtoImplUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C14408211C6A8C0030CFEA /* GPProtoImplUITests.swift */; };
 		92C1441C211C6C760030CFEA /* ProtoImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92C1441B211C6C760030CFEA /* ProtoImpl.mm */; };
+		C07909582121F87900547D9D /* libgpproto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C079094F2121F7F500547D9D /* libgpproto.dylib */; settings = {ATTRIBUTES = (Weak, ); }; };
+		C079095A2121F91200547D9D /* libgpproto.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = C079094F2121F7F500547D9D /* libgpproto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,25 +36,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		92910D7F2121C65C00C76050 /* Embed Libraries */ = {
+		C07909592121F90800547D9D /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				C079095A2121F91200547D9D /* libgpproto.dylib in CopyFiles */,
 			);
-			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		925F98F62121D736000F00F3 /* libgpproto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpproto.dylib; path = ../../../install/lib/libgpproto.dylib; sourceTree = "<group>"; };
-		925F98F82121D7DB000F00F3 /* libgpnet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpnet.a; path = ../../../install/lib/libgpnet.a; sourceTree = "<group>"; };
-		925F98F92121D7DB000F00F3 /* libgputils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgputils.a; path = ../../../install/lib/libgputils.a; sourceTree = "<group>"; };
-		925F98FA2121D7DB000F00F3 /* libgpcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpcore.a; path = ../../../install/lib/libgpcore.a; sourceTree = "<group>"; };
-		9286F54D2121D6C500E6D351 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../../../../install/include; sourceTree = "<group>"; };
-		9286F54E2121D6C500E6D351 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../../install/lib; sourceTree = "<group>"; };
 		92C143E5211C6A8B0030CFEA /* GPProtoImpl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GPProtoImpl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92C143E8211C6A8B0030CFEA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		92C143EA211C6A8B0030CFEA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -71,6 +64,9 @@
 		92C1441A211C6C760030CFEA /* GPProtoImpl-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GPProtoImpl-Bridging-Header.h"; sourceTree = "<group>"; };
 		92C1441B211C6C760030CFEA /* ProtoImpl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProtoImpl.mm; sourceTree = "<group>"; };
 		92C14428211C77A80030CFEA /* ProtoImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProtoImpl.h; sourceTree = "<group>"; };
+		C079094F2121F7F500547D9D /* libgpproto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpproto.dylib; path = ../../../install/lib/libgpproto.dylib; sourceTree = "<group>"; };
+		C07909552121F85600547D9D /* NetworkAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkAddress.h; sourceTree = "<group>"; };
+		C07909572121F85600547D9D /* Proto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Proto.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				925F98F72121D736000F00F3 /* libgpproto.dylib in Frameworks */,
+				C07909582121F87900547D9D /* libgpproto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,9 +119,8 @@
 		92C143E7211C6A8B0030CFEA /* GPProtoImpl */ = {
 			isa = PBXGroup;
 			children = (
-				9286F54D2121D6C500E6D351 /* include */,
-				9286F54E2121D6C500E6D351 /* lib */,
 				92C143E8211C6A8B0030CFEA /* AppDelegate.swift */,
+				C07909522121F85600547D9D /* include */,
 				92C1441B211C6C760030CFEA /* ProtoImpl.mm */,
 				92C14428211C77A80030CFEA /* ProtoImpl.h */,
 				92C143EA211C6A8B0030CFEA /* ViewController.swift */,
@@ -158,12 +153,43 @@
 		92C14417211C6BE30030CFEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				925F98FA2121D7DB000F00F3 /* libgpcore.a */,
-				925F98F82121D7DB000F00F3 /* libgpnet.a */,
-				925F98F92121D7DB000F00F3 /* libgputils.a */,
-				925F98F62121D736000F00F3 /* libgpproto.dylib */,
+				C079094F2121F7F500547D9D /* libgpproto.dylib */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C07909522121F85600547D9D /* include */ = {
+			isa = PBXGroup;
+			children = (
+				C07909532121F85600547D9D /* gp */,
+			);
+			name = include;
+			path = ../../../../install/include;
+			sourceTree = "<group>";
+		};
+		C07909532121F85600547D9D /* gp */ = {
+			isa = PBXGroup;
+			children = (
+				C07909542121F85600547D9D /* net */,
+				C07909562121F85600547D9D /* proto */,
+			);
+			path = gp;
+			sourceTree = "<group>";
+		};
+		C07909542121F85600547D9D /* net */ = {
+			isa = PBXGroup;
+			children = (
+				C07909552121F85600547D9D /* NetworkAddress.h */,
+			);
+			path = net;
+			sourceTree = "<group>";
+		};
+		C07909562121F85600547D9D /* proto */ = {
+			isa = PBXGroup;
+			children = (
+				C07909572121F85600547D9D /* Proto.h */,
+			);
+			path = proto;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -176,7 +202,7 @@
 				92C143E1211C6A8B0030CFEA /* Sources */,
 				92C143E2211C6A8B0030CFEA /* Frameworks */,
 				92C143E3211C6A8B0030CFEA /* Resources */,
-				92910D7F2121C65C00C76050 /* Embed Libraries */,
+				C07909592121F90800547D9D /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -275,9 +301,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9286F54F2121D6C500E6D351 /* include in Resources */,
 				92C143F3211C6A8B0030CFEA /* LaunchScreen.storyboard in Resources */,
-				9286F5502121D6C500E6D351 /* lib in Resources */,
 				92C143F0211C6A8B0030CFEA /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -464,6 +488,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;
@@ -491,6 +516,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;

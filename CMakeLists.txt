@@ -90,7 +90,7 @@ if (MSVC)
 elseif (CLANG OR GCC)
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG} -fno-omit-frame-pointer -fno-exceptions -fno-rtti")
     if (APPLE)
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S,-all_load")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S")
     else()
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
@@ -107,6 +107,41 @@ elseif (CLANG OR GCC)
     endif()
 elseif (INTEL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG}")
+endif()
+
+include(AddCXXCompilerFlag)
+if (NOT MSVC)
+    # add_cxx_compiler_flag("-Wall")
+    # add_cxx_compiler_flag("-Wextra")
+    #add_cxx_compiler_flag("-Wimplicit-fallthrough=2")
+    #add_cxx_compiler_flag("-Wpointer-arith")
+    # add_cxx_compiler_flag("-Wcast-qual")
+    #add_cxx_compiler_flag("-Wsign-compare")
+    #add_cxx_compiler_flag("-Wduplicated-branches")
+    #add_cxx_compiler_flag("-Wduplicated-cond")
+    #add_cxx_compiler_flag("-Walloc-zero")
+    # add_cxx_compiler_flag("-Wlogical-op")
+    #add_cxx_compiler_flag("-Wno-tautological-compare")
+    #add_cxx_compiler_flag("-Wpointer-arith")
+    #add_cxx_compiler_flag("-Wvla")
+    #add_cxx_compiler_flag("-Wnon-virtual-dtor")
+    #add_cxx_compiler_flag("-Wno-unused-parameter")
+    #add_cxx_compiler_flag("-Wconversion")
+    # add_cxx_compiler_flag("-Wno-sign-conversion")
+    #add_cxx_compiler_flag("-Wc++14-compat-pedantic")
+    # add_cxx_compiler_flag("-Qunused-arguments")
+    # add_cxx_compiler_flag("-Wodr")
+    #add_cxx_compiler_flag("-flto-odr-type-merging")
+
+    #  add_cxx_compiler_flag("-Werror")
+
+    #  add_cxx_compiler_flag("-Wcast-align")
+
+    #std::int32_t <-> int and off_t <-> std::size_t/std::int64_t
+    #  add_cxx_compiler_flag("-Wuseless-cast")
+
+    #external headers like openssl
+    #  add_cxx_compiler_flag("-Wzero-as-null-pointer-constant")
 endif()
 
 # enable_testing()
@@ -139,6 +174,11 @@ install(TARGETS gpproto gpcore GPStatic EXPORT GPTargets
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
+
+install(EXPORT GPTargets
+        FILE GPTargets.cmake
+        NAMESPACE gpproto::
+        DESTINATION lib/cmake/gp)
 
 install(FILES gp/proto/Proto.h DESTINATION include/gp/proto)
 install(FILES gpnet/gp/net/NetworkAddress.h DESTINATION include/gp/net)
