@@ -12,7 +12,7 @@
 #include "gp/utils/Logging.h"
 
 namespace gpproto {
-class TcpConnection final : public Connection, std::enable_shared_from_this<NetworkSocketDelegate>, NetworkSocketDelegate {
+class TcpConnection final : public Connection, public std::enable_shared_from_this<NetworkSocketDelegate>, public NetworkSocketDelegate {
     public:
 
         enum class TcpPacketReadTag : uint8_t {
@@ -28,6 +28,7 @@ class TcpConnection final : public Connection, std::enable_shared_from_this<Netw
         }
 
         TcpConnection(IPv4Address& address, uint16_t port) : socket(nullptr), address(address), port(port) {
+            LOGV("TcpConnection initialized");
             closed = false;
         }
 
@@ -49,7 +50,7 @@ class TcpConnection final : public Connection, std::enable_shared_from_this<Netw
         void networkSocketDidDisconnectFromHost(std::shared_ptr<NetworkSocket> socket, const NetworkAddress& address, uint16_t port, uint8_t reasonCode);
 
     private:
-        std::unique_ptr<NetworkSocket> socket;
+        std::shared_ptr<NetworkSocket> socket;
         std::weak_ptr<ConnectionDelegate> delegate;
         IPv4Address address;
         uint16_t port;

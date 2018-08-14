@@ -13,22 +13,26 @@
 using namespace gpproto;
 
 Proto* _proto;
-IPv4Address* _address;
+std::string _address;
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        _address = new IPv4Address("195.158.12.163");
-        _proto = new Proto(*_address, 8281);
+        _address = "195.158.12.163";
+        _proto = new Proto(_address, 8281);
     }
     return self;
 }
 
 - (void)dealloc
 {
-    delete _address;
     delete _proto;
+}
+
+- (void)initProto
+{
+    _proto->init();
 }
 
 - (void) start

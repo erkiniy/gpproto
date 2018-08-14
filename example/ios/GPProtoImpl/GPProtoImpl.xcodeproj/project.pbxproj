@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		922A56222122D249004BBB3A /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 922A56202122D249004BBB3A /* lib */; };
+		922A56232122D249004BBB3A /* include in Resources */ = {isa = PBXBuildFile; fileRef = 922A56212122D249004BBB3A /* include */; };
 		92C143E9211C6A8B0030CFEA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143E8211C6A8B0030CFEA /* AppDelegate.swift */; };
 		92C143EB211C6A8B0030CFEA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143EA211C6A8B0030CFEA /* ViewController.swift */; };
 		92C143F0211C6A8B0030CFEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92C143EF211C6A8B0030CFEA /* Assets.xcassets */; };
@@ -14,8 +16,10 @@
 		92C143FE211C6A8C0030CFEA /* GPProtoImplTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143FD211C6A8C0030CFEA /* GPProtoImplTests.swift */; };
 		92C14409211C6A8C0030CFEA /* GPProtoImplUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C14408211C6A8C0030CFEA /* GPProtoImplUITests.swift */; };
 		92C1441C211C6C760030CFEA /* ProtoImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92C1441B211C6C760030CFEA /* ProtoImpl.mm */; };
-		C07909582121F87900547D9D /* libgpproto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C079094F2121F7F500547D9D /* libgpproto.dylib */; settings = {ATTRIBUTES = (Weak, ); }; };
-		C079095A2121F91200547D9D /* libgpproto.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = C079094F2121F7F500547D9D /* libgpproto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		92FB5EE82122DFD7005F4442 /* libgpproto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5EE72122DFD6005F4442 /* libgpproto.a */; };
+		92FB5EEC2122DFF4005F4442 /* libgputils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5EE92122DFF3005F4442 /* libgputils.a */; };
+		92FB5EED2122DFF4005F4442 /* libgpcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5EEA2122DFF3005F4442 /* libgpcore.a */; };
+		92FB5EEE2122DFF4005F4442 /* libgpnet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5EEB2122DFF4005F4442 /* libgpnet.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,20 +39,9 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		C07909592121F90800547D9D /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				C079095A2121F91200547D9D /* libgpproto.dylib in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
+		922A56202122D249004BBB3A /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = "../../../../ios-install/lib"; sourceTree = "<group>"; };
+		922A56212122D249004BBB3A /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = "../../../../ios-install/include"; sourceTree = "<group>"; };
 		92C143E5211C6A8B0030CFEA /* GPProtoImpl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GPProtoImpl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92C143E8211C6A8B0030CFEA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		92C143EA211C6A8B0030CFEA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -64,9 +57,10 @@
 		92C1441A211C6C760030CFEA /* GPProtoImpl-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GPProtoImpl-Bridging-Header.h"; sourceTree = "<group>"; };
 		92C1441B211C6C760030CFEA /* ProtoImpl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProtoImpl.mm; sourceTree = "<group>"; };
 		92C14428211C77A80030CFEA /* ProtoImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProtoImpl.h; sourceTree = "<group>"; };
-		C079094F2121F7F500547D9D /* libgpproto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpproto.dylib; path = ../../../install/lib/libgpproto.dylib; sourceTree = "<group>"; };
-		C07909552121F85600547D9D /* NetworkAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkAddress.h; sourceTree = "<group>"; };
-		C07909572121F85600547D9D /* Proto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Proto.h; sourceTree = "<group>"; };
+		92FB5EE72122DFD6005F4442 /* libgpproto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpproto.a; path = "../../../ios-install/lib/libgpproto.a"; sourceTree = "<group>"; };
+		92FB5EE92122DFF3005F4442 /* libgputils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgputils.a; path = "../../../ios-install/lib/libgputils.a"; sourceTree = "<group>"; };
+		92FB5EEA2122DFF3005F4442 /* libgpcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpcore.a; path = "../../../ios-install/lib/libgpcore.a"; sourceTree = "<group>"; };
+		92FB5EEB2122DFF4005F4442 /* libgpnet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgpnet.a; path = "../../../ios-install/lib/libgpnet.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,7 +68,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C07909582121F87900547D9D /* libgpproto.dylib in Frameworks */,
+				92FB5EEC2122DFF4005F4442 /* libgputils.a in Frameworks */,
+				92FB5EED2122DFF4005F4442 /* libgpcore.a in Frameworks */,
+				92FB5EEE2122DFF4005F4442 /* libgpnet.a in Frameworks */,
+				92FB5EE82122DFD7005F4442 /* libgpproto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,8 +116,9 @@
 		92C143E7211C6A8B0030CFEA /* GPProtoImpl */ = {
 			isa = PBXGroup;
 			children = (
+				922A56212122D249004BBB3A /* include */,
+				922A56202122D249004BBB3A /* lib */,
 				92C143E8211C6A8B0030CFEA /* AppDelegate.swift */,
-				C07909522121F85600547D9D /* include */,
 				92C1441B211C6C760030CFEA /* ProtoImpl.mm */,
 				92C14428211C77A80030CFEA /* ProtoImpl.h */,
 				92C143EA211C6A8B0030CFEA /* ViewController.swift */,
@@ -153,43 +151,12 @@
 		92C14417211C6BE30030CFEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C079094F2121F7F500547D9D /* libgpproto.dylib */,
+				92FB5EEA2122DFF3005F4442 /* libgpcore.a */,
+				92FB5EEB2122DFF4005F4442 /* libgpnet.a */,
+				92FB5EE92122DFF3005F4442 /* libgputils.a */,
+				92FB5EE72122DFD6005F4442 /* libgpproto.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		C07909522121F85600547D9D /* include */ = {
-			isa = PBXGroup;
-			children = (
-				C07909532121F85600547D9D /* gp */,
-			);
-			name = include;
-			path = ../../../../install/include;
-			sourceTree = "<group>";
-		};
-		C07909532121F85600547D9D /* gp */ = {
-			isa = PBXGroup;
-			children = (
-				C07909542121F85600547D9D /* net */,
-				C07909562121F85600547D9D /* proto */,
-			);
-			path = gp;
-			sourceTree = "<group>";
-		};
-		C07909542121F85600547D9D /* net */ = {
-			isa = PBXGroup;
-			children = (
-				C07909552121F85600547D9D /* NetworkAddress.h */,
-			);
-			path = net;
-			sourceTree = "<group>";
-		};
-		C07909562121F85600547D9D /* proto */ = {
-			isa = PBXGroup;
-			children = (
-				C07909572121F85600547D9D /* Proto.h */,
-			);
-			path = proto;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -202,7 +169,6 @@
 				92C143E1211C6A8B0030CFEA /* Sources */,
 				92C143E2211C6A8B0030CFEA /* Frameworks */,
 				92C143E3211C6A8B0030CFEA /* Resources */,
-				C07909592121F90800547D9D /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -301,8 +267,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				922A56222122D249004BBB3A /* lib in Resources */,
 				92C143F3211C6A8B0030CFEA /* LaunchScreen.storyboard in Resources */,
 				92C143F0211C6A8B0030CFEA /* Assets.xcassets in Resources */,
+				922A56232122D249004BBB3A /* include in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -493,14 +461,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;
 				FRAMEWORK_SEARCH_PATHS = "";
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../install/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../ios-install/include\"";
 				INFOPLIST_FILE = GPProtoImpl/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/gp/lib";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"\"$(SRCROOT)/../../../install/lib\"",
+					"\"$(SRCROOT)/../../../ios-install/lib\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = uz.gpproto.GPProtoImpl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -508,6 +476,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -521,20 +490,21 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;
 				FRAMEWORK_SEARCH_PATHS = "";
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../install/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../ios-install/include\"";
 				INFOPLIST_FILE = GPProtoImpl/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/gp/lib";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"\"$(SRCROOT)/../../../install/lib\"",
+					"\"$(SRCROOT)/../../../ios-install/lib\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = uz.gpproto.GPProtoImpl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "GPProtoImpl/GPProtoImpl-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};

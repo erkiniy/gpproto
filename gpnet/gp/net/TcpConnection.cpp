@@ -7,12 +7,14 @@ using namespace gpproto;
 
 void TcpConnection::start() {
     TcpConnection::queue()->async([&] {
+        LOGV("Starting TcpConnection");
         if (socket)
             return;
 
-        socket = std::unique_ptr<NetworkSocket>(NetworkSocket::Create(NetworkProtocol::PROTO_TCP, &address));
+        socket = std::shared_ptr<NetworkSocket>(NetworkSocket::Create(NetworkProtocol::PROTO_TCP, &address));
         socket->Connect(&address, port);
         socket->setDelegate(shared_from_this());
+        LOGV("Tcp connection start after setting delegate");
         socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
     });
 }
@@ -30,7 +32,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
     if (datas.empty())
         return;
 
-    TcpConnection::queue()->async([&] {
+    TcpConnection::queue()->async([&, datas] {
          for (auto const& i : datas)
          {
              if (socket)

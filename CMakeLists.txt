@@ -162,7 +162,7 @@ set(GPCLIENT_SOURCE
         gp/proto/Proto.h
         gp/proto/Proto.cpp)
 
-add_library(gpproto SHARED ${GPCLIENT_SOURCE})
+add_library(gpproto ${GPCLIENT_SOURCE})
 target_include_directories(gpproto PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(gpproto PRIVATE gpcore)
 
@@ -181,4 +181,3 @@ install(EXPORT GPTargets
         DESTINATION lib/cmake/gp)
 
 install(FILES gp/proto/Proto.h DESTINATION include/gp/proto)
-install(FILES gpnet/gp/net/NetworkAddress.h DESTINATION include/gp/net)

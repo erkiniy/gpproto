@@ -16,7 +16,11 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         self.view.backgroundColor = .red
         
+        proto?.initProto();
         proto?.start();
+        
+        let data = Data(bytes: [1, 0, 0, 0])
+        proto?.send(data)
     }
 
     override func didReceiveMemoryWarning() {

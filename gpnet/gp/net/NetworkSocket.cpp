@@ -154,7 +154,7 @@ void NetworkSocket::maybeDequeueRead() {
                 if (!strongSelf_)
                     return;
 
-                if (!strongSelf_->Receive(packet.get()))
+                if (strongSelf_->Receive(packet.get()))
                 {
                     NetworkSocket::queue()->async([packet, weakSelf] {
 

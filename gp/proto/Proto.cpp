@@ -8,13 +8,21 @@
 #include "gp/utils/Logging.h"
 
 namespace gpproto {
-    class Proto ::Impl : std::enable_shared_from_this<ConnectionDelegate>, ConnectionDelegate {
+    class Proto ::Impl : public std::enable_shared_from_this<ConnectionDelegate>, public ConnectionDelegate {
     public:
-        Impl(IPv4Address& address, uint16_t port) : address(address), port(port), connection(std::make_unique<TcpConnection>(address, port)) {
-            connection->setDelegate(shared_from_this());
+        Impl(const std::string& address, uint16_t port) : address(IPv4Address(address)), port(port) {
+            LOGV("Impl allocated");
+            connection = (std::make_shared<TcpConnection>(this->address, this->port));
         }
 
-        ~Impl() = default;
+        ~Impl() {
+            LOGV("Impl deallocated");
+            connection->setDelegate(nullptr);
+        };
+
+        void init() {
+            connection->setDelegate(shared_from_this());
+        }
 
         void start() {
             connection->start();
@@ -41,6 +49,7 @@ namespace gpproto {
 
         void request(const char* data, size_t&& length) {
             auto slice = std::make_shared<StreamSlice>(data, length);
+            LOGV("Impl -> sending datas");
             connection->sendDatas({slice});
         }
 
@@ -50,12 +59,12 @@ namespace gpproto {
         void (*didReceiveData)(const char*, const size_t&);
 
     protected:
-        std::unique_ptr<TcpConnection> connection;
+        std::shared_ptr<TcpConnection> connection;
         IPv4Address address;
         uint16_t port;
     };
 
-    Proto::Proto(IPv4Address& address, uint16_t port) : impl_(std::make_unique<Impl>(address, port)) {
+    Proto::Proto(const std::string& address, uint16_t port) : impl_(std::make_shared<Impl>(address, port)) {
 
     }
 
@@ -64,12 +73,14 @@ namespace gpproto {
     }
 
     void Proto::init() {
+        impl_->init();
         impl_->didConnect = callbacks.didConnect;
         impl_->didDisconnect = callbacks.didDisconnect;
         impl_->didReceiveData = callbacks.didReceiveData;
     }
 
     void Proto::start() {
+        LOGV("Starting")
         impl_->start();
     }
 

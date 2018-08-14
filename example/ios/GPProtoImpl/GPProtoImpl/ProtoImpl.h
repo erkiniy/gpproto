@@ -15,6 +15,7 @@
 - (id)init;
 - (void)dealloc;
 
+- (void)initProto;
 - (void)start;
 - (void)stop;
 
