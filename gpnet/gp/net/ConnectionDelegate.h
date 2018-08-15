@@ -13,9 +13,9 @@ namespace gpproto {
 
     class ConnectionDelegate {
     public:
-        virtual void connectionOpened(Connection& connection) = 0;
-        virtual void connectionClosed(Connection& connection) = 0;
-        virtual void connectionDidReceiveData(std::shared_ptr<StreamSlice> slice) = 0;
+        virtual void connectionOpened(const Connection& connection) = 0;
+        virtual void connectionClosed(const Connection& connection) = 0;
+        virtual void connectionDidReceiveData(const Connection&, std::shared_ptr<StreamSlice> slice) = 0;
     };
 }
 

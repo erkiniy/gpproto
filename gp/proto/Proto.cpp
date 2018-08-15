@@ -32,17 +32,17 @@ namespace gpproto {
             connection->stop();
         }
 
-        void connectionOpened(Connection& connection) {
+        void connectionOpened(const Connection& connection) {
             if (didConnect)
                 didConnect();
         }
 
-        void connectionClosed(Connection& connection) {
+        void connectionClosed(const Connection& connection) {
             if (didDisconnect)
                 didDisconnect();
         }
 
-        void connectionDidReceiveData(std::shared_ptr<StreamSlice> slice) {
+        void connectionDidReceiveData(const Connection& connection, std::shared_ptr<StreamSlice> slice) {
             if (didReceiveData)
                 didReceiveData(slice->bytes, slice->size);
         }

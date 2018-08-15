@@ -43,11 +43,11 @@ class TcpConnection final : public Connection, public std::enable_shared_from_th
         void sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const;
         void closeAndNotify();
 
-        void networkSocketDidReadData(std::shared_ptr<NetworkSocket> socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
-        void networkSocketDidReadPartialData(std::shared_ptr<NetworkSocket> socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
-        void networkSocketDidSendData(std::shared_ptr<NetworkSocket> socket, size_t length, uint8_t tag);
-        void networkSocketDidConnectToHost(std::shared_ptr<NetworkSocket> socket, const NetworkAddress& address, uint16_t port);
-        void networkSocketDidDisconnectFromHost(std::shared_ptr<NetworkSocket> socket, const NetworkAddress& address, uint16_t port, uint8_t reasonCode);
+        void networkSocketDidReadData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
+        void networkSocketDidReadPartialData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
+        void networkSocketDidSendData(const NetworkSocket& socket, size_t length, uint8_t tag);
+        void networkSocketDidConnectToHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port);
+        void networkSocketDidDisconnectFromHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port, uint8_t reasonCode);
 
     private:
         std::shared_ptr<NetworkSocket> socket;

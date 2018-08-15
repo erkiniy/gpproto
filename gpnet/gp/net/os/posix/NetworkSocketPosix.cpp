@@ -109,7 +109,7 @@ void NetworkSocketPosix::Close() {
 
             auto delegate = strongSelf->delegate.lock();
             if (delegate)
-                delegate->networkSocketDidDisconnectFromHost(strongSelf, *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
+                delegate->networkSocketDidDisconnectFromHost(*strongSelf.get(), *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
         }
     });
 }
@@ -233,7 +233,7 @@ void NetworkSocketPosix::Connect(NetworkAddress *address, uint16_t port) {
 
         auto delegate = strongSelf->delegate.lock();
         if (delegate)
-            delegate->networkSocketDidConnectToHost(strongSelf, *address, port);
+            delegate->networkSocketDidConnectToHost(*strongSelf.get(), *address, port);
 
         strongSelf->maybeDequeueRead();
         strongSelf->maybeDequeueWrite();

@@ -48,9 +48,6 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
         void readDataWithTimeout(float timeout, size_t length, uint8_t tag);
         void sendDataWithTimeout(float timeout, const std::shared_ptr<StreamSlice>& slice, uint8_t tag);
 
-        void maybeDequeueWrite();
-        void maybeDequeueRead();
-
         virtual size_t Send(NetworkPacket* packet) = 0;
         void Send(std::shared_ptr<StreamSlice> slice);
 
@@ -82,6 +79,9 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
         NetworkProtocol protocol;
         NetworkAddress* address;
         std::weak_ptr<NetworkSocketDelegate> delegate;
+
+        void maybeDequeueWrite();
+        void maybeDequeueRead();
 
     private:
         std::list<std::shared_ptr<NetworkPacket>> readBufferQueue;

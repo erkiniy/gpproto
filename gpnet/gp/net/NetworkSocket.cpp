@@ -125,7 +125,7 @@ void NetworkSocket::maybeDequeueWrite() {
                 auto strongDelegate = weakDelegate.lock();
 
                 if (strongDelegate)
-                    strongDelegate->networkSocketDidSendData(strongSelf, packet->slice->size, packet->tag);
+                    strongDelegate->networkSocketDidSendData(*strongSelf.get(), packet->slice->size, packet->tag);
             }
         }
 
@@ -166,7 +166,7 @@ void NetworkSocket::maybeDequeueRead() {
                         auto strongDelegate = weakDelegate.lock();
 
                         if (strongDelegate)
-                            strongDelegate->networkSocketDidReadData(strongSelf__, packet->slice, packet->tag);
+                            strongDelegate->networkSocketDidReadData(*strongSelf__.get(), packet->slice, packet->tag);
                     });
                 }
             });

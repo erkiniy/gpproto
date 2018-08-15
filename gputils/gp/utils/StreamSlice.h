@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "Logging.h"
 #include "CustomStringConvertable.h"
 
 namespace gpproto {
@@ -32,7 +33,7 @@ namespace gpproto {
         }
 
         ~StreamSlice() {
-            printf("Destructed StreamSlice with size %lu\n", this->size);
+            LOGV("Destructed StreamSlice with size %lu\n", this->size);
             if (bytes)
                 free(bytes);
         }
@@ -43,8 +44,10 @@ namespace gpproto {
         char* toSystemEndian() const;
         char* byteSwapped() const;
 
-    private:
-        };
+        bool operator == (const StreamSlice &s1, const StreamSlice &s2) const {
+            return s1.size == s2.size && !memcmp(s1.bytes, s2.bytes, s1.size);
+        }
+    };
 }
 
 #endif //GPPROTO_STREAMSLICE_H
