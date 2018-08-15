@@ -118,13 +118,14 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
         {
             uint8_t lengthMarker = 0;
             memcpy(&lengthMarker, data->bytes, 1);
-            if (lengthMarker == 0x7f)
-                this->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
-            else if (lengthMarker > 0 && lengthMarker <= 0x7e)
+
+            if (lengthMarker >= 0x1 && lengthMarker <= 0x7e)
             {
                 lengthMarker <<= 2;
                 this->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             }
+            else if (lengthMarker == 0x7f)
+                this->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
             else {
                 LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
                 closeAndNotify();
@@ -138,10 +139,10 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
             lengthMarker &= 0x00ffffff;
             lengthMarker <<= 2;
 
-            if (lengthMarker > 0)
+            if (lengthMarker > 0 && lengthMarker < 4 * 1024 * 1024)
                 this->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             else {
-                LOGE("TcpConnection: Received wrong packet length %u", lengthMarker / 4);
+                LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
                 closeAndNotify();
             }
         }

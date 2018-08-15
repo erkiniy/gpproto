@@ -43,11 +43,11 @@ namespace gpproto {
         char* toLittleEndian() const;
         char* toSystemEndian() const;
         char* byteSwapped() const;
-
-        bool operator == (const StreamSlice &s1, const StreamSlice &s2) const {
-            return s1.size == s2.size && !memcmp(s1.bytes, s2.bytes, s1.size);
-        }
     };
+
+    bool operator == (const StreamSlice &s1, const StreamSlice &s2) {
+        return s1.size == s2.size && !memcmp(s1.bytes, s2.bytes, s1.size);
+    }
 }
 
 #endif //GPPROTO_STREAMSLICE_H
