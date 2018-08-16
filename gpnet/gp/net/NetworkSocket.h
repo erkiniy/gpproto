@@ -45,6 +45,8 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
         NetworkSocket(NetworkProtocol protocol, NetworkAddress* address);
         virtual ~NetworkSocket();
 
+        NetworkSocket(const NetworkSocket&) = delete;
+
         void readDataWithTimeout(float timeout, size_t length, uint8_t tag);
         void sendDataWithTimeout(float timeout, const std::shared_ptr<StreamSlice>& slice, uint8_t tag);
 

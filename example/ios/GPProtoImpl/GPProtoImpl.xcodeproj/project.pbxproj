@@ -461,6 +461,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;
 				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../ios-install/include\"";
 				INFOPLIST_FILE = GPProtoImpl/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -470,6 +474,8 @@
 					"$(PROJECT_DIR)",
 					"\"$(SRCROOT)/../../../ios-install/lib\"",
 				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = uz.gpproto.GPProtoImpl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "GPProtoImpl/GPProtoImpl-Bridging-Header.h";
@@ -499,6 +505,8 @@
 					"$(PROJECT_DIR)",
 					"\"$(SRCROOT)/../../../ios-install/lib\"",
 				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = uz.gpproto.GPProtoImpl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "GPProtoImpl/GPProtoImpl-Bridging-Header.h";

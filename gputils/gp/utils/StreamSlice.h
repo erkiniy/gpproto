@@ -16,7 +16,7 @@ namespace gpproto {
     struct StreamSlice: public CustomStringConvertable {
 
     public:
-        char *bytes;
+        unsigned char *bytes;
         size_t size;
         bool number;
 
@@ -27,7 +27,7 @@ namespace gpproto {
 
         StreamSlice(const char *bytes, size_t size, bool number = false) {
             this->size = size;
-            this->bytes = (char *)malloc(size);
+            this->bytes = (unsigned char *)malloc(size);
             this->number = number;
             memcpy(this->bytes, bytes, size);
         }
@@ -40,13 +40,13 @@ namespace gpproto {
 
         virtual std::string description() const;
 
-        char* toLittleEndian() const;
-        char* toSystemEndian() const;
-        char* byteSwapped() const;
+        unsigned char* toLittleEndian() const;
+        unsigned char* toSystemEndian() const;
+        unsigned char* byteSwapped() const;
     };
 
     bool operator == (const StreamSlice &s1, const StreamSlice &s2) {
-        return s1.size == s2.size && !memcmp(s1.bytes, s2.bytes, s1.size);
+        return s1.size == s2.size && (memcmp(s1.bytes, s2.bytes, s1.size) == 0);
     }
 }
 

@@ -48,7 +48,7 @@ namespace gpproto {
         }
 
         void request(const char* data, size_t&& length) {
-            auto slice = std::make_shared<StreamSlice>(data, length);
+            auto slice = std::make_shared<StreamSlice>(data, std::move(length));
             LOGV("Impl -> sending datas");
             connection->sendDatas({slice});
         }
@@ -88,7 +88,7 @@ namespace gpproto {
         impl_->stop();
     }
 
-    void Proto::send(const char *data, size_t& length) {
+    void Proto::send(const char *data, size_t length) {
         impl_->request(data, std::move(length));
     }
 }

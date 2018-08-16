@@ -2,6 +2,24 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD 14)
 
+if (NOT ZLIB_FOUND)
+    find_package(ZLIB REQUIRED)
+endif()
+
+if (ZLIB_FOUND)
+    set(GP_HAVE_ZLIB 1)
+    message(STATUS "Found ZLIB: ${ZLIB_INCLUDE_DIR} ${ZLIB_LIBRARIES}")
+
+    if (NOT OPENSSL_FOUND)
+        find_package(OpenSSL REQUIRED)
+    endif()
+
+    if (OPENSSL_FOUND)
+        set(GP_HAVE_OPENSSL 1)
+        message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR} ${OPENSSL_CRYPTO_LIBRARY}")
+    endif()
+endif()
+
 set(GPUTILS_SOURCE
         gp/utils/DispatchQueue.h
         gp/utils/DispatchQueue.cpp
@@ -46,10 +64,30 @@ set(GPUTILS_SOURCE
         gp/utils/Timer.h
 
         gp/utils/DispatchQueuePool.cpp
-        gp/utils/DispatchQueuePool.h)
+        gp/utils/DispatchQueuePool.h
+
+        gp/utils/Crypto.cpp
+        gp/utils/Crypto.h
+
+        gp/utils/Common.cpp
+        gp/utils/Common.h
+
+        gp/utils/Random.cpp
+        gp/utils/Random.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
-target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+if (OPENSSL_FOUND)
+    target_link_libraries(gputils PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
+    target_include_directories(gputils SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
+endif()
+
+if (ZLIB_FOUND)
+    target_link_libraries(gputils PRIVATE ${ZLIB_LIBRARIES})
+    target_include_directories(gputils SYSTEM PRIVATE ${ZLIB_INCLUDE_DIR})
+endif()
 
 install(TARGETS gputils EXPORT GPTargets
         LIBRARY DESTINATION lib

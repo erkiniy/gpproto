@@ -21,7 +21,6 @@
 
 - (void)sendData:(NSData *)data;
 
-
 @end
 
 #endif /* ProtoImpl_h */

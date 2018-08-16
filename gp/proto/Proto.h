@@ -18,7 +18,7 @@ namespace gpproto {
 
         void init();
         void start();
-        void send(const char *data, size_t& length);
+        void send(const char *data, size_t length);
         void stop();
 
         struct Callbacks {

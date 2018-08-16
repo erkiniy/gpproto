@@ -10,11 +10,15 @@
 namespace gpproto {
     class NetworkSocketPosix : public NetworkSocket {
     public:
+        NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress* address);
+        virtual ~NetworkSocketPosix();
+
+        NetworkSocketPosix(const NetworkSocketPosix&) = delete;
+
         std::shared_ptr<NetworkSocketPosix> shared_from_this() {
             return std::static_pointer_cast<NetworkSocketPosix>(NetworkSocket::shared_from_this());
         }
-        NetworkSocketPosix(NetworkProtocol protocol, NetworkAddress* address);
-        virtual ~NetworkSocketPosix();
+
         virtual size_t Send(NetworkPacket* packet);
         virtual size_t Receive(NetworkPacket* packet);
 
