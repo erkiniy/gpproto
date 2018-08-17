@@ -73,7 +73,10 @@ set(GPUTILS_SOURCE
         gp/utils/Common.h
 
         gp/utils/Random.cpp
-        gp/utils/Random.h)
+        gp/utils/Random.h
+
+        gp/utils/BigNum.cpp
+        gp/utils/BigNum.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
 
