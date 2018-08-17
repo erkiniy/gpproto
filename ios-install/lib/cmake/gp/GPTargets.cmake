@@ -63,6 +63,7 @@ add_library(gpproto::gputils STATIC IMPORTED)
 
 set_target_properties(gpproto::gputils PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:OpenSSL::Crypto>;/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator11.2.sdk/usr/lib/libz.tbd;/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator11.2.sdk/usr/lib/libz.tbd"
 )
 
 # Create imported target gpproto::gpproto

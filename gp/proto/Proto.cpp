@@ -47,8 +47,8 @@ namespace gpproto {
                 didReceiveData(slice->bytes, slice->size);
         }
 
-        void request(const char* data, size_t&& length) {
-            auto slice = std::make_shared<StreamSlice>(data, std::move(length));
+        void request(const unsigned char* data, const size_t& length) {
+            auto slice = std::make_shared<StreamSlice>(data, length);
             LOGV("Impl -> sending datas");
             connection->sendDatas({slice});
         }
@@ -56,7 +56,7 @@ namespace gpproto {
     public:
         void (*didConnect)();
         void (*didDisconnect)();
-        void (*didReceiveData)(const char*, const size_t&);
+        void (*didReceiveData)(unsigned const char*, const size_t&);
 
     protected:
         std::shared_ptr<TcpConnection> connection;
@@ -88,7 +88,7 @@ namespace gpproto {
         impl_->stop();
     }
 
-    void Proto::send(const char *data, size_t length) {
+    void Proto::send(const unsigned char *data, size_t length) {
         impl_->request(data, std::move(length));
     }
 }

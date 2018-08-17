@@ -18,13 +18,13 @@ namespace gpproto {
 
         void init();
         void start();
-        void send(const char *data, size_t length);
+        void send(const unsigned char *data, size_t length);
         void stop();
 
         struct Callbacks {
             void (*didConnect)();
             void (*didDisconnect)();
-            void (*didReceiveData)(const char*, const size_t&);
+            void (*didReceiveData)(unsigned const char*, const size_t&);
         };
 
         Callbacks callbacks;

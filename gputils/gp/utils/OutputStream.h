@@ -16,7 +16,7 @@ namespace gpproto {
 
         OutputStream(std::shared_ptr<StreamSlice> data) : currentPosition(0), size(data->size) {
             LOGV("Allocating OutputStream");
-            this->bytes = (char *)malloc(data->size);
+            this->bytes = (unsigned char *)malloc(data->size);
             memcpy(this->bytes, data->bytes, data->size);
         }
 
@@ -49,7 +49,7 @@ namespace gpproto {
         std::string readStringRaw() const;
 
     private:
-        char* bytes;
+        unsigned char* bytes;
         const size_t size;
         mutable size_t currentPosition;
 

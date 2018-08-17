@@ -77,7 +77,7 @@ void NetworkSocket::readDataWithTimeout(float timeout, size_t length, uint8_t ta
 
         auto slice = std::make_shared<StreamSlice>();
         slice->size = length;
-        slice->bytes = (char *)malloc(length);
+        slice->bytes = (unsigned char *)malloc(length);
 
         auto readBuffer = std::make_shared<NetworkPacket>();
         readBuffer->tag = tag;

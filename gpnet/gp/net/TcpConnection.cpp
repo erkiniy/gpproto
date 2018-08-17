@@ -54,7 +54,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
 
              size_t headerLength = 0;
 
-             char *packetData = (char *)malloc(4 + i->size);
+             unsigned char *packetData = (unsigned char *)malloc(4 + i->size);
 
              if (quarterLength <= 0x7e) {
                  memcpy(packetData, &quarterLengthMarker, 1);

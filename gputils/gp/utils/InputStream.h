@@ -17,8 +17,8 @@ namespace gpproto {
         static const size_t kChunkSize = 16;
 
         InputStream() : currentSize(0), numberOfChunks(1) {
-            bytes = (char*)malloc(kChunkSize);
-            printf("Input Stream allocated\n");
+            bytes = (unsigned char *)malloc(kChunkSize);
+            LOGV("Input Stream allocated\n");
         }
 
         ~InputStream() {
@@ -51,9 +51,9 @@ namespace gpproto {
     private:
         size_t currentSize;
         int numberOfChunks;
-        char* bytes;
+        unsigned char* bytes;
 
-        void writeNumber(const char* number, size_t size);
+        void writeNumber(const unsigned char* number, size_t size);
 
         void addSlice(const StreamSlice& slice);
         size_t remainingSize() const;

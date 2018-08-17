@@ -93,13 +93,13 @@ std::string OutputStream::readStringRaw() const {
     checkSize(size, __PRETTY_FUNCTION__);
 
     auto slice = readSlice(size, false);
-    return slice->size == 0 ? "" : std::string(static_cast<char *>(slice->bytes), slice->size);
+    return slice->size == 0 ? "" : std::string(reinterpret_cast<char *>(slice->bytes), slice->size);
 }
 
 std::string OutputStream::readString() const {
     try {
         auto slice = readBytes();
-        return slice->size ==0 ? "" : std::string(static_cast<char *>(slice->bytes), slice->size);
+        return slice->size == 0 ? "" : std::string(reinterpret_cast<char *>(slice->bytes), slice->size);
     }
     catch (OutputStreamException& e) {
         throw e;

@@ -9,7 +9,6 @@
 
 void gpproto::Random::secureBytes(unsigned char *ptr, size_t size) {
     int err = RAND_bytes(ptr, static_cast<int>(size));
-    if (err)
 }
 
 int32 gpproto::Random::secureInt32() {

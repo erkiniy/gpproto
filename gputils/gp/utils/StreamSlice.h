@@ -25,7 +25,7 @@ namespace gpproto {
 
         StreamSlice() = default;
 
-        StreamSlice(const char *bytes, size_t size, bool number = false) {
+        StreamSlice(const unsigned char *bytes, size_t size, bool number = false) {
             this->size = size;
             this->bytes = (unsigned char *)malloc(size);
             this->number = number;
