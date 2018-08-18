@@ -6,6 +6,8 @@ if (NOT ZLIB_FOUND)
     find_package(ZLIB REQUIRED)
 endif()
 
+# cmake -D-DOPENSSL_ROOT_DIR=/usr/local/opt/openssl/ -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
+
 if (ZLIB_FOUND)
     set(GP_HAVE_ZLIB 1)
     message(STATUS "Found ZLIB: ${ZLIB_INCLUDE_DIR} ${ZLIB_LIBRARIES}")
