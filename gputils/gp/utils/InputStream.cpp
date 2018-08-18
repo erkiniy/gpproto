@@ -17,6 +17,7 @@ void InputStream::writeBool(bool value) {
 void InputStream::writeUInt8(uint8_t number) {
     writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
 }
+
 void InputStream::writeInt8(int8_t number) {
     writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
 }
@@ -51,7 +52,7 @@ void InputStream::writeData(const StreamSlice &data) {
 }
 
 void InputStream::writeRawString(const std::string &string) {
-    if (!string.length())
+    if (string.length() == 0)
         writeInt8(0);
     else {
         const char* data = string.data();
@@ -63,7 +64,7 @@ void InputStream::writeRawString(const std::string &string) {
 }
 
 void InputStream::writeString(const std::string &string) {
-    if (!string.length())
+    if (string.length() == 0)
         writeInt8(0);
     else {
         const char* data = string.data();
@@ -92,7 +93,6 @@ void InputStream::writeBytes(const StreamSlice &data) {
     while ((extraBytes + data.size) % 4) {
         writeInt8(0);
         extraBytes++;
-        //LOGV("Adding null padding");
     }
 }
 

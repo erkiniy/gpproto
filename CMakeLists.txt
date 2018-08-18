@@ -144,11 +144,18 @@ if (NOT MSVC)
     #  add_cxx_compiler_flag("-Wzero-as-null-pointer-constant")
 endif()
 
-# enable_testing()
+if (NOT OPENSSL_FOUND)
+    find_package(OpenSSL)
+endif()
+if (OPENSSL_FOUND)
+    message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR} ${OPENSSL_LIBRARIES}")
+endif()
+
+enable_testing()
 
 add_subdirectory(gpnet)
 add_subdirectory(gputils)
-# add_subdirectory(test)
+add_subdirectory(test)
 
 set(GPCORE_SOURCE
         gp/proto/Core.cpp
@@ -156,7 +163,8 @@ set(GPCORE_SOURCE
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-target_link_libraries(gpcore PUBLIC gputils gpnet)
+target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
+target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
 
 set(GPCLIENT_SOURCE
         gp/proto/Proto.h

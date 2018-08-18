@@ -29,19 +29,17 @@ namespace gpproto {
             this->size = size;
             this->bytes = (unsigned char *)malloc(size);
             this->number = number;
-            this->owner = true;
             memcpy(this->bytes, bytes, size);
         }
 
-        StreamSlice(unsigned char *bytes, size_t size) {
+        StreamSlice(const size_t& size) {
             this->size = size;
-            this->owner = false;
-            this->bytes = bytes;
+            this->bytes = (unsigned char *)malloc(size);
         }
 
         ~StreamSlice() {
             LOGV("Destructed StreamSlice with size %lu\n", this->size);
-            if (bytes && owner)
+            if (bytes)
                 delete bytes;
         }
 
@@ -51,8 +49,14 @@ namespace gpproto {
         unsigned char* toSystemEndian() const;
         unsigned char* byteSwapped() const;
 
-    private:
-        bool owner;
+        unsigned char* begin() {
+            return bytes;
+        }
+
+        unsigned char* end() {
+            return bytes + size;
+        }
+
     };
 
     bool operator == (const StreamSlice &s1, const StreamSlice &s2) {

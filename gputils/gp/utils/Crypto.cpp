@@ -131,7 +131,7 @@ uint64 Crypto::pq_factorize(uint64 pq) {
 int Crypto::pq_factorize(const StreamSlice& pq_str, std::string *p_str, std::string *q_str) {
     size_t size = pq_str.size;
 
-    if (static_cast<int>(size) > 8 || (static_cast<int>(size) == 8) && (pq_str.bytes[0] & 128) != 0)
+    if (static_cast<int>(size) > 8 || ((static_cast<int>(size) == 8) && (pq_str.bytes[0] & 128) != 0))
         return pq_factorize_big(pq_str, p_str, q_str);
 
     auto ptr = pq_str.bytes;
@@ -167,15 +167,15 @@ void gpproto::Crypto::initCrypto() {
 }
 
 std::shared_ptr<StreamSlice> Crypto::sha1(const StreamSlice& data) {
-    unsigned char output[SHA_DIGEST_LENGTH];
-    SHA1(data.bytes, data.size, output);
-    return std::make_shared<StreamSlice>(output, SHA_DIGEST_LENGTH);
+    auto output = std::make_shared<StreamSlice>(SHA256_DIGEST_LENGTH);
+    SHA1(data.bytes, data.size, output->begin());
+    return output;
 }
 
 std::shared_ptr<StreamSlice> Crypto::sha256(const StreamSlice& data) {
-    unsigned char output[SHA256_DIGEST_LENGTH];
-    SHA256(data.bytes, data.size, output);
-    return std::make_shared<StreamSlice>(output, SHA256_DIGEST_LENGTH);
+    auto output = std::make_shared<StreamSlice>(SHA256_DIGEST_LENGTH);
+    SHA256(data.bytes, data.size, output->begin());
+    return output;
 }
 
 std::shared_ptr<StreamSlice> aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv,
@@ -190,11 +190,11 @@ std::shared_ptr<StreamSlice> aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes
     if (err)
         return nullptr;
 
-    unsigned char out[data.size + AES_BLOCK_SIZE];
+    auto out = std::make_shared<StreamSlice>(data.size);
 
-    AES_cbc_encrypt(data.bytes, out, data.size, &key, aes_iv->raw, encrypt);
+    AES_cbc_encrypt(data.bytes, out->begin(), data.size, &key, aes_iv->raw, encrypt);
 
-    return std::make_shared<StreamSlice>(out, data.size);
+    return out;
 }
 
 std::shared_ptr<StreamSlice> Crypto::aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv,
