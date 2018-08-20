@@ -131,8 +131,8 @@ uint64 Crypto::pq_factorize(uint64 pq) {
 int Crypto::pq_factorize(const StreamSlice& pq_str, std::string *p_str, std::string *q_str) {
     size_t size = pq_str.size;
 
-    if (static_cast<int>(size) > 8 || ((static_cast<int>(size) == 8) && (pq_str.bytes[0] & 128) != 0))
-        return pq_factorize_big(pq_str, p_str, q_str);
+//    if (static_cast<int>(size) > 8 || ((static_cast<int>(size) == 8) && (pq_str.bytes[0] & 128) != 0))
+//        return pq_factorize_big(pq_str, p_str, q_str);
 
     auto ptr = pq_str.bytes;
     uint64 pq = 0;

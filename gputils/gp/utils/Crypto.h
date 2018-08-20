@@ -5,16 +5,16 @@
 #ifndef GPPROTO_CRYPTO_H
 #define GPPROTO_CRYPTO_H
 
-#include "Common.h"
-#include "StreamSlice.h"
 #include <memory>
-
+#include "StreamSlice.h"
+#include "Common.h"
 
 using namespace gpproto;
+
 namespace gpproto::Crypto {
     uint64 pq_factorize(uint64 pq);
 
-    int pq_factorize_big(const StreamSlice &pq_str, std::string *p_str, std::string *q_str);
+//    int pq_factorize_big(const StreamSlice &pq_str, std::string *p_str, std::string *q_str);
 
     int pq_factorize(const StreamSlice &pq_str, std::string *p_str, std::string *q_str);
 

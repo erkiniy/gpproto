@@ -75,9 +75,7 @@ void NetworkSocket::readDataWithTimeout(float timeout, size_t length, uint8_t ta
         if (!strongSelf)
             return;
 
-        auto slice = std::make_shared<StreamSlice>();
-        slice->size = length;
-        slice->bytes = (unsigned char *)malloc(length);
+        auto slice = std::make_shared<StreamSlice>(length);
 
         auto readBuffer = std::make_shared<NetworkPacket>();
         readBuffer->tag = tag;
@@ -88,7 +86,7 @@ void NetworkSocket::readDataWithTimeout(float timeout, size_t length, uint8_t ta
     });
 }
 
-void NetworkSocket::sendDataWithTimeout(float timeout, const std::shared_ptr<StreamSlice>& slice, uint8_t tag) {
+void NetworkSocket::sendDataWithTimeout(float timeout, std::shared_ptr<StreamSlice> slice, uint8_t tag) {
     std::weak_ptr<NetworkSocket> weakSelf = shared_from_this();
     NetworkSocket::queue()->async([weakSelf, slice, tag] {
         auto strongSelf = weakSelf.lock();

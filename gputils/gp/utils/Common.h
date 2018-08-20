@@ -5,10 +5,13 @@
 #ifndef GPPROTO_COMMON_H
 #define GPPROTO_COMMON_H
 
-
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <memory>
+
+#include "StreamSlice.h"
 
 using int8 = std::int8_t;
 using int16 = std::int16_t;
@@ -46,8 +49,9 @@ inline bool operator!=(const UInt<size> &a, const UInt<size> &b) {
     return !(a == b);
 }
 
-
 using UInt128 = UInt<128>;
 using UInt256 = UInt<256>;
+
+std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex);
 
 #endif //GPPROTO_COMMON_H

@@ -5,9 +5,9 @@
 #ifndef GPPROTO_STREAMSLICE_H
 #define GPPROTO_STREAMSLICE_H
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
 
 #include "Logging.h"
 #include "CustomStringConvertable.h"
@@ -23,7 +23,7 @@ namespace gpproto {
         static const uint32_t TLBoolTrue = 0x997275b5;
         static const uint32_t TLBoolFalse = 0xbc799737;
 
-        StreamSlice() = default;
+        StreamSlice() = delete;
 
         StreamSlice(const unsigned char *bytes, size_t size, bool number = false) {
             this->size = size;
@@ -32,9 +32,8 @@ namespace gpproto {
             memcpy(this->bytes, bytes, size);
         }
 
-        StreamSlice(const size_t& size) {
-            this->size = size;
-            this->bytes = (unsigned char *)malloc(size);
+        StreamSlice(const size_t& size) : bytes((unsigned char *)malloc(size)), size(size), number(false) {
+
         }
 
         ~StreamSlice() {
@@ -49,6 +48,8 @@ namespace gpproto {
         unsigned char* toSystemEndian() const;
         unsigned char* byteSwapped() const;
 
+        std::shared_ptr<StreamSlice> subData(int index, size_t length);
+
         unsigned char* begin() {
             return bytes;
         }
@@ -56,10 +57,9 @@ namespace gpproto {
         unsigned char* end() {
             return bytes + size;
         }
-
     };
 
-    bool operator == (const StreamSlice &s1, const StreamSlice &s2) {
+    inline bool operator == (const StreamSlice &s1, const StreamSlice &s2) {
         return s1.size == s2.size && (memcmp(s1.bytes, s2.bytes, s1.size) == 0);
     }
 }

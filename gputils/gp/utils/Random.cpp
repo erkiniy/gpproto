@@ -2,24 +2,25 @@
 // Created by Jaloliddin Erkiniy on 8/16/18.
 //
 
-#include "Random.h"
-#include "Logging.h"
+
 #include <random>
 #include <limits>
 #include <openssl/rand.h>
+#include "Random.h"
+#include "Logging.h"
 
 void gpproto::Random::secureBytes(unsigned char *ptr, size_t size) {
     RAND_bytes(ptr, static_cast<int>(size));
 }
 
-int32 gpproto::Random::secureInt32() {
-    int32 val = 0;
-    secureBytes(reinterpret_cast<unsigned char *>(&val), sizeof(int32));
+int32_t gpproto::Random::secureInt32() {
+    int32_t val = 0;
+    secureBytes(reinterpret_cast<unsigned char *>(&val), sizeof(int32_t));
     return val;
 }
 int64_t gpproto::Random::secureInt64() {
-    int64 val = 0;
-    secureBytes(reinterpret_cast<unsigned char *>(&val), sizeof(int64));
+    int64_t val = 0;
+    secureBytes(reinterpret_cast<unsigned char *>(&val), sizeof(int64_t));
     return val;
 }
 
@@ -28,17 +29,17 @@ static unsigned int rand_device_helper() {
     return rd();
 }
 
-uint32 gpproto::Random::fastUInt32() {
+uint32_t gpproto::Random::fastUInt32() {
     auto &rg = rand_device_helper;
     std::seed_seq seq{ rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg() };
     std::mt19937 gen(seq);
-    return static_cast<uint32>(gen());
+    return static_cast<uint32_t>(gen());
 }
-uint64 gpproto::Random::fastUInt64() {
+uint64_t gpproto::Random::fastUInt64() {
     auto &rg = rand_device_helper;
     std::seed_seq seq{ rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg() };
     std::mt19937_64 gen(seq);
-    return static_cast<uint64>(gen());
+    return static_cast<uint64_t>(gen());
 }
 
 int gpproto::Random::fast(int min, int max) {

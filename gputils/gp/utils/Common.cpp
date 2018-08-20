@@ -3,3 +3,32 @@
 //
 
 #include "Common.h"
+
+unsigned char hexToChar(const char& c) {
+    if (c >= '0' && c <= '9')
+        return (unsigned char)(c - '0');
+    if (c >= 'A' && c <= 'F')
+        return (unsigned char)(c - 'A' + 10);
+    if (c >= 'a' && c <= 'f')
+        return (unsigned char)(c - 'a' + 10);
+    return 0; //throw std::invalid_argument("Invalid input string");
+}
+
+std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex) {
+    auto s = std::make_shared<gpproto::StreamSlice>(hex.length() / 2 + hex.length() % 2);
+
+    auto data = s->begin();
+    auto dataPtr = data;
+
+
+    if (hex.length() % 2)
+        hex.insert(0, 1, '0');
+
+    auto it = hex.begin();
+
+    for(; it != hex.end(); it++)
+        *dataPtr++ = hexToChar(*it++) << 4 | hexToChar(*it);
+
+    return s;
+}
+

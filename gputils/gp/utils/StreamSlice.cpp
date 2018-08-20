@@ -44,6 +44,16 @@ unsigned char* StreamSlice::toSystemEndian() const {
     return result;
 }
 
+std::shared_ptr<StreamSlice> StreamSlice::subData(int index, size_t length) {
+    if (size < index + length)
+        return nullptr;
+
+    auto slice = std::make_shared<StreamSlice>(length);
+    memcpy(slice->begin(), (bytes + index), length);
+
+    return slice;
+}
+
 std::string StreamSlice::description() const {
     auto s = std::string("");
 
