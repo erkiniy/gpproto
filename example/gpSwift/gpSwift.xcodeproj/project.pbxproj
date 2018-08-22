@@ -1,0 +1,322 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		92FB5EFD212D51E2005F4442 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FB5EFC212D51E2005F4442 /* main.swift */; };
+		92FB5F0D212D54CC005F4442 /* libgpproto.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 92FB5F0C212D54CC005F4442 /* libgpproto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		92FB5F0E212D54DA005F4442 /* libgpproto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5F0C212D54CC005F4442 /* libgpproto.dylib */; };
+		92FB5F12212D59F6005F4442 /* ProtoImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92FB5F11212D59F6005F4442 /* ProtoImpl.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		92FB5EF7212D51E2005F4442 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				92FB5F0D212D54CC005F4442 /* libgpproto.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		92FB5EF9212D51E2005F4442 /* gpSwift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gpSwift; sourceTree = BUILT_PRODUCTS_DIR; };
+		92FB5EFC212D51E2005F4442 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		92FB5F03212D521A005F4442 /* gpSwift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "gpSwift-Bridging-Header.h"; sourceTree = "<group>"; };
+		92FB5F0C212D54CC005F4442 /* libgpproto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpproto.dylib; path = gp/lib/libgpproto.dylib; sourceTree = "<group>"; };
+		92FB5F10212D59F6005F4442 /* ProtoImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtoImpl.h; sourceTree = "<group>"; };
+		92FB5F11212D59F6005F4442 /* ProtoImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ProtoImpl.mm; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		92FB5EF6212D51E2005F4442 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92FB5F0E212D54DA005F4442 /* libgpproto.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		92FB5EF0212D51E2005F4442 = {
+			isa = PBXGroup;
+			children = (
+				92FB5EFB212D51E2005F4442 /* gpSwift */,
+				92FB5EFA212D51E2005F4442 /* Products */,
+				92FB5F06212D52D6005F4442 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		92FB5EFA212D51E2005F4442 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				92FB5EF9212D51E2005F4442 /* gpSwift */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		92FB5EFB212D51E2005F4442 /* gpSwift */ = {
+			isa = PBXGroup;
+			children = (
+				92FB5F10212D59F6005F4442 /* ProtoImpl.h */,
+				92FB5F11212D59F6005F4442 /* ProtoImpl.mm */,
+				92FB5EFC212D51E2005F4442 /* main.swift */,
+				92FB5F03212D521A005F4442 /* gpSwift-Bridging-Header.h */,
+			);
+			path = gpSwift;
+			sourceTree = "<group>";
+		};
+		92FB5F06212D52D6005F4442 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				92FB5F0C212D54CC005F4442 /* libgpproto.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		92FB5EF8212D51E2005F4442 /* gpSwift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92FB5F00212D51E2005F4442 /* Build configuration list for PBXNativeTarget "gpSwift" */;
+			buildPhases = (
+				92FB5EF5212D51E2005F4442 /* Sources */,
+				92FB5EF6212D51E2005F4442 /* Frameworks */,
+				92FB5EF7212D51E2005F4442 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = gpSwift;
+			productName = gpSwift;
+			productReference = 92FB5EF9212D51E2005F4442 /* gpSwift */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92FB5EF1212D51E2005F4442 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0920;
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = "Jaloliddin Erkiniy";
+				TargetAttributes = {
+					92FB5EF8212D51E2005F4442 = {
+						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0920;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 92FB5EF4212D51E2005F4442 /* Build configuration list for PBXProject "gpSwift" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 92FB5EF0212D51E2005F4442;
+			productRefGroup = 92FB5EFA212D51E2005F4442 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				92FB5EF8212D51E2005F4442 /* gpSwift */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		92FB5EF5212D51E2005F4442 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92FB5EFD212D51E2005F4442 /* main.swift in Sources */,
+				92FB5F12212D59F6005F4442 /* ProtoImpl.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		92FB5EFE212D51E2005F4442 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		92FB5EFF212D51E2005F4442 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+			};
+			name = Release;
+		};
+		92FB5F01212D51E2005F4442 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					gp/lib,
+					"$(PROJECT_DIR)/gp/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "gpSwift/gpSwift-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				USER_HEADER_SEARCH_PATHS = gp/include;
+			};
+			name = Debug;
+		};
+		92FB5F02212D51E2005F4442 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					gp/lib,
+					"$(PROJECT_DIR)/gp/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "gpSwift/gpSwift-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
+				USER_HEADER_SEARCH_PATHS = gp/include;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		92FB5EF4212D51E2005F4442 /* Build configuration list for PBXProject "gpSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92FB5EFE212D51E2005F4442 /* Debug */,
+				92FB5EFF212D51E2005F4442 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92FB5F00212D51E2005F4442 /* Build configuration list for PBXNativeTarget "gpSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92FB5F01212D51E2005F4442 /* Debug */,
+				92FB5F02212D51E2005F4442 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 92FB5EF1212D51E2005F4442 /* Project object */;
+}

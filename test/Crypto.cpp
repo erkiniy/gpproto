@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(aes_test) {
     //LOGV("IV KEY HEX = %s", iv->description().c_str());
     //LOGV("KEY HEX = %s", key->description().c_str());
 
-    std::string plain = "JaloliddinErkiniy";
+    std::string plain = "JaloliddinErkini";
     const char* data = plain.data();
     size_t size = strlen(data);
 

@@ -28,12 +28,12 @@ list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gputils "${_IMPORT_PREFIX}/lib/libg
 # Import target "gpproto::gpproto" for configuration "Release"
 set_property(TARGET gpproto::gpproto APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(gpproto::gpproto PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
-  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libgpproto.a"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libgpproto.dylib"
+  IMPORTED_SONAME_RELEASE "@rpath/libgpproto.dylib"
   )
 
 list(APPEND _IMPORT_CHECK_TARGETS gpproto::gpproto )
-list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gpproto "${_IMPORT_PREFIX}/lib/libgpproto.a" )
+list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gpproto "${_IMPORT_PREFIX}/lib/libgpproto.dylib" )
 
 # Import target "gpproto::gpcore" for configuration "Release"
 set_property(TARGET gpproto::gpcore APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
