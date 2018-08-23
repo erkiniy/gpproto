@@ -12,13 +12,19 @@
 namespace gpproto {
     class ClientSync final {
     public:
-        ClientSync() = default;
-        ~ClientSync() {
+        struct gp_rx_event;
 
-        }
+        ClientSync() = default;
+        ~ClientSync() {}
 
         int send(const unsigned char *data, size_t& length);
-        std::pair<StreamSlice*, ProtoError*> receive(double& timeout);
+        gp_rx_event* receive(double& timeout);
+        void pause();
+        void resume();
+        void reset();
+
+    private:
+        gp_rx_event *currentOutputEvent;
     };
 }
 

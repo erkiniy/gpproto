@@ -21,24 +21,8 @@ int gp_client_send(void *client, gp_tx_data *request) {
     return c->send(request->data->value, request->data->length);
 }
 
-gp_rx_data *gp_client_receive(void *client, double timeout) {
-    auto data = static_cast<gpproto::ClientSync *>(client)->receive(timeout);
-    gp_rx_data rx_data;
-    gp_data _data;
-
-    if (data.first)
-    {
-        _data.length = data.first->size;
-        _data.value = data.first->begin();
-
-        rx_data.data = &_data;
-    }
-
-    if (data.second) {
-
-    }
-
-    return &rx_data;
+gp_rx_event *gp_client_receive(void *client, double timeout) {
+    return static_cast<gpproto::ClientSync *>(client)->receive(timeout);
 }
 
 void gp_client_pause(void *client) {
