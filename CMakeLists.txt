@@ -170,7 +170,7 @@ set(GPCORE_SOURCE
         gp/proto/ClientSync.cpp
         gp/proto/ClientSync.h
 
-        gp/net/ProtoError.h gp/proto/gp_client_data.h gp/net/Transport.cpp gp/net/Transport.h gp/proto/AuthKeyInfo.cpp gp/proto/AuthKeyInfo.h gp/proto/DatacenterSaltsetInfo.cpp gp/proto/DatacenterSaltsetInfo.h)
+        gp/net/ProtoError.h gp/proto/gp_client_data.h gp/net/Transport.cpp gp/net/Transport.h gp/proto/AuthKeyInfo.cpp gp/proto/AuthKeyInfo.h gp/proto/DatacenterSaltsetInfo.cpp gp/proto/DatacenterSaltsetInfo.h gp/proto/Request.cpp gp/proto/Request.h gp/proto/ProtoDelegate.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)

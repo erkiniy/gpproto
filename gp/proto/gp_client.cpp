@@ -22,7 +22,8 @@ int gp_client_send(void *client, gp_tx_data *request) {
 }
 
 gp_rx_event *gp_client_receive(void *client, double timeout) {
-    return static_cast<gpproto::ClientSync *>(client)->receive(timeout);
+    auto c = static_cast<gpproto::ClientSync *>(client);
+    return c->receive(timeout);
 }
 
 void gp_client_pause(void *client) {

@@ -36,7 +36,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
          {
              size_t length = i->size;
 
-             if (!length)
+             if (length == 0)
                  continue;
 
              if (length % 4) {
@@ -80,7 +80,9 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
 }
 
 void TcpConnection::setDelegate(std::shared_ptr<ConnectionDelegate> delegate) {
-    this->delegate = delegate;
+    TcpConnection::queue()->async([&, delegate] {
+        this->delegate = delegate;
+    });
 }
 
 void TcpConnection::closeAndNotify() {
@@ -102,12 +104,20 @@ void TcpConnection::closeAndNotify() {
 void TcpConnection::networkSocketDidConnectToHost(const NetworkSocket& socket,
                                                   const NetworkAddress &address, uint16_t port) {
     LOGV("TcpConnection did connect to host");
+    TcpConnection::queue()->async([&] {
+        if (!delegate.expired())
+            delegate.lock()->connectionOpened(*this);
+    });
 }
 
 void TcpConnection::networkSocketDidDisconnectFromHost(const NetworkSocket& socket,
                                                        const NetworkAddress &address, uint16_t port,
                                                        uint8_t reasonCode) {
     LOGV("TcpConnection did disconnect from host");
+    TcpConnection::queue()->async([&] {
+        if (!delegate.expired())
+            delegate.lock()->connectionClosed(*this);
+    });
 }
 
 void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,

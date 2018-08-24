@@ -19,11 +19,22 @@ void Context::setGlobalTimeDifference(double difference) {
     });
 }
 
-AuthKeyInfo* Context::getAuthKeyInfoForDatacenterId(int32_t id) {
-    AuthKeyInfo* info;
-    Context::queue()->sync([&] {
+std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) {
+    std::shared_ptr<AuthKeyInfo> info = nullptr;
 
+    Context::queue()->sync([&, id] {
+        auto it = authInfoByDatacenterId.find(id);
+
+        if (it != authInfoByDatacenterId.end())
+            info = authInfoByDatacenterId[id];
     });
 
     return info;
+}
+
+void Context::setAuthKeyInfoForDatacenterId(AuthKeyInfo&& keyInfo, int32_t id) {
+    std::shared_ptr<AuthKeyInfo> info = std::make_shared<AuthKeyInfo>(std::move(keyInfo));
+    Context::queue()->async([&, info, id] {
+        authInfoByDatacenterId[id] = info;
+    });
 }

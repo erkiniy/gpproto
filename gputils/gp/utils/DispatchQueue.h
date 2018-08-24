@@ -38,9 +38,9 @@ namespace gpproto {
 
         void sync(const DispatchWork &work);
 
-        void async(const DispatchWork work);
+        void async(DispatchWork work);
 
-        void asyncForce(const DispatchWork work);
+        void asyncForce(DispatchWork work);
 
         bool isCurrentQueue() {
             return std::this_thread::get_id() == this->_threadId;
@@ -62,7 +62,7 @@ namespace gpproto {
         Semaphore _asyncSemaphore;
         Semaphore _syncSemaphore;
 
-        void _async(const DispatchWork work, bool force);
+        void _async(DispatchWork work, bool force);
 
         void threadWorker() {
 

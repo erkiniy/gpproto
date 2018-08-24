@@ -20,7 +20,10 @@ namespace gpproto {
         {};
 
         ~AuthKeyInfo() = default;
-        AuthKeyInfo(const AuthKeyInfo&) = default;
+
+        AuthKeyInfo(const AuthKeyInfo&) = delete;
+
+        AuthKeyInfo(AuthKeyInfo &&) = default;
 
         const std::shared_ptr<StreamSlice> authKey;
         const int64_t authKeyId;

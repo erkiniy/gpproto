@@ -18,8 +18,8 @@ namespace gpproto {
 
         Context(const Context&) = delete;
 
-        static std::unique_ptr<DispatchQueue> queue() {
-            static std::unique_ptr<DispatchQueue> q = std::make_unique<DispatchQueue>("uz.gpproto.context");
+        static std::shared_ptr<DispatchQueue> queue() {
+            static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.context");
             return q;
         }
 
@@ -27,11 +27,13 @@ namespace gpproto {
 
         void setGlobalTimeDifference(double difference);
 
-        AuthKeyInfo* getAuthKeyInfoForDatacenterId(int32_t id);
+        std::shared_ptr<AuthKeyInfo> getAuthKeyInfoForDatacenterId(int32_t id);
+
+        void setAuthKeyInfoForDatacenterId(AuthKeyInfo&& keyInfo, int32_t id);
 
     private:
         double globalTimeDifference;
-        std::unordered_map<int32_t, AuthKeyInfo> authInfoByDatacenterId;
+        std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
     };
 }
 

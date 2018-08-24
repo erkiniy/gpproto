@@ -3,7 +3,6 @@
 //
 
 #include "ClientSync.h"
-#include "gp_client_data.h"
 
 using namespace gpproto;
 
@@ -11,5 +10,7 @@ gp_rx_event* ClientSync::receive(double &timeout) {
     if (currentOutputEvent)
         delete currentOutputEvent;
 
-    return nullptr;
+    currentOutputEvent = (gp_rx_event *)malloc(sizeof(gp_rx_event));
+
+    return currentOutputEvent;
 }

@@ -12,7 +12,7 @@ void DispatchQueue::async(const DispatchQueue::DispatchWork work) {
     _async(work, false);
 }
 
-void DispatchQueue::asyncForce(const DispatchQueue::DispatchWork work) {
+void DispatchQueue::asyncForce(DispatchQueue::DispatchWork work) {
     _async(work, true);
 }
 
@@ -34,7 +34,7 @@ void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
     }
 }
 
-void DispatchQueue::_async(const DispatchQueue::DispatchWork work, bool force) {
+void DispatchQueue::_async(DispatchQueue::DispatchWork work, bool force) {
     if (this->isCurrentQueue() && !force) {
         work();
     }

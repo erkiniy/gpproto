@@ -6,32 +6,49 @@
 #define GPPROTO_PROTO_H
 
 #include <string>
-#include <stdlib.h>
-#include <memory>
-#include <functional>
+#include "gp/utils/DispatchQueue.h"
+#include "ProtoDelegate.h"
 
 namespace gpproto {
-    class Proto {
-    public:
-        Proto(const std::string& address, uint16_t port);
-        ~Proto();
 
-        void init();
-        void start();
-        void send(const unsigned char *data, size_t length);
+    typedef enum {
+        ProtoStateAwaitingAuthorization = 1,
+        ProtoStateAwaitingTimeFixAndSalts = 2,
+        ProtoStateStopped = 4,
+        ProtoStatePaused = 8
+    } ProtoState;
+
+    typedef enum {
+        ProtoConnectionStateConnected = 0,
+        ProtoConnectionStateConnecting = 1,
+        ProtoConnectionStateWaiting = 2
+    } ProtoConnectionState;
+
+    class Proto final : std::enable_shared_from_this<Proto> {
+    public:
+
+        static std::shared_ptr<DispatchQueue> queue() {
+            static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.manager");
+            return q;
+        }
+
+        ~Proto() {
+            auto _delegate = delegate;
+            Proto::queue()->async([&] {
+               // _delegate.reset();
+            });
+        }
+
+        void pause();
+        void resume();
         void stop();
 
-        struct Callbacks {
-            void (*didConnect)();
-            void (*didDisconnect)();
-            void (*didReceiveData)(unsigned const char*, const size_t&);
-        };
+        void setDelegate(std::shared_ptr<ProtoDelegate> delegate);
 
-        Callbacks callbacks;
-
-    protected:
-        class Impl;
-        std::shared_ptr<Impl> impl_;
+    private:
+        ProtoState state;
+        std::weak_ptr<ProtoDelegate> delegate;
+        void setState(int state);
     };
 }
 
