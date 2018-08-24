@@ -18,12 +18,6 @@ namespace gpproto {
         ProtoStatePaused = 8
     } ProtoState;
 
-    typedef enum {
-        ProtoConnectionStateConnected = 0,
-        ProtoConnectionStateConnecting = 1,
-        ProtoConnectionStateWaiting = 2
-    } ProtoConnectionState;
-
     class Proto final : std::enable_shared_from_this<Proto> {
     public:
 
@@ -35,7 +29,7 @@ namespace gpproto {
         ~Proto() {
             auto _delegate = delegate;
             Proto::queue()->async([&] {
-               // _delegate.reset();
+                _delegate.reset();
             });
         }
 

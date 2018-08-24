@@ -10,9 +10,15 @@
 namespace gpproto {
     class Proto;
 
+    typedef enum {
+        ProtoConnectionStateConnected = 0,
+        ProtoConnectionStateConnecting = 1,
+        ProtoConnectionStateWaiting = 2
+    } ProtoConnectionState;
+
     class ProtoDelegate {
     public:
-        virtual void connectionStateChanged(const Proto& proto, int state) = 0;
+        virtual void connectionStateChanged(const Proto& proto, ProtoConnectionState state) = 0;
     };
 }
 

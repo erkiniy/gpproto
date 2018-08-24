@@ -13,7 +13,7 @@ find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
         ${Boost_INCLUDE_DIRS})
 
-add_definitions (-DBOOST_TEST_DYN_LINK)
+add_definitions (-DBOOST_TEST_DYN_LINK )
 
 #[[
 add_executable(TestExecutable mytest.cpp mytest.h)
