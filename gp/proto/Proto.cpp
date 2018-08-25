@@ -49,3 +49,11 @@ void Proto::setState(int state) {
     this->state = static_cast<ProtoState>(state);
 
 }
+
+void Proto::setTransport(std::shared_ptr<Transport> transport) {
+
+}
+
+void Proto::resetTransport() {
+
+}

@@ -40,8 +40,8 @@ void Timer::start() {
             return;
         }
         else {
-            if (strongSelf->queue)
-                strongSelf->queue->async(strongSelf->action);
+            if (auto queue = strongSelf->queue)
+                queue->async(strongSelf->action);
             else
                 strongSelf->action();
 

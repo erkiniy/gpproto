@@ -8,6 +8,7 @@
 #include <string>
 #include "gp/utils/DispatchQueue.h"
 #include "ProtoDelegate.h"
+#include "gp/net/Transport.h"
 
 namespace gpproto {
 
@@ -18,7 +19,7 @@ namespace gpproto {
         ProtoStatePaused = 8
     } ProtoState;
 
-    class Proto final : std::enable_shared_from_this<Proto> {
+    class Proto final : public std::enable_shared_from_this<Proto> {
     public:
 
         static std::shared_ptr<DispatchQueue> queue() {
@@ -43,6 +44,9 @@ namespace gpproto {
         ProtoState state;
         std::weak_ptr<ProtoDelegate> delegate;
         void setState(int state);
+        std::shared_ptr<Transport> transport;
+        void setTransport(std::shared_ptr<Transport> transport);
+        void resetTransport();
     };
 }
 

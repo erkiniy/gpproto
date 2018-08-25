@@ -46,6 +46,14 @@ struct gp_tx_data {
     const gp_data *data;
 };
 
+struct gp_environment {
+    char *encryption_password;
+    char *device_model;
+    char *system_version;
+    char *app_version;
+    char *lang_code;
+};
+
 #ifdef __cplusplus
 }
 #endif

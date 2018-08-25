@@ -54,7 +54,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
 
              size_t headerLength = 0;
 
-             unsigned char *packetData = (unsigned char *)malloc(4 + i->size);
+             auto packetData = (unsigned char *)malloc(4 + i->size);
 
              if (quarterLength <= 0x7e) {
                  memcpy(packetData, &quarterLengthMarker, 1);
@@ -94,8 +94,9 @@ void TcpConnection::closeAndNotify() {
             socket->Close();
             socket = nullptr;
 
-            if (!delegate.expired())
-                delegate.lock()->connectionClosed(*this);
+            if (auto strongDelegate = delegate.lock())
+                strongDelegate->connectionClosed(*this);
+
             LOGV("Close and notify");
         }
     });
@@ -105,8 +106,8 @@ void TcpConnection::networkSocketDidConnectToHost(const NetworkSocket& socket,
                                                   const NetworkAddress &address, uint16_t port) {
     LOGV("TcpConnection did connect to host");
     TcpConnection::queue()->async([&] {
-        if (!delegate.expired())
-            delegate.lock()->connectionOpened(*this);
+        if (auto strongDelegate = delegate.lock())
+            strongDelegate->connectionOpened(*this);
     });
 }
 
@@ -115,8 +116,8 @@ void TcpConnection::networkSocketDidDisconnectFromHost(const NetworkSocket& sock
                                                        uint8_t reasonCode) {
     LOGV("TcpConnection did disconnect from host");
     TcpConnection::queue()->async([&] {
-        if (!delegate.expired())
-            delegate.lock()->connectionClosed(*this);
+        if (auto strongDelegate = delegate.lock())
+            strongDelegate->connectionClosed(*this);
     });
 }
 
@@ -158,8 +159,8 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
         }
         else if (tag == (uint8_t)TcpPacketReadTag::body && data->size > 0)
         {
-            if (!this->delegate.expired())
-                this->delegate.lock()->connectionDidReceiveData(*this, data);
+            if (auto strongDelegate = delegate.lock())
+                strongDelegate->connectionDidReceiveData(*this, data);
 
             this->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
         }

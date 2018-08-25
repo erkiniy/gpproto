@@ -8,9 +8,10 @@
 #include <unordered_map>
 #include "gp/utils/DispatchQueue.h"
 #include "AuthKeyInfo.h"
+#include "DatacenterAddress.h"
 
 namespace gpproto {
-    class Context final : std::enable_shared_from_this<Context> {
+    class Context final : public std::enable_shared_from_this<Context> {
     public:
         Context() = default;
 
@@ -23,6 +24,8 @@ namespace gpproto {
             return q;
         }
 
+        double getGlobalTime();
+
         double getGlobalTimeDifference();
 
         void setGlobalTimeDifference(double difference);
@@ -31,9 +34,14 @@ namespace gpproto {
 
         void setAuthKeyInfoForDatacenterId(AuthKeyInfo&& keyInfo, int32_t id);
 
+        std::shared_ptr<DatacenterAddress> getDatacenterAddressForDatacenterId(int32_t id);
+
+        void setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id);
+
     private:
         double globalTimeDifference;
         std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
+        std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterAddressByDatacenterId;
     };
 }
 

@@ -17,14 +17,14 @@ namespace gpproto {
 
     class Request {
     public:
-        Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
+        explicit Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
                 : body(body), completion(std::move(completion)), failure(std::move(failure)) {};
 
         ~Request() = default;
 
         Request(const Request&) = delete;
 
-    private:
+    protected:
         std::shared_ptr<StreamSlice> body;
         RequestCompletion completion;
         RequestFailure failure;

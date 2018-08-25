@@ -7,7 +7,8 @@
 
 namespace gpproto {
     class Transport {
-
+    public:
+        void stop();
     };
 }
 
