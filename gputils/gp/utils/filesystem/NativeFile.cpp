@@ -53,7 +53,7 @@ void NativeFile::Open(int mode)
     _mode = mode;
     _isReadOnly = true;
 
-    auto openMode = (std::ios_base::open_mode)0x00;
+    auto openMode = (std::ios_base::openmode)0x00;
 
     if (mode & File::read)
         openMode |= std::fstream::in;
@@ -89,7 +89,7 @@ uint64_t NativeFile::Seek(uint64_t offset, File::Origin origin)
     if (!isOpened())
         return 0;
 
-    std::ios_base::seek_dir way;
+    std::ios_base::seekdir way;
     if (origin == begin)
         way = std::ios_base::beg;
     else if (origin == end)

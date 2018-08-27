@@ -5,8 +5,8 @@
 #ifndef GPPROTO_FILESYSTEM_H
 #define GPPROTO_FILESYSTEM_H
 
-#include "File.h"
 #include <set>
+#include "File.h"
 
 namespace gpproto
 {

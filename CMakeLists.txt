@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Prevent in-source build
 get_filename_component(GP_REAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
@@ -39,23 +40,24 @@ include(CheckCXXCompilerFlag)
 
 if (GCC OR CLANG OR INTEL)
     if (WIN32 AND INTEL)
-        SET(STD14_FLAG /Qstd=c++14)
+        SET(STD17_FLAG /Qstd=c++17)
     else()
-        SET(STD14_FLAG -std=c++14)
+        SET(STD17_FLAG -std=c++17)
     endif()
-    CHECK_CXX_COMPILER_FLAG(${STD14_FLAG} HAVE_STD14)
-    if (NOT HAVE_STD14)
-        string(REPLACE "c++14" "c++1y" STD14_FLAG "${STD14_FLAG}")
-        CHECK_CXX_COMPILER_FLAG(${STD14_FLAG} HAVE_STD1Y)
-        set(HAVE_STD14 ${HAVE_STD1Y})
+    CHECK_CXX_COMPILER_FLAG(${STD17_FLAG} HAVE_STD17)
+    if (NOT HAVE_STD17)
+        string(REPLACE "c++17" "c++1z" STD17_FLAG "${STD17_FLAG}")
+        CHECK_CXX_COMPILER_FLAG(${STD17_FLAG} HAVE_STD1Z)
+        set(HAVE_STD17 ${HAVE_STD1Z})
     endif()
 elseif (MSVC)
-    set(HAVE_STD14 MSVC_VERSION>=1900)
+    set(HAVE_STD17 MSVC_VERSION>=1900)
 endif()
 
-if (NOT HAVE_STD14)
-    message(FATAL_ERROR "No C++14 support in the compiler. Please upgrade the compiler.")
+if (NOT HAVE_STD17)
+    message(FATAL_ERROR "No C++17 support in the compiler. Please upgrade the compiler.")
 endif()
+
 
 if (NOT ANDROID) # _FILE_OFFSET_BITS is broken in ndk r15 and r15b and doesn't work prior to Android 7.0
     add_definitions(-D_FILE_OFFSET_BITS=64)
@@ -89,6 +91,7 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /W4 /wd4100 /wd4127 /wd4324 /wd4505 /wd4702")
 elseif (CLANG OR GCC)
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG} -fno-omit-frame-pointer -fno-exceptions -fno-rtti")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG}")
     if (APPLE)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S")
     else()
@@ -106,7 +109,7 @@ elseif (CLANG OR GCC)
         endif()
     endif()
 elseif (INTEL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG}")
 endif()
 
 include(AddCXXCompilerFlag)
@@ -170,7 +173,30 @@ set(GPCORE_SOURCE
         gp/proto/ClientSync.cpp
         gp/proto/ClientSync.h
 
-        gp/net/ProtoError.h gp/proto/gp_client_data.h gp/net/Transport.cpp gp/net/Transport.h gp/proto/AuthKeyInfo.cpp gp/proto/AuthKeyInfo.h gp/proto/DatacenterSaltsetInfo.cpp gp/proto/DatacenterSaltsetInfo.h gp/proto/Request.cpp gp/proto/Request.h gp/proto/ProtoDelegate.h gp/proto/DatacenterAddress.h gp/proto/Session.cpp gp/proto/Session.h gp/net/TransportDelegate.cpp gp/net/TransportDelegate.h)
+        gp/net/ProtoError.h
+
+        gp/proto/gp_client_data.h
+
+        gp/net/Transport.cpp
+        gp/net/Transport.h
+
+        gp/proto/AuthKeyInfo.cpp
+        gp/proto/AuthKeyInfo.h
+
+        gp/proto/DatacenterSaltsetInfo.cpp
+        gp/proto/DatacenterSaltsetInfo.h
+
+        gp/proto/Request.cpp
+        gp/proto/Request.h
+
+        gp/proto/ProtoDelegate.h
+
+        gp/proto/DatacenterAddress.h
+
+        gp/proto/Session.cpp
+        gp/proto/Session.h
+
+        gp/net/TransportDelegate.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
