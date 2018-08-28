@@ -12,24 +12,26 @@
 namespace gpproto {
     class Transport {
     public:
-        Transport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress>)
-                : context(context),
+        Transport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)
+                : context(std::move(context)),
                   datacenterId(datacenterId),
-                  address(address),
+                  address(std::move(address)),
                   delegate(delegate)
-        {}
+        {};
 
-        virtual void stop();
+        virtual void stop() = 0;
 
-        virtual void reset();
+        virtual void reset() = 0;
 
-        void setDelegate(std::shared_ptr<TransportDelegate> delegate);
+        virtual void setDelegateNeedsTransaction() = 0;
+
+        virtual void setDelegate(std::shared_ptr<TransportDelegate> delegate) = 0;
 
         std::shared_ptr<Context> context;
         const int32_t datacenterId;
         std::shared_ptr<DatacenterAddress> address;
 
-    private:
+    protected:
         std::weak_ptr<TransportDelegate> delegate;
     };
 }

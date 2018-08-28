@@ -177,7 +177,6 @@ set(GPCORE_SOURCE
 
         gp/proto/gp_client_data.h
 
-        gp/net/Transport.cpp
         gp/net/Transport.h
 
         gp/proto/AuthKeyInfo.cpp
@@ -196,7 +195,7 @@ set(GPCORE_SOURCE
         gp/proto/Session.cpp
         gp/proto/Session.h
 
-        gp/net/TransportDelegate.h)
+        gp/net/TransportDelegate.h gp/net/TcpTransport.cpp gp/net/TcpTransport.h gp/net/IncomingMessage.h gp/net/OutgoingMessage.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
