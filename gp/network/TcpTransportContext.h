@@ -6,16 +6,19 @@
 #define GPPROTO_TCPTRANSPORTCONTEXT_H
 
 #include "gp/net/TcpConnection.h"
-#include "gp/network/TcpTransport.h"
+#include "gp/proto/DatacenterAddress.h"
 #include "gp/network/TcpTransportContextDelegate.h"
+#include "gp/utils/DispatchQueue.h"
 
 namespace gpproto
 {
     class TcpConnection;
     class TcpTransportContext : public std::enable_shared_from_this<TcpTransportContext> {
     public:
-        TcpTransportContext() = default;
+        TcpTransportContext(std::shared_ptr<DispatchQueue> queue) : queue(queue) {};
+
         std::shared_ptr<TcpConnection> connection;
+        std::shared_ptr<DispatchQueue> queue;
 
         bool waitingForConnectionToBecomeAvailable = false;
         bool requestTransactionWhenBecomesAvailable = false;

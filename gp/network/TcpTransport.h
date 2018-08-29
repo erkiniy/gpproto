@@ -17,13 +17,12 @@ namespace gpproto
     public:
         TcpTransport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)
         : Transport(std::move(delegate), std::move(context), datacenterId, std::move(address)),
-          transportContext(std::make_shared<TcpTransportContext>())
+          transportContext(std::make_shared<TcpTransportContext>(TcpTransport::queue()))
         {
-            TcpTransport::queue()->asyncForce([&, transportContext] {
-                //transportContext->address = address;
-
-                auto strongSelf = shared_from_this();
-                auto contextDelegate = std::static_pointer_cast<TcpTransportContextDelegate>(strongSelf);
+            TcpTransport::queue()->asyncForce([this] {
+                transportContext->address = this->address;
+                //auto strongSelf = shared_from_this();
+                //auto contextDelegate = std::static_pointer_cast<TcpTransportContextDelegate>(strongSelf);
 
                 //transportContext->setDelegate(contextDelegate);
 
