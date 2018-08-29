@@ -7,6 +7,7 @@
 
 #include "ConnectionDelegate.h"
 #include <list>
+#include <memory>
 
 namespace gpproto {
     class Connection {
@@ -16,6 +17,11 @@ namespace gpproto {
         virtual void setDelegate(std::shared_ptr<ConnectionDelegate> delegate) = 0;
         virtual void sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const = 0;
         virtual void closeAndNotify() = 0;
+
+        bool isEqual(const Connection& obj) const {
+            return std::addressof(*this) == std::addressof(obj);
+        }
+
     protected:
         bool closed;
     };

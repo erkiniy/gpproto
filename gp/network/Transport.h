@@ -6,7 +6,7 @@
 #define GPPROTO_TRANSPORT_H
 
 #include "gp/proto/Context.h"
-#include "gp/net/TransportDelegate.h"
+#include "gp/network/TransportDelegate.h"
 #include "gp/proto/DatacenterAddress.h"
 
 namespace gpproto {

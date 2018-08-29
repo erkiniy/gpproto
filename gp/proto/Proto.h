@@ -8,7 +8,7 @@
 #include <string>
 #include "gp/utils/DispatchQueue.h"
 #include "ProtoDelegate.h"
-#include "gp/net/Transport.h"
+#include "gp/network/Transport.h"
 
 namespace gpproto {
 

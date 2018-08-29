@@ -7,13 +7,13 @@
 
 using namespace gpproto;
 
-void DispatchQueue::async(const DispatchQueue::DispatchWork work) {
+void DispatchQueue::async(DispatchQueue::DispatchWork work) {
     printf("Starting Async\n");
-    _async(work, false);
+    _async(std::move(work), false);
 }
 
 void DispatchQueue::asyncForce(DispatchQueue::DispatchWork work) {
-    _async(work, true);
+    _async(std::move(work), true);
 }
 
 void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {

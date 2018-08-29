@@ -12,7 +12,7 @@
 #include "gp/utils/Logging.h"
 
 namespace gpproto {
-class TcpConnection final : public Connection, public std::enable_shared_from_this<NetworkSocketDelegate>, public NetworkSocketDelegate {
+class TcpConnection final : public Connection, public NetworkSocketDelegate, public std::enable_shared_from_this<TcpConnection> {
     public:
 
         enum class TcpPacketReadTag : uint8_t {

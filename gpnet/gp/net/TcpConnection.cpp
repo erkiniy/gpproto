@@ -6,23 +6,27 @@
 using namespace gpproto;
 
 void TcpConnection::start() {
-    TcpConnection::queue()->async([&] {
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf] {
+        auto socketDelegate = std::static_pointer_cast<NetworkSocketDelegate>(strongSelf);
+
         LOGV("Starting TcpConnection");
-        if (socket)
+        if (strongSelf->socket)
             return;
 
-        socket = std::shared_ptr<NetworkSocket>(NetworkSocket::Create(NetworkProtocol::PROTO_TCP, &address));
-        socket->Connect(&address, port);
-        socket->setDelegate(shared_from_this());
-        socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
+        strongSelf->socket = std::shared_ptr<NetworkSocket>(NetworkSocket::Create(NetworkProtocol::PROTO_TCP, &strongSelf->address));
+        strongSelf->socket->setDelegate(socketDelegate);
+        strongSelf->socket->Connect(&strongSelf->address, strongSelf->port);
+        strongSelf->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
     });
 }
 
 void TcpConnection::stop() {
-    TcpConnection::queue()->async([&]{
-        if (closed) {
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf] {
+        if (strongSelf->closed) {
             LOGV("Stopping the socket");
-            closeAndNotify();
+            strongSelf->closeAndNotify();
         }
     });
 }
@@ -30,8 +34,9 @@ void TcpConnection::stop() {
 void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const {
     if (datas.empty())
         return;
+    auto strongSelf = shared_from_this();
 
-    TcpConnection::queue()->async([&, datas] {
+    TcpConnection::queue()->async([strongSelf, datas = std::move(datas)] {
          for (auto const& i : datas)
          {
              size_t length = i->size;
@@ -44,7 +49,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
                  return;
              }
 
-             if (closed || !socket) {
+             if (strongSelf->closed || !strongSelf->socket) {
                  LOGE("TcpConnection: attempt to send a packet on closed or invalid socket");
                  return;
              }
@@ -72,7 +77,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
 
              auto finalData = std::make_shared<StreamSlice>(packetData, headerLength + length, false);
 
-             socket->sendDataWithTimeout(10.0, finalData, 0);
+             strongSelf->socket->sendDataWithTimeout(10.0, finalData, 0);
 
              free(packetData);
          }
@@ -80,22 +85,24 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
 }
 
 void TcpConnection::setDelegate(std::shared_ptr<ConnectionDelegate> delegate) {
-    TcpConnection::queue()->async([&, delegate] {
-        this->delegate = delegate;
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf, delegate] {
+        strongSelf->delegate = delegate;
     });
 }
 
 void TcpConnection::closeAndNotify() {
-    TcpConnection::queue()->async([&] {
-        if (!closed) {
-            closed = true;
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf] {
+        if (!strongSelf->closed) {
+            strongSelf->closed = true;
 
-            socket->setDelegate(nullptr);
-            socket->Close();
-            socket = nullptr;
+            strongSelf->socket->setDelegate(nullptr);
+            strongSelf->socket->Close();
+            strongSelf->socket = nullptr;
 
-            if (auto strongDelegate = delegate.lock())
-                strongDelegate->connectionClosed(*this);
+            if (auto strongDelegate = strongSelf->delegate.lock())
+                strongDelegate->connectionClosed(*strongSelf);
 
             LOGV("Close and notify");
         }
@@ -105,9 +112,10 @@ void TcpConnection::closeAndNotify() {
 void TcpConnection::networkSocketDidConnectToHost(const NetworkSocket& socket,
                                                   const NetworkAddress &address, uint16_t port) {
     LOGV("TcpConnection did connect to host");
-    TcpConnection::queue()->async([&] {
-        if (auto strongDelegate = delegate.lock())
-            strongDelegate->connectionOpened(*this);
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf] {
+        if (auto strongDelegate = strongSelf->delegate.lock())
+            strongDelegate->connectionOpened(*strongSelf);
     });
 }
 
@@ -115,15 +123,17 @@ void TcpConnection::networkSocketDidDisconnectFromHost(const NetworkSocket& sock
                                                        const NetworkAddress &address, uint16_t port,
                                                        uint8_t reasonCode) {
     LOGV("TcpConnection did disconnect from host");
-    TcpConnection::queue()->async([&] {
-        if (auto strongDelegate = delegate.lock())
-            strongDelegate->connectionClosed(*this);
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf] {
+        if (auto strongDelegate = strongSelf->delegate.lock())
+            strongDelegate->connectionClosed(*strongSelf);
     });
 }
 
 void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
                                              std::shared_ptr<StreamSlice> data, uint8_t tag) {
-    TcpConnection::queue()->async([&, data, tag] {
+    auto strongSelf = shared_from_this();
+    TcpConnection::queue()->async([strongSelf, data, tag] {
         LOGV("TcpConnection did read data with size = %zu bytes and tag %u", data->size, tag);
         if (tag == (uint8_t)TcpPacketReadTag::shortLength && data->size == 1)
         {
@@ -133,13 +143,13 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
             if (lengthMarker >= 0x1 && lengthMarker <= 0x7e)
             {
                 lengthMarker <<= 2;
-                this->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
+                strongSelf->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             }
             else if (lengthMarker == 0x7f)
-                this->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
+                strongSelf->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
             else {
                 LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
-                closeAndNotify();
+                strongSelf->closeAndNotify();
             }
         }
         else if (tag == (uint8_t)TcpPacketReadTag::longLength && data->size == 3)
@@ -151,18 +161,18 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
             lengthMarker <<= 2;
 
             if (lengthMarker > 0 && lengthMarker < 4 * 1024 * 1024)
-                this->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
+                strongSelf->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             else {
                 LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
-                closeAndNotify();
+                strongSelf->closeAndNotify();
             }
         }
         else if (tag == (uint8_t)TcpPacketReadTag::body && data->size > 0)
         {
-            if (auto strongDelegate = delegate.lock())
-                strongDelegate->connectionDidReceiveData(*this, data);
+            if (auto strongDelegate = strongSelf->delegate.lock())
+                strongDelegate->connectionDidReceiveData(*strongSelf, data);
 
-            this->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
+            strongSelf->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
         }
     });
 }

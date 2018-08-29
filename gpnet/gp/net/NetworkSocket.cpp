@@ -42,6 +42,7 @@ bool NetworkSocket::isFailed() {
 
 NetworkSocket* NetworkSocket::Create(NetworkProtocol protocol, NetworkAddress* address) {
 #ifdef _WIN32
+#error Socket not implemented for Windows
     return NetworkSocketWinsock()
 #else
     return new NetworkSocketPosix(protocol, address);
@@ -52,18 +53,18 @@ IPv4Address* NetworkSocket::ResolveDomainName(std::string name) {
 #ifdef _WIN32
 #else
 #endif
-    return NetworkSocketPosix::ResolveDomainName(name);
+    return NetworkSocketPosix::ResolveDomainName(std::move(name));
 }
 
 void NetworkSocket::Receive(std::shared_ptr<StreamSlice> slice) {
     NetworkPacket packet = { 0 };
-    packet.slice = slice;
+    packet.slice = std::move(slice);
     Receive(&packet);
 }
 
 void NetworkSocket::Send(std::shared_ptr<StreamSlice> slice) {
     NetworkPacket packet = { 0 };
-    packet.slice = slice;
+    packet.slice = std::move(slice);
     Send(&packet);
 }
 
@@ -123,7 +124,7 @@ void NetworkSocket::maybeDequeueWrite() {
                 auto strongDelegate = weakDelegate.lock();
 
                 if (strongDelegate)
-                    strongDelegate->networkSocketDidSendData(*strongSelf.get(), packet->slice->size, packet->tag);
+                    strongDelegate->networkSocketDidSendData(*strongSelf, packet->slice->size, packet->tag);
             }
         }
 
@@ -164,7 +165,7 @@ void NetworkSocket::maybeDequeueRead() {
                         auto strongDelegate = weakDelegate.lock();
 
                         if (strongDelegate)
-                            strongDelegate->networkSocketDidReadData(*strongSelf__.get(), packet->slice, packet->tag);
+                            strongDelegate->networkSocketDidReadData(*strongSelf__, packet->slice, packet->tag);
                     });
                 }
             });

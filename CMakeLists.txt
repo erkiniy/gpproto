@@ -173,11 +173,11 @@ set(GPCORE_SOURCE
         gp/proto/ClientSync.cpp
         gp/proto/ClientSync.h
 
-        gp/net/ProtoError.h
+        gp/network/ProtoError.h
 
         gp/proto/gp_client_data.h
 
-        gp/net/Transport.h
+        gp/network/Transport.h
 
         gp/proto/AuthKeyInfo.cpp
         gp/proto/AuthKeyInfo.h
@@ -195,7 +195,13 @@ set(GPCORE_SOURCE
         gp/proto/Session.cpp
         gp/proto/Session.h
 
-        gp/net/TransportDelegate.h gp/net/TcpTransport.cpp gp/net/TcpTransport.h gp/net/IncomingMessage.h gp/net/OutgoingMessage.h)
+        gp/network/TransportDelegate.h
+        gp/network/TcpTransport.cpp
+        gp/network/TcpTransport.h
+
+        gp/network/IncomingMessage.h
+        gp/network/OutgoingMessage.h
+        gp/network/MessageTransaction.h gp/network/TcpTransportContext.cpp gp/network/TcpTransportContext.h gp/network/TcpTransportContextDelegate.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)

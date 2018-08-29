@@ -6,7 +6,7 @@
 #define GPPROTO_CLIENTSYNC_H
 
 #include <cstdlib>
-#include "../net/ProtoError.h"
+#include "gp/network/ProtoError.h"
 #include "gp/utils/StreamSlice.h"
 #include "gp_client_data.h"
 
