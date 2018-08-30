@@ -55,5 +55,18 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
+    Proto::queue()->async([strongSelf = shared_from_this(), transport] {
+        if (strongSelf->state & ProtoStateStopped)
+            return;
 
+        if (auto _transport = strongSelf->transport)
+        {
+            _transport->setDelegate(nullptr);
+            _transport->stop();
+
+            strongSelf->setTransport(nullptr);
+        }
+
+
+    });
 }

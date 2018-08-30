@@ -21,12 +21,12 @@ namespace gpproto
         {
             TcpTransport::queue()->asyncForce([this] {
                 transportContext->address = this->address;
-                //auto strongSelf = shared_from_this();
-                //auto contextDelegate = std::static_pointer_cast<TcpTransportContextDelegate>(strongSelf);
+                auto strongSelf = shared_from_this();
+                auto contextDelegate = std::static_pointer_cast<TcpTransportContextDelegate>(strongSelf);
 
-                //transportContext->setDelegate(contextDelegate);
+                transportContext->setDelegate(contextDelegate);
 
-                //transportContext->networkIsAvailable = true;
+                transportContext->networkIsAvailable = true;
             });
         };
 
@@ -54,6 +54,8 @@ namespace gpproto
     private:
         void requestTransactionFromDelegate();
         std::shared_ptr<TcpTransportContext> transportContext;
+
+        void startIfNeeded();
     };
 }
 

@@ -20,11 +20,18 @@ namespace gpproto {
 
     class IPv4Address : public NetworkAddress {
     public:
-        IPv4Address(std::string addr);
-        IPv4Address(uint32_t addr);
+        explicit IPv4Address(std::string addr);
+
+        explicit IPv4Address(uint32_t addr);
+
+        IPv4Address(const IPv4Address&) = default;
+
         std::string ToString();
+
         virtual bool isEmpty();
+
         uint32_t GetAddress();
+
     private:
         uint32_t address;
     };

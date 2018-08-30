@@ -9,13 +9,13 @@
 #include "gp/proto/DatacenterAddress.h"
 #include "gp/network/TcpTransportContextDelegate.h"
 #include "gp/utils/DispatchQueue.h"
-
+#include "gp/utils/Timer.h"
 namespace gpproto
 {
     class TcpConnection;
     class TcpTransportContext : public std::enable_shared_from_this<TcpTransportContext> {
     public:
-        TcpTransportContext(std::shared_ptr<DispatchQueue> queue) : queue(queue) {};
+        explicit TcpTransportContext(std::shared_ptr<DispatchQueue> queue) : queue(std::move(queue)) {};
 
         std::shared_ptr<TcpConnection> connection;
         std::shared_ptr<DispatchQueue> queue;
@@ -28,6 +28,8 @@ namespace gpproto
         bool stopped = false;
         bool connected = false;
 
+        bool needsReconnection = false;
+
         void requestConnection();
         void startIfNeeded();
 
@@ -35,8 +37,19 @@ namespace gpproto
 
         void setDelegate(std::shared_ptr<TcpTransportContextDelegate> delegate);
 
+        void connectionClosed();
+
+        void invalidateTimer();
+
     private:
         std::weak_ptr<TcpTransportContextDelegate> delegate;
+        int backoffCount = 0;
+
+        void startTimer(double timeout);
+
+        void timerEvent();
+
+        std::shared_ptr<Timer> backoffTimer;
     };
 }
 
