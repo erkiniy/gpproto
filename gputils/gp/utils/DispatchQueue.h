@@ -13,7 +13,7 @@
 #include <vector>
 #include <condition_variable>
 
-#include "Semaphore.h"
+#include "gp/utils/Semaphore.h"
 
 namespace gpproto {
     class DispatchQueue {

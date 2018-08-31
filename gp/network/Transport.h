@@ -9,7 +9,8 @@
 #include "gp/network/TransportDelegate.h"
 #include "gp/proto/DatacenterAddress.h"
 
-namespace gpproto {
+namespace gpproto
+{
     class Transport {
     public:
         Transport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)

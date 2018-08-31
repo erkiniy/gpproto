@@ -1,14 +1,14 @@
 //
-// Created by ProDigital on 7/25/18.
+// Created by Erkiniy Jaloliddin on 7/25/18.
 //
 
-#include "DispatchQueue.h"
+#include "gp/utils/DispatchQueue.h"
 #include "gp/utils/Logging.h"
 
 using namespace gpproto;
 
 void DispatchQueue::async(DispatchQueue::DispatchWork work) {
-    printf("Starting Async\n");
+    //LOGV("Starting Async\n");
     _async(std::move(work), false);
 }
 
@@ -30,6 +30,7 @@ void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
         _mutex.unlock();
 
         _asyncSemaphore.notify();
+
         _syncSemaphore.wait();
     }
 }

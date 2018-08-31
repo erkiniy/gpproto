@@ -2,8 +2,9 @@
 // Created by Jaloliddin Erkiniy on 8/22/18.
 //
 
-#include "Context.h"
 #include <chrono>
+#include "gp/proto/Context.h"
+#include "gp/network/TransportScheme.h"
 
 using namespace gpproto;
 
@@ -66,8 +67,62 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(
 void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id) {
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
 
-    Context::queue()->async([&, addr] {
-        datacenterAddressByDatacenterId[id] = addr;
+    Context::queue()->async([strongSelf = shared_from_this(), addr, id] {
+        strongSelf->datacenterAddressByDatacenterId[id] = addr;
     });
 #warning implement storing to keychain
+}
+
+std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacenterId(int32_t id) {
+    std::shared_ptr<DatacenterAddress> address = nullptr;
+
+    Context::queue()->sync([&, id] {
+        auto it = datacenterSeedAddressByDatacenterId.find(id);
+
+        if (it != datacenterSeedAddressByDatacenterId.end())
+            address = datacenterSeedAddressByDatacenterId[id];
+    });
+
+    return address;
+}
+
+void Context::setDatacenterSeedAddress(gpproto::DatacenterAddress &&address, int32_t id) {
+
+    auto addr = std::make_shared<DatacenterAddress>(std::move(address));
+
+    Context::queue()->async([strongSelf = shared_from_this(), addr, id] {
+        strongSelf->datacenterSeedAddressByDatacenterId[id] = addr;
+    });
+}
+
+std::shared_ptr<TransportScheme> Context::transportSchemeForDatacenterId(int32_t id) {
+    auto strongSelf = shared_from_this();
+    std::shared_ptr<TransportScheme> scheme = nullptr;
+
+    Context::queue()->sync([&, strongSelf, id] {
+        std::shared_ptr<DatacenterAddress> address = strongSelf->getDatacenterAddressForDatacenterId(id);
+
+        if (address == nullptr)
+            address = strongSelf->getDatacenterSeedAddressForDatacenterId(id);
+
+        if (address == nullptr)
+            strongSelf->addressSetForDatacenterIdRequired(id);
+        else {
+            scheme = std::make_shared<TransportScheme>(TransportType::Tcp, address);
+        }
+    });
+
+    return scheme;
+}
+
+void Context::transportSchemeForDatacenterIdRequired(int32_t id) {
+
+}
+
+void Context::addressSetForDatacenterIdRequired(int32_t id) {
+#warning Implement getConfig
+}
+
+void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
+
 }

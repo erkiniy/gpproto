@@ -7,10 +7,12 @@
 
 #include <unordered_map>
 #include "gp/utils/DispatchQueue.h"
-#include "AuthKeyInfo.h"
-#include "DatacenterAddress.h"
+#include "gp/proto/AuthKeyInfo.h"
+#include "gp/proto/DatacenterAddress.h"
 
 namespace gpproto {
+    class TransportScheme;
+
     class Context final : public std::enable_shared_from_this<Context> {
     public:
         Context() = default;
@@ -38,10 +40,23 @@ namespace gpproto {
 
         void setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id);
 
+        std::shared_ptr<DatacenterAddress> getDatacenterSeedAddressForDatacenterId(int32_t id);
+
+        void setDatacenterSeedAddress(DatacenterAddress&& address, int32_t id);
+
+        std::shared_ptr<TransportScheme> transportSchemeForDatacenterId(int32_t id);
+
+        void addressSetForDatacenterIdRequired(int32_t id);
+
+        void authInfoForDatacenterWithIdRequired(int32_t id);
+
+        void transportSchemeForDatacenterIdRequired(int32_t id);
+
     private:
         double globalTimeDifference;
         std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterAddressByDatacenterId;
+        std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
     };
 }
 
