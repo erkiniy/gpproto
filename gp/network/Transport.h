@@ -20,6 +20,8 @@ namespace gpproto
                   delegate(delegate)
         {};
 
+        virtual ~Transport() {};
+
         virtual void stop() = 0;
 
         virtual void reset() = 0;
@@ -27,6 +29,12 @@ namespace gpproto
         virtual void setDelegateNeedsTransaction() = 0;
 
         virtual void setDelegate(std::shared_ptr<TransportDelegate> delegate) = 0;
+
+        virtual void updateConnectionState() = 0;
+
+        bool isEqual(const Transport& obj) const {
+            return std::addressof(*this) == std::addressof(obj);
+        }
 
         std::shared_ptr<Context> context;
         const int32_t datacenterId;

@@ -5,10 +5,10 @@
 #define BOOST_TEST_MODULE StreamTests
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
-#include <gp/utils/OutputStream.h>
-#include <gp/utils/OutputStreamException.h>
+#include <gp/utils/InputStream.h>
+#include <gp/utils/InputStreamException.h>
 #include "gp/utils/Logging.h"
-#include "gp/utils/InputStream.h"
+#include "gp/utils/OutputStream.h"
 
 using namespace gpproto;
 

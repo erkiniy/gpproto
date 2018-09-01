@@ -23,6 +23,8 @@ namespace gpproto
         bool waitingForConnectionToBecomeAvailable = false;
         bool requestTransactionWhenBecomesAvailable = false;
 
+        bool connectionIsValid = false;
+
         bool networkIsAvailable = true;
 
         bool stopped = false;
@@ -40,6 +42,8 @@ namespace gpproto
         void connectionClosed();
 
         void invalidateTimer();
+
+        void connectionValidDataReceived();
 
     private:
         std::weak_ptr<TcpTransportContextDelegate> delegate;

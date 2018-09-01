@@ -1,64 +1,65 @@
 //
-// Created by ProDigital on 8/2/18.
+// Created by ProDigital on 8/1/18.
 //
 
-#ifndef GPPROTO_OUTPUTSTREAM_H
-#define GPPROTO_OUTPUTSTREAM_H
+#ifndef GPPROTO_INPUTSTREAM_H
+#define GPPROTO_INPUTSTREAM_H
 
-#include <cstdint>
+#include <stdint.h>
 #include <string>
 #include "StreamSlice.h"
-#include "Logging.h"
 
 namespace gpproto {
-    class OutputStream final {
-    public:
 
-        OutputStream(std::shared_ptr<StreamSlice> data) : currentPosition(0), size(data->size) {
-            LOGV("Allocating OutputStream");
-            this->bytes = (unsigned char *)malloc(data->size);
-            memcpy(this->bytes, data->bytes, data->size);
+    class OutputStream final {
+
+    public:
+        static const size_t kChunkSize = 16;
+
+        OutputStream() : currentSize(0), numberOfChunks(1) {
+            bytes = (unsigned char *)malloc(kChunkSize);
+            LOGV("Input Stream allocated\n");
         }
 
         ~OutputStream() {
-            LOGV("Dealocating OutputStream");
+            currentSize = 0;
             if (bytes)
                 free(bytes);
         }
 
-        uint8_t readUInt8() const;
-        int8_t readInt8() const;
-        int16_t readInt16() const;
-        int32_t readInt32() const;
-        uint32_t readUInt32() const;
-        int64_t readInt64() const;
+        OutputStream(const OutputStream&) = delete;
 
-        template <class T> T readNumber() const {
-            T result;
-            memcpy(&result, readSlice(sizeof(T), true)->toSystemEndian(), sizeof(T));
-            return result;
-        }
+        void writeBool(bool value);
 
-        double readDouble() const;
-        bool readBool() const;
+        void writeUInt8(uint8_t number);
+        void writeInt8(int8_t number);
+        void writeInt16(int16_t number);
+        void writeInt32(int32_t number);
+        void writeUInt32(uint32_t number);
+        void writeInt64(int64_t number);
 
-        std::shared_ptr<StreamSlice> readData(size_t length) const;
-        std::shared_ptr<StreamSlice> readDataMaxLength(size_t length) const noexcept;
-        std::shared_ptr<StreamSlice> readBytes() const;
-        std::string readString() const;
-        std::string readStringRaw() const;
+        void writeDouble(double number);
+
+        void writeData(const StreamSlice& data);
+        void writeBytes(const StreamSlice& data);
+
+        void writeRawString(const std::string& string);
+        void writeString(const std::string& string);
+
+        std::shared_ptr<StreamSlice> currentBytes() const;
 
     private:
+        size_t currentSize;
+        int numberOfChunks;
         unsigned char* bytes;
-        const size_t size;
-        mutable size_t currentPosition;
 
+        void writeNumber(const unsigned char* number, size_t size);
+
+        void addSlice(const StreamSlice& slice);
         size_t remainingSize() const;
-        std::shared_ptr<StreamSlice> readSlice(size_t size, bool number) const;
-
-        void checkSize(size_t size, std::string message) const;
     };
 
-
 }
-#endif //GPPROTO_OUTPUTSTREAM_H
+
+
+#endif //GPPROTO_INPUTSTREAM_H

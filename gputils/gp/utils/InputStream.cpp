@@ -1,124 +1,161 @@
 //
-// Created by ProDigital on 8/1/18.
+// Created by ProDigital on 8/2/18.
 //
 
-#include "InputStream.h"
-#include "ByteOrder.h"
-#include "Logging.h"
-#include <math.h>
+#include "gp/utils/InputStream.h"
+
+#define MIN(X, Y) ((X > Y) ? Y : X)
+#define MAX(X, Y) ((X > Y) ? X : Y)
 
 using namespace gpproto;
 
-void InputStream::writeBool(bool value) {
-    uint32_t number = value ? StreamSlice::TLBoolTrue : StreamSlice::TLBoolFalse;
-    writeUInt32(number);
+uint8_t InputStream::readUInt8() const {
+    uint8_t result;
+    memcpy(&result, readSlice(1, true)->toSystemEndian(), 1);
+    return result;
 }
 
-void InputStream::writeUInt8(uint8_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+int8_t InputStream::readInt8() const {
+    checkSize(1, __PRETTY_FUNCTION__);
+    int8_t result;
+    memcpy(&result, readSlice(1, true)->toSystemEndian(), 1);
+    return result;
 }
 
-void InputStream::writeInt8(int8_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+int16_t InputStream::readInt16() const {
+    checkSize(2, __PRETTY_FUNCTION__);
+    int16_t result;
+    memcpy(&result, readSlice(2, true)->toSystemEndian(), 2);
+    return result;
 }
 
-void InputStream::writeInt16(int16_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+uint32_t InputStream::readUInt32() const {
+    checkSize(4, __PRETTY_FUNCTION__);
+    uint32_t result;
+    memcpy(&result, readSlice(4, true)->toSystemEndian(), 4);
+    return result;
 }
 
-void InputStream::writeInt32(int32_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+int32_t InputStream::readInt32() const {
+    checkSize(4, __PRETTY_FUNCTION__);
+    int32_t result;
+    memcpy(&result, readSlice(4, true)->toSystemEndian(), 4);
+    return result;
 }
 
-void InputStream::writeUInt32(uint32_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+int64_t InputStream::readInt64() const {
+    checkSize(8, __PRETTY_FUNCTION__);
+    int64_t result;
+    memcpy(&result, readSlice(8, true)->toSystemEndian(), 8);
+    return result;
 }
 
-void InputStream::writeInt64(int64_t number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+bool InputStream::readBool() const {
+    checkSize(4, __PRETTY_FUNCTION__);
+    uint32_t marker = readUInt32();
+    return marker == StreamSlice::TLBoolTrue;
 }
 
-void InputStream::writeDouble(double number) {
-    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+double InputStream::readDouble() const {
+    checkSize(8, __PRETTY_FUNCTION__);
+    auto s = readSlice(8, true);
+    auto bytes = s->toSystemEndian();
+    double result;
+    memcpy(&result, bytes, 8);
+    return result;
 }
 
-void InputStream::writeNumber(const unsigned char *number, size_t size) {
-    StreamSlice s = StreamSlice(number, size, true);
-    addSlice(s);
+std::shared_ptr<StreamSlice> InputStream::readData(size_t length) const {
+    checkSize(length, __PRETTY_FUNCTION__);
+    return readSlice(length, false);
 }
 
-void InputStream::writeData(const StreamSlice &data) {
-    addSlice(data);
+std::shared_ptr<StreamSlice> InputStream::readDataMaxLength(size_t length) const noexcept {
+    if (remainingSize() > length)
+        return readSlice(length, false);
+
+    return readSlice(remainingSize(), false);
 }
 
-void InputStream::writeRawString(const std::string &string) {
-    if (string.length() == 0)
-        writeInt8(0);
-    else {
-        const char* data = string.data();
-        size_t size = strlen(data);
-        writeInt32((int32_t)size);
-        StreamSlice s = StreamSlice(reinterpret_cast<const unsigned char *>(data), size);
-        writeData(s);
+std::string InputStream::readStringRaw() const {
+    checkSize(4, __PRETTY_FUNCTION__);
+    int32_t length = readInt32();
+
+    if (length == 0)
+        return "";
+
+    if (length < 0)
+        throw InputStreamException("Negative length marker for readBytes()", 400);
+
+    size_t size = length;
+
+    checkSize(size, __PRETTY_FUNCTION__);
+
+    auto slice = readSlice(size, false);
+    return slice->size == 0 ? "" : std::string(reinterpret_cast<char *>(slice->bytes), slice->size);
+}
+
+std::string InputStream::readString() const {
+    try {
+        auto slice = readBytes();
+        return slice->size == 0 ? "" : std::string(reinterpret_cast<char *>(slice->bytes), slice->size);
+    }
+    catch (InputStreamException& e) {
+        throw e;
     }
 }
 
-void InputStream::writeString(const std::string &string) {
-    if (string.length() == 0)
-        writeInt8(0);
-    else {
-        const char* data = string.data();
-        StreamSlice s = StreamSlice(reinterpret_cast<const unsigned char *>(data), strlen(data));
-        writeBytes(s);
-    }
-}
+std::shared_ptr<StreamSlice> InputStream::readBytes() const {
+    checkSize(1, __PRETTY_FUNCTION__);
+    uint8_t lengthMarker = readUInt8();
+    int32_t length = lengthMarker;
 
-void InputStream::writeBytes(const StreamSlice &data) {
     int8_t extraBytes = 0;
 
-    if (data.size <= 253) {
-        writeUInt8((uint8_t)data.size);
+    if (lengthMarker == 0)
+        return std::make_shared<StreamSlice>(nullptr, 0, false);
+
+    if (lengthMarker <= 253)
         extraBytes = 1;
-    }
-    else {
-        int32_t sizeInt = ((int32_t)data.size & (0x00ffffff));
-        writeUInt8((uint8_t)254);
-        auto lengthData = StreamSlice(reinterpret_cast<const unsigned char*>(&sizeInt), 3, true);
-        writeData(lengthData);
+    else if (lengthMarker == 254) {
+        checkSize(3, __PRETTY_FUNCTION__);
+        length = 0;
+        memcpy(&length, readSlice(3, true)->toSystemEndian(), 3);
         extraBytes = 4;
     }
+    else {
+        throw InputStreamException("Wrong length marker for readBytes()", 400);
+    }
 
-    writeData(data);
+    if (length < 0)
+        throw InputStreamException("Negative length marker for readBytes()", 400);
 
-    while ((extraBytes + data.size) % 4) {
-        writeInt8(0);
+    size_t size = length;
+
+    checkSize(size, __PRETTY_FUNCTION__);
+
+    auto slice = readSlice(size, false);
+
+    while ((extraBytes + size) % 4) {
+        checkSize(1, __PRETTY_FUNCTION__);
+        readUInt8();
         extraBytes++;
     }
+
+    return slice;
 }
 
-void InputStream::addSlice(const StreamSlice& slice) {
-
-    while (remainingSize() < slice.size)
-    {
-        size_t targetChunks = 1 + (size_t)(ceil((double)(slice.size - remainingSize()) / kChunkSize)) + numberOfChunks;
-        bytes = (unsigned char *)realloc(reinterpret_cast<void *>(bytes), kChunkSize * targetChunks);
-        numberOfChunks = (int)targetChunks;
-    }
-
-    memcpy(bytes + currentSize, slice.toLittleEndian(), slice.size);
-
-    currentSize += slice.size;
-}
-
-std::shared_ptr<StreamSlice> InputStream::currentBytes() const {
-//    if (currentSize == 0)
-//        return nullptr;
-
-    LOGV("Total allocated slice is = %lu, when useful one is = %lu", kChunkSize * numberOfChunks, currentSize);
-
-    return std::make_shared<StreamSlice>(bytes, currentSize);
+std::shared_ptr<StreamSlice> InputStream::readSlice(size_t size, bool number) const {
+    auto s = std::make_shared<StreamSlice>(bytes + currentPosition, size, number);
+    currentPosition += size;
+    return s;
 }
 
 size_t InputStream::remainingSize() const {
-    return kChunkSize * numberOfChunks - currentSize;
+    return MAX(size - currentPosition, 0);
+}
+
+void InputStream::checkSize(size_t size, std::string message) const {
+    if (remainingSize() < size)
+        throw InputStreamException("Size not enough when revoking " + message, 400);
 }

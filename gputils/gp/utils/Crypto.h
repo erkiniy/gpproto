@@ -6,8 +6,8 @@
 #define GPPROTO_CRYPTO_H
 
 #include <memory>
-#include "StreamSlice.h"
-#include "Common.h"
+#include "gp/utils/StreamSlice.h"
+#include "gp/utils/Common.h"
 
 using namespace gpproto;
 
@@ -23,6 +23,8 @@ namespace gpproto::Crypto {
     std::shared_ptr<StreamSlice> sha1(const StreamSlice &data);
 
     std::shared_ptr<StreamSlice> sha256(const StreamSlice &data);
+
+    std::shared_ptr<StreamSlice> sha256Subdata(const StreamSlice& data, size_t offset, size_t length);
 
     std::shared_ptr<StreamSlice> aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, const StreamSlice &plain);
 

@@ -2,8 +2,8 @@
 // Created by ProDigital on 8/1/18.
 //
 
-#include "StreamSlice.h"
-#include "ByteOrder.h"
+#include "gp/utils/StreamSlice.h"
+#include "gp/utils/ByteOrder.h"
 
 using namespace gpproto;
 

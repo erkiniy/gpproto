@@ -37,6 +37,9 @@ template <size_t size>
 struct UInt {
     static_assert(size % 8 == 0, "size should be divisible by 8");
     uint8 raw[size / 8];
+
+    UInt<size>() = default;
+    UInt<size>(UInt<size> &&) noexcept = default;
 };
 
 template <size_t size>

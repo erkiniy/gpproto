@@ -173,8 +173,12 @@ std::shared_ptr<StreamSlice> Crypto::sha1(const StreamSlice& data) {
 }
 
 std::shared_ptr<StreamSlice> Crypto::sha256(const StreamSlice& data) {
+    return sha256Subdata(data, 0, data.size);
+}
+
+std::shared_ptr<StreamSlice> Crypto::sha256Subdata(const StreamSlice &data, size_t offset, size_t length) {
     auto output = std::make_shared<StreamSlice>(SHA256_DIGEST_LENGTH);
-    SHA256(data.bytes, data.size, output->begin());
+    SHA256(data.bytes + offset, length, output->begin());
     return output;
 }
 

@@ -91,3 +91,9 @@ void TcpTransportContext::timerEvent() {
             strongDelegate->tcpConnectionRequestReconnection(*strongSelf);
     });
 }
+
+void TcpTransportContext::connectionValidDataReceived() {
+    backoffCount = 0;
+
+    invalidateTimer();
+}

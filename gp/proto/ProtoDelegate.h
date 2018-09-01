@@ -18,6 +18,7 @@ namespace gpproto {
 
     class ProtoDelegate {
     public:
+        virtual void connectionStateAvailibilityChanged(const Proto& proto, bool isNetworkAvailable) = 0;
         virtual void connectionStateChanged(const Proto& proto, ProtoConnectionState state) = 0;
     };
 }

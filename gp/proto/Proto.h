@@ -32,7 +32,7 @@ namespace gpproto {
 
         explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false) : useUnauthorizedMode(useUnauthorizedMode), datacenterId(datacenterId), context(std::move(context)) {};
 
-        ~Proto() = default;
+        //~Proto() = default;
 
         void pause();
         void resume();
@@ -47,10 +47,11 @@ namespace gpproto {
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
         void transportReadyForTransaction(const Transport& transport) override;
-        void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data) override;
+        void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) override;
 
     private:
         std::shared_ptr<Context> context;
+        std::shared_ptr<AuthKeyInfo> authInfo;
 
         uint32_t protoState = 0;
 
@@ -67,6 +68,13 @@ namespace gpproto {
         void resetTransport();
 
         void allTransactionsMayHaveFailed();
+
+        void updateConnectionState();
+
+        bool isStopped();
+        bool isPaused();
+
+        std::shared_ptr<StreamSlice> decryptIncomingTransportData(const std::shared_ptr<StreamSlice>& data);
     };
 }
 

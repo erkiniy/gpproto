@@ -35,7 +35,7 @@ namespace gpproto
             return q;
         }
 
-        ~TcpTransport();
+        ~TcpTransport() override;
 
         void stop() override;
 
@@ -44,6 +44,8 @@ namespace gpproto
         void setDelegate(std::shared_ptr<TransportDelegate> delegate) override;
 
         void setDelegateNeedsTransaction() override;
+
+        void updateConnectionState() override;
 
         void tcpConnectionRequestReconnection(const TcpTransportContext& context) override;
 
@@ -56,6 +58,9 @@ namespace gpproto
         std::shared_ptr<TcpTransportContext> transportContext;
 
         void startIfNeeded();
+
+        void connectionIsValid();
+        void connectionIsInvalid();
     };
 }
 

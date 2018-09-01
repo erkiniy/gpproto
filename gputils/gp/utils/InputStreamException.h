@@ -9,12 +9,12 @@
 #include <string>
 
 namespace gpproto {
-    class OutputStreamException : public std::exception {
+    class InputStreamException : public std::exception {
     public:
         const std::string message;
         const int code;
 
-        OutputStreamException(const std::string &message, int code) : message(message), code(code) {
+        InputStreamException(std::string message, int code) : message(std::move(message)), code(code) {
 
         }
     };

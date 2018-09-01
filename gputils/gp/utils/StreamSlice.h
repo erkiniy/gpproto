@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "Logging.h"
-#include "CustomStringConvertable.h"
+#include "gp/utils/Logging.h"
+#include "gp/utils/CustomStringConvertable.h"
 
 namespace gpproto {
     struct StreamSlice: public CustomStringConvertable {
@@ -32,9 +32,7 @@ namespace gpproto {
             memcpy(this->bytes, bytes, size);
         }
 
-        StreamSlice(const size_t& size) : bytes((unsigned char *)malloc(size)), size(size), number(false) {
-
-        }
+        StreamSlice(const size_t& size) : bytes((unsigned char *)malloc(size)), size(size), number(false) {}
 
         ~StreamSlice() {
             LOGV("Destructed StreamSlice with size %lu\n", this->size);
@@ -54,14 +52,38 @@ namespace gpproto {
             return bytes;
         }
 
+        unsigned char* rbegin() const {
+            return bytes;
+        }
+
         unsigned char* end() {
             return bytes + size;
         }
+
+//        inline StreamSlice operator + (const StreamSlice& s1, const StreamSlice& s2) {
+//            auto s = StreamSlice(s1.size + s2.size);
+//            memcpy(s.begin(), s1.rbegin(), s1.size);
+//            memcpy(s.begin() + s1.size, s2.rbegin(), s2.size);
+//            return s;
+//        }
+//
+//        inline StreamSlice operator + (const StreamSlice& s1) const {
+//            auto s = StreamSlice(this->size + s1.size);
+//            memcpy(s.begin(), this->rbegin(), this->size);
+//            memcpy(s.begin() + this->size, s1.rbegin(), s1.size);
+//            return s;
+//        }
     };
 
     inline bool operator == (const StreamSlice &s1, const StreamSlice &s2) {
         return s1.size == s2.size && (memcmp(s1.bytes, s2.bytes, s1.size) == 0);
     }
+
+    inline bool operator != (const StreamSlice &s1, const StreamSlice &s2) {
+        return !(s1 == s2);
+    }
+
+
 }
 
 #endif //GPPROTO_STREAMSLICE_H

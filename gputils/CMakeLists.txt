@@ -49,18 +49,18 @@ set(GPUTILS_SOURCE
 
         gp/utils/ByteOrder.h
 
-        gp/utils/InputStream.h
-        gp/utils/InputStream.cpp
+        gp/utils/OutputStream.h
+        gp/utils/OutputStream.cpp
 
         gp/utils/StreamSlice.cpp
         gp/utils/StreamSlice.h
 
         gp/utils/CustomStringConvertable.h
 
-        gp/utils/OutputStream.cpp
-        gp/utils/OutputStream.h
+        gp/utils/InputStream.cpp
+        gp/utils/InputStream.h
 
-        gp/utils/OutputStreamException.h
+        gp/utils/InputStreamException.h
 
         gp/utils/Timer.cpp
         gp/utils/Timer.h

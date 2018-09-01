@@ -128,9 +128,16 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
             return;
 
         if (auto strongDelegate = strongSelf->delegate.lock())
-        {
-            strongDelegate->transportHasIncomingData(*strongSelf, slice);
-        }
+            strongDelegate->transportHasIncomingData(*strongSelf, slice, true, [weakSelf = weak_from_this()](bool success) {
+                if (auto _strongSelf = weakSelf.lock())
+                {
+                    if (success)
+                        _strongSelf->connectionIsValid();
+                    else
+                        _strongSelf->connectionIsInvalid();
+                }
+            });
+
     });
 }
 
@@ -164,5 +171,24 @@ void TcpTransport::startIfNeeded() {
         strongSelf->transportContext->connection->setDelegate(strongDelegate);
 
         strongSelf->transportContext->connection->start();
+    });
+}
+
+
+void TcpTransport::updateConnectionState() {
+
+}
+
+void TcpTransport::connectionIsValid() {
+    TcpTransport::queue()->async([strongSelf = shared_from_this()] {
+        strongSelf->transportContext->connectionIsValid = true;
+        strongSelf->transportContext->connectionValidDataReceived();
+    });
+
+}
+
+void TcpTransport::connectionIsInvalid() {
+    TcpTransport::queue()->async([strongSelf = shared_from_this()] {
+        //TODO: invalidate current transport scheme
     });
 }
