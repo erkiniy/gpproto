@@ -223,8 +223,7 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
     auto messageKeyFull = Crypto::sha256Subdata(*decryptedData, 0, 32 + messageDataLength);
     auto messageKey = messageKeyFull->subData(16, 16);
 
-    if (*messageKey != *embeddedMessageKey)
-    {
+    if (*messageKey != *embeddedMessageKey) {
         LOGE("[Proto decryptIncomingTransportData] -> received message key is different from computed");
         return nullptr;
     }
