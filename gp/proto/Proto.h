@@ -10,9 +10,13 @@
 #include "gp/proto/ProtoDelegate.h"
 #include "gp/network/Transport.h"
 #include "gp/proto/Context.h"
+#include "gp/proto/Session.h"
 
 namespace gpproto {
     class TransportScheme;
+    class IncomingMessage;
+    class ProtoInternalMessage;
+    class InputStream;
 
     typedef enum {
         ProtoStateAwaitingTransportScheme = 1,
@@ -30,7 +34,10 @@ namespace gpproto {
             return q;
         }
 
-        explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false) : useUnauthorizedMode(useUnauthorizedMode), datacenterId(datacenterId), context(std::move(context)) {};
+        explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
+                : useUnauthorizedMode(useUnauthorizedMode),
+                  datacenterId(datacenterId),
+                  context(std::move(context)), sessionInfo(std::move(Session(context))) { };
 
         //~Proto() = default;
 
@@ -47,11 +54,13 @@ namespace gpproto {
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
         void transportReadyForTransaction(const Transport& transport) override;
+
         void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) override;
 
     private:
         std::shared_ptr<Context> context;
         std::shared_ptr<AuthKeyInfo> authInfo;
+        Session sessionInfo;
 
         uint32_t protoState = 0;
 
@@ -75,6 +84,9 @@ namespace gpproto {
         bool isPaused();
 
         std::shared_ptr<StreamSlice> decryptIncomingTransportData(const std::shared_ptr<StreamSlice>& data);
+        std::shared_ptr<IncomingMessage> parseIncomingMessage(std::shared_ptr<StreamSlice> data, int64_t& dataMessageId, bool& parseError);
+
+        std::shared_ptr<ProtoInternalMessage> parseMessage(const std::shared_ptr<StreamSlice>& data);
     };
 }
 

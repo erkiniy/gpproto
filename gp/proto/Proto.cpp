@@ -10,6 +10,7 @@
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/InputStream.h"
 #include "gp/proto/MessageEncryptionKey.h"
+#include "InternalParser.h"
 
 using namespace gpproto;
 
@@ -166,12 +167,11 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
         if (strongSelf->useUnauthorizedMode)
             decryptedData = data;
         else
-            decryptedData = decryptIncomingTransportData(data);
+            decryptedData = strongSelf->decryptIncomingTransportData(data);
 
         if (decryptedData)
         {
             decodeResult(true);
-
 
         }
     });
@@ -229,4 +229,81 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
     }
 
     return decryptedData;
+}
+
+std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<StreamSlice> data,
+                                                             int64_t &dataMessageId, bool &parseError) {
+    InputStream is = InputStream(data);
+    try {
+
+        int64_t embeddedMessageId = 0;
+        int32_t embeddedSeqNo = 0;
+        int64_t embeddedSalt = 0;
+        int32_t topMessageSize = 0;
+
+        if (useUnauthorizedMode)
+        {
+            int64_t authKeyId = is.readInt64();
+            if (authKeyId != 0)
+            {
+                parseError = true;
+                return nullptr;
+            }
+            embeddedMessageId = is.readInt64();
+
+            topMessageSize = is.readInt32();
+            if (topMessageSize < 4) {
+
+                parseError = true;
+                return nullptr;
+            }
+
+            dataMessageId = embeddedMessageId;
+        }
+        else
+        {
+            embeddedSalt = is.readInt64();
+
+            int64_t embeddedSessionId = is.readInt64();
+
+            if (embeddedSessionId != sessionInfo.id)
+            {
+                parseError = true;
+                return nullptr;
+            }
+
+            embeddedMessageId = is.readInt64();
+
+            embeddedSeqNo = is.readInt32();
+
+            topMessageSize = is.readInt32();
+
+        }
+
+        auto topMessageData = is.readDataMaxLength(INT32_MAX);
+
+        auto topMessage = parseMessage(topMessageData);
+
+        if (topMessage == nullptr)
+        {
+            parseError = true;
+            return nullptr;
+        }
+
+#warning check message id
+
+
+    }
+    catch (const InputStreamException& e) {
+        LOGE("[Proto parseIncomingMessage] -> parse error %s", e.message.c_str());
+        return nullptr;
+    }
+}
+
+std::shared_ptr<ProtoInternalMessage> Proto::parseMessage(const std::shared_ptr<StreamSlice>& data) {
+    auto unwrappedData = InternalParser::unwrapMessage(data);
+
+    auto internalMessage = InternalParser::parseMessage(unwrappedData);
+
+    return internalMessage;
 }

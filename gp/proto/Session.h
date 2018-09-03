@@ -23,8 +23,10 @@ namespace gpproto {
 
         Session(const Session&) = delete;
 
+        Session(Session &&) = default;
+
         ~Session() = default;
-        int64_t id;
+        const int64_t id;
 
         int64_t generateClientMessageId(bool& monotonityViolated);
         int32_t generateClientSeqNo(bool messageIdIsMeaningful);
