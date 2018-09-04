@@ -65,10 +65,10 @@ BOOST_AUTO_TEST_CASE(gzip_test) {
 
     auto unzippedData = Crypto::gzip_unzip(data);
 
-//    if (unzippedData)
-//    {
-//        auto str = std::string(reinterpret_cast<char *>(unzippedData->begin()), unzippedData->size);
-//        LOGV("UNZIPPED STRING is %s", str.c_str());
-//    }
+    if (unzippedData)
+    {
+        auto str = std::string(reinterpret_cast<char *>(unzippedData->begin()), unzippedData->size);
+        LOGV("UNZIPPED STRING is %s", str.c_str());
+    }
 }
 

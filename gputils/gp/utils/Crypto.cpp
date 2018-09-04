@@ -13,6 +13,9 @@
 #include <openssl/sha.h>
 #include <openssl/rsa.h>
 #include <zlib.h>
+
+#include "gp/utils/OutputStream.h"
+
 using namespace gpproto;
 
 template <class FromT>
@@ -225,43 +228,38 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
 
     unsigned char output[kMemoryChunkSize];
     uInt gotBack;
-    StreamSlice* result;
-    size_t currentResultSize = 0;
+    std::unique_ptr<OutputStream> os = std::make_unique<OutputStream>();
     z_stream stream;
 
     if (length == 0)
         return nullptr;
 
     bzero(&stream, sizeof(z_stream));
-    stream.avail_in = (uInt)length;
+    stream.avail_in = static_cast<uInt>(length);
     stream.next_in = data->bytes;
 
     retCode = inflateInit2(&stream, windowBits);
     if (retCode != Z_OK)
     {
-        LOGE("\"%s: inflateInit2() failed with error %i\", __PRETTY_FUNCTION__, retCode");
+        LOGE("Inflate failed with error %d", retCode);
         return nullptr;
     }
 
-    result = new StreamSlice(length * 4);
-
     do {
-        stream.avail_in = kMemoryChunkSize;
+        stream.avail_out = kMemoryChunkSize;
         stream.next_out = output;
         retCode = inflate(&stream, Z_NO_FLUSH);
         if ((retCode != Z_OK) && (retCode != Z_STREAM_END))
         {
             LOGE("Inflate failed with error %d", retCode);
             inflateEnd(&stream);
-            result->bytes = nullptr;
-            delete result;
             return nullptr;
         }
         gotBack = kMemoryChunkSize - stream.avail_out;
         if (gotBack > 0) {
-            memcpy(result->begin(), output, gotBack);
-            currentResultSize += gotBack;
-            LOGV("CurrentResultSize %lu", currentResultSize);
+            StreamSlice s(gotBack);
+            memcpy(s.begin(), output, gotBack);
+            os->writeData(s);
         }
 
     } while (retCode == Z_OK);
@@ -271,8 +269,6 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
     if (retCode != Z_STREAM_END)
         return nullptr;
 
-    result->size = currentResultSize;
-
-    return std::shared_ptr<StreamSlice>(result);
+    return os->currentBytes();
 }
 
