@@ -84,7 +84,7 @@ namespace gpproto {
         bool isPaused();
 
         std::shared_ptr<StreamSlice> decryptIncomingTransportData(const std::shared_ptr<StreamSlice>& data);
-        std::shared_ptr<IncomingMessage> parseIncomingMessage(std::shared_ptr<StreamSlice> data, int64_t& dataMessageId, bool& parseError);
+        std::vector<std::shared_ptr<IncomingMessage>> parseIncomingMessage(std::shared_ptr<StreamSlice> data, int64_t& dataMessageId, bool& parseError);
 
         std::shared_ptr<ProtoInternalMessage> parseMessage(const std::shared_ptr<StreamSlice>& data);
     };

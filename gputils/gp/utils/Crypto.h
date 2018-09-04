@@ -29,6 +29,10 @@ namespace gpproto::Crypto {
     std::shared_ptr<StreamSlice> aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, const StreamSlice &plain);
 
     std::shared_ptr<StreamSlice> aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, const StreamSlice &cypher);
+
+    std::shared_ptr<StreamSlice> gzip_zip(const std::shared_ptr<StreamSlice>& data);
+    std::shared_ptr<StreamSlice> gzip_unzip(const std::shared_ptr<StreamSlice>& data);
+
 }
 
 

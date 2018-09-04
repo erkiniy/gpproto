@@ -57,3 +57,18 @@ BOOST_AUTO_TEST_CASE(aes_test) {
      */
 };
 
+BOOST_AUTO_TEST_CASE(gzip_test) {
+    std::string hex = "1f8b08000000000000007d503b0e824010bdca4b2c68d403783a81024dd4c4560baf80c8465970b9c29b1bf9062db4b1d8cfccbcdf2e2f4c6c2d676fa56d58f3c9b4028f0cea3dac988351881b5bd6d016d84cc0c80784488cb6666d5bad8315c838a8d7bba65607abc4f0b2d1193357480eb22a5b8267f9b5ee08d96d19a0bb5c4619e7b6935498e33d6ee036bc2b886b2555010bd8de0a1f8fe2abc3ab4f247c1236e2934def700ac4f6ec953f4bdc77d40eff132b40fd05556e517f94ac745b0f36fdd5643cbadda0e8618999c69fcf7c0177413d6f6d010000";
+    auto data = hexToData(hex);
+
+    LOGV("Hex length %lu", data->size);
+
+    auto unzippedData = Crypto::gzip_unzip(data);
+
+//    if (unzippedData)
+//    {
+//        auto str = std::string(reinterpret_cast<char *>(unzippedData->begin()), unzippedData->size);
+//        LOGV("UNZIPPED STRING is %s", str.c_str());
+//    }
+}
+

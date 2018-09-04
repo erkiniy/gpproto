@@ -10,7 +10,8 @@
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/InputStream.h"
 #include "gp/proto/MessageEncryptionKey.h"
-#include "InternalParser.h"
+#include "gp/proto/InternalParser.h"
+#include "gp/network/IncomingMessage.h"
 
 using namespace gpproto;
 
@@ -231,9 +232,9 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
     return decryptedData;
 }
 
-std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<StreamSlice> data,
+std::vector<std::shared_ptr<IncomingMessage>> Proto::parseIncomingMessage(std::shared_ptr<StreamSlice> data,
                                                              int64_t &dataMessageId, bool &parseError) {
-    InputStream is = InputStream(data);
+    InputStream is = InputStream(std::move(data));
     try {
 
         int64_t embeddedMessageId = 0;
@@ -247,7 +248,7 @@ std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<Str
             if (authKeyId != 0)
             {
                 parseError = true;
-                return nullptr;
+                return {};
             }
             embeddedMessageId = is.readInt64();
 
@@ -255,7 +256,7 @@ std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<Str
             if (topMessageSize < 4) {
 
                 parseError = true;
-                return nullptr;
+                return {};
             }
 
             dataMessageId = embeddedMessageId;
@@ -269,7 +270,7 @@ std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<Str
             if (embeddedSessionId != sessionInfo.id)
             {
                 parseError = true;
-                return nullptr;
+                return {};
             }
 
             embeddedMessageId = is.readInt64();
@@ -280,23 +281,43 @@ std::shared_ptr<IncomingMessage> Proto::parseIncomingMessage(std::shared_ptr<Str
 
         }
 
-        auto topMessageData = is.readDataMaxLength(INT32_MAX);
-
+        auto topMessageData = is.readRemainingData();
         auto topMessage = parseMessage(topMessageData);
 
         if (topMessage == nullptr)
         {
             parseError = true;
-            return nullptr;
+            return {};
         }
 
 #warning check message id
 
+        std::vector<std::shared_ptr<IncomingMessage>> messages;
+        auto timestamp = (int32_t)(embeddedMessageId / 4294967296);
 
+        if (auto containerMessage = std::dynamic_pointer_cast<Container>(topMessage))
+        {
+            for (const auto& subMessage : containerMessage->messages)
+            {
+                if (auto subObject = parseMessage(subMessage->body))
+                {
+                    auto subMessageId = subMessage->messageId;
+                    auto subMessageSeqNo = subMessage->seqNo;
+                    auto subMessageLength = subMessage->body->size;
+
+                    messages.push_back(std::make_shared<IncomingMessage>(subMessageId, subMessageSeqNo, timestamp, subMessageLength, subObject));
+                }
+            }
+        }
+        else {
+            messages.push_back(std::make_shared<IncomingMessage>(embeddedMessageId, embeddedSeqNo, timestamp, topMessageSize, topMessage));
+        }
+
+        return messages;
     }
     catch (const InputStreamException& e) {
         LOGE("[Proto parseIncomingMessage] -> parse error %s", e.message.c_str());
-        return nullptr;
+        return {};
     }
 }
 

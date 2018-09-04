@@ -33,6 +33,7 @@ namespace gpproto {
         int32_t readInt32() const;
         uint32_t readUInt32() const;
         int64_t readInt64() const;
+        uint64_t readUInt64() const;
 
         template <class T> T readNumber() const {
             T result;
@@ -43,8 +44,9 @@ namespace gpproto {
         double readDouble() const;
         bool readBool() const;
 
+        std::shared_ptr<StreamSlice> readRemainingData() const;
         std::shared_ptr<StreamSlice> readData(size_t length) const;
-        std::shared_ptr<StreamSlice> readDataMaxLength(size_t length) const noexcept;
+        std::shared_ptr<StreamSlice> readDataMaxLength(size_t length) const;
         std::shared_ptr<StreamSlice> readBytes() const;
         std::string readString() const;
         std::string readStringRaw() const;

@@ -50,6 +50,13 @@ int64_t InputStream::readInt64() const {
     return result;
 }
 
+uint64_t InputStream::readUInt64() const {
+    checkSize(8, __PRETTY_FUNCTION__);
+    uint64_t result;
+    memcpy(&result, readSlice(8, true)->toSystemEndian(), 8);
+    return result;
+}
+
 bool InputStream::readBool() const {
     checkSize(4, __PRETTY_FUNCTION__);
     uint32_t marker = readUInt32();
@@ -65,13 +72,17 @@ double InputStream::readDouble() const {
     return result;
 }
 
+std::shared_ptr<StreamSlice> InputStream::readRemainingData() const {
+    return readDataMaxLength(INT32_MAX);
+}
+
 std::shared_ptr<StreamSlice> InputStream::readData(size_t length) const {
     checkSize(length, __PRETTY_FUNCTION__);
     return readSlice(length, false);
 }
 
-std::shared_ptr<StreamSlice> InputStream::readDataMaxLength(size_t length) const noexcept {
-    if (remainingSize() > length)
+std::shared_ptr<StreamSlice> InputStream::readDataMaxLength(size_t length) const {
+    if (length <= remainingSize())
         return readSlice(length, false);
 
     return readSlice(remainingSize(), false);
@@ -87,7 +98,7 @@ std::string InputStream::readStringRaw() const {
     if (length < 0)
         throw InputStreamException("Negative length marker for readBytes()", 400);
 
-    size_t size = length;
+    size_t size = (size_t)length;
 
     checkSize(size, __PRETTY_FUNCTION__);
 
