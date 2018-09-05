@@ -11,11 +11,14 @@
 namespace gpproto
 {
     class Transport;
+    class MessageTransaction;
+    class TransportTransaction;
+
     class TransportDelegate {
     public:
         virtual void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) = 0;
         virtual void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) = 0;
-        virtual void transportReadyForTransaction(const Transport& transport) = 0;
+        virtual void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<TransportTransaction>)> transactionsReady) = 0;
         virtual void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) = 0;
     };
 }

@@ -14,7 +14,7 @@ namespace gpproto
 
     class TimeSyncMessageServiceDelegate {
     public:
-        virtual void timeSyncServiceCompleted(const TimeSyncMessageService& service, double timeDifference, std::vector<DatacenterSaltsetInfo> saltlist) = 0;
+        virtual void timeSyncServiceCompleted(const TimeSyncMessageService& service, double timeDifference, std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist) = 0;
     };
 
     class TimeSyncMessageService : public MessageService {

@@ -16,7 +16,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-namespace gpproto {
+namespace gpproto
+{
     class TransportScheme;
     class IncomingMessage;
     class ProtoInternalMessage;
@@ -61,11 +62,11 @@ namespace gpproto {
 
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
-        void transportReadyForTransaction(const Transport& transport) override;
+        void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<TransportTransaction>)> transactionsReady) override;
 
         void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) override;
 
-        void timeSyncServiceCompleted(const TimeSyncMessageService& service, double timeDifference, std::vector<DatacenterSaltsetInfo> saltlist) override;
+        void timeSyncServiceCompleted(const TimeSyncMessageService& service, double timeDifference, std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist) override;
 
         void requestTransportTransactions();
 

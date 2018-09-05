@@ -15,6 +15,7 @@
 #include "gp/proto/TimeFixContext.h"
 #include "gp/proto/MessageService.h"
 #include "gp/proto/TimeSyncMessageService.h"
+#include "gp/proto/TransportTransaction.h"
 
 using namespace gpproto;
 
@@ -589,21 +590,39 @@ void Proto::transportNetworkConnectionStateChanged(const Transport &transport, b
     });
 }
 
-void Proto::transportReadyForTransaction(const Transport &transport) {
-
-}
-
 void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &saltlist,
                            bool replace) {
     context->setGlobalTimeDifference(timeDifference);
 
     if (!saltlist.empty())
     {
+        auto updatedAuthInfo = replace ? authInfo->replaceSaltset(saltlist) : authInfo->mergeSaltset(saltlist, context->getGlobalTime());
+        authInfo = updatedAuthInfo;
 
+        if (canAskTransactions() || canAskServiceTransactions())
+            requestTransportTransactions();
     }
 }
 
 void Proto::timeSyncServiceCompleted(const TimeSyncMessageService &service, double timeDifference,
-                                     std::vector<DatacenterSaltsetInfo> saltlist) {
+                                     std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist) {
+    Proto::queue()->async([self = shared_from_this(), &service, timeDifference, saltlist = std::move(saltlist)] {
+        auto it = self->messageServices.find(service.internalId);
+
+        if (it == self->messageServices.end())
+            return;
+
+        self->completeTimeSync();
+
+        self->messageServices.erase(it);
+
+        self->timeSyncInfoChanged(timeDifference, saltlist, false);
+    });
+}
+
+void Proto::transportReadyForTransaction(const Transport &transport,
+                                         std::shared_ptr<MessageTransaction> transportSpecificTransaction,
+                                         std::function<void(
+                                                 std::vector<TransportTransaction>)> transactionsReady) {
 
 }

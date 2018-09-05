@@ -201,7 +201,7 @@ set(GPCORE_SOURCE
 
         gp/network/IncomingMessage.h
         gp/network/OutgoingMessage.h
-        gp/network/MessageTransaction.h gp/network/TcpTransportContext.cpp gp/network/TcpTransportContext.h gp/network/TcpTransportContextDelegate.h gp/network/TransportScheme.cpp gp/network/TransportScheme.h gp/proto/ContextChangeDelegate.h gp/proto/MessageEncryptionKey.cpp gp/proto/MessageEncryptionKey.h gp/proto/ProtoInternalMessage.h gp/proto/InternalParser.h gp/proto/TimeFixContext.h gp/proto/MessageService.h gp/proto/MessageTransaction.h gp/proto/RequestMessageService.cpp gp/proto/RequestMessageService.h gp/proto/TimeSyncMessageService.cpp gp/proto/TimeSyncMessageService.h)
+        gp/network/MessageTransaction.h gp/network/TcpTransportContext.cpp gp/network/TcpTransportContext.h gp/network/TcpTransportContextDelegate.h gp/network/TransportScheme.cpp gp/network/TransportScheme.h gp/proto/ContextChangeDelegate.h gp/proto/MessageEncryptionKey.cpp gp/proto/MessageEncryptionKey.h gp/proto/ProtoInternalMessage.h gp/proto/InternalParser.h gp/proto/TimeFixContext.h gp/proto/MessageService.h gp/proto/MessageTransaction.h gp/proto/RequestMessageService.cpp gp/proto/RequestMessageService.h gp/proto/TimeSyncMessageService.cpp gp/proto/TimeSyncMessageService.h gp/proto/TransportTransaction.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
