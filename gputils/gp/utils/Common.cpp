@@ -2,7 +2,8 @@
 // Created by Jaloliddin Erkiniy on 8/16/18.
 //
 
-#include "Common.h"
+#include "gp/utils/Common.h"
+#include <chrono>
 
 unsigned char hexToChar(const char& c) {
     if (c >= '0' && c <= '9')
@@ -30,5 +31,10 @@ std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex) {
         *dataPtr++ = hexToChar(*it++) << 4 | hexToChar(*it);
 
     return s;
+}
+
+double getAbsoluteSystemTime() {
+    auto timestamp = std::chrono::seconds(std::time(nullptr)).count();
+    return static_cast<double>(timestamp);
 }
 

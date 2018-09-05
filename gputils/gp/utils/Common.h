@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 
-#include "StreamSlice.h"
+#include "gp/utils/StreamSlice.h"
 
 using int8 = std::int8_t;
 using int16 = std::int16_t;
@@ -56,5 +56,6 @@ using UInt128 = UInt<128>;
 using UInt256 = UInt<256>;
 
 std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex);
+double getAbsoluteSystemTime();
 
 #endif //GPPROTO_COMMON_H
