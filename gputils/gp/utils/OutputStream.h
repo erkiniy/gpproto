@@ -5,9 +5,9 @@
 #ifndef GPPROTO_INPUTSTREAM_H
 #define GPPROTO_INPUTSTREAM_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
-#include "StreamSlice.h"
+#include "gp/utils/StreamSlice.h"
 
 namespace gpproto {
 
@@ -47,6 +47,7 @@ namespace gpproto {
         void writeString(const std::string& string);
 
         std::shared_ptr<StreamSlice> currentBytes() const;
+        size_t getCurrentSize() const;
 
     private:
         size_t currentSize;

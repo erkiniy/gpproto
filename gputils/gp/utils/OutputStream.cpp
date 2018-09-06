@@ -119,6 +119,10 @@ std::shared_ptr<StreamSlice> OutputStream::currentBytes() const {
     return std::make_shared<StreamSlice>(bytes, currentSize);
 }
 
+size_t OutputStream::getCurrentSize() const {
+    return currentSize;
+}
+
 size_t OutputStream::remainingSize() const {
     return kChunkSize * numberOfChunks - currentSize;
 }

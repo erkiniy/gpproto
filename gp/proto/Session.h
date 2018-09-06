@@ -42,6 +42,8 @@ namespace gpproto {
         void addContainerMessageIdMapping(int64_t containerMessageId, std::vector<int64_t> childMessageIds);
         std::vector<int64_t> messageIdsInContainer(int64_t containerMessageId) const;
 
+        int64_t actualClientMessageId() const;
+
     private:
         std::shared_ptr<Context> context;
         int32_t seqNo;

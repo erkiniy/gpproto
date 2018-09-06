@@ -5,20 +5,19 @@
 #ifndef GPPROTO_AUTHKEYINFO_H
 #define GPPROTO_AUTHKEYINFO_H
 
-#include "gp/utils/StreamSlice.h"
-#include "DatacenterSaltsetInfo.h"
 #include <vector>
 
 namespace gpproto
 {
+    class StreamSlice;
     class DatacenterSaltsetInfo;
     class AuthKeyInfo {
     public:
         AuthKeyInfo() = delete;
-        AuthKeyInfo(std::shared_ptr<StreamSlice> key, int64_t id, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>>& saltSet) :
-                authKey(key),
+        AuthKeyInfo(std::shared_ptr<StreamSlice> key, int64_t id, std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltSet) :
+                authKey(std::move(key)),
                 authKeyId(id),
-                saltSet(saltSet)
+                saltSet(std::move(saltSet))
         {};
 
         ~AuthKeyInfo() = default;
@@ -29,10 +28,12 @@ namespace gpproto
 
         const std::shared_ptr<StreamSlice> authKey;
         const int64_t authKeyId;
-        const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltSet;
+        mutable std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltSet;
 
         std::shared_ptr<AuthKeyInfo> mergeSaltset(const std::vector<std::shared_ptr<DatacenterSaltsetInfo>>& updatedSaltset, double timestamp);
         std::shared_ptr<AuthKeyInfo> replaceSaltset(const std::vector<std::shared_ptr<DatacenterSaltsetInfo>>& updatedSaltset);
+
+        int64_t authSaltForClientMessageId(int64_t messageId) const;
     };
 }
 

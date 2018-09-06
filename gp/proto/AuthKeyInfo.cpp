@@ -4,6 +4,8 @@
 
 #include "gp/proto/AuthKeyInfo.h"
 #include "gp/proto/DatacenterSaltsetInfo.h"
+#include "gp/utils/Logging.h"
+#include "gp/utils/StreamSlice.h"
 
 using namespace gpproto;
 
@@ -43,4 +45,28 @@ std::shared_ptr<AuthKeyInfo> AuthKeyInfo::mergeSaltset(const std::vector<std::sh
 
 std::shared_ptr<AuthKeyInfo> AuthKeyInfo::replaceSaltset(const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &updatedSaltset) {
     return std::make_shared<AuthKeyInfo>(this->authKey, this->authKeyId, updatedSaltset);
+}
+
+int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
+    int index = 0;
+    int64_t bestSalt = 0;
+    std::vector<int> saltsToDelete;
+
+    for (const auto &salt : saltSet)
+    {
+        if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId) {
+            bestSalt = salt->salt;
+            break;
+        }
+        saltsToDelete.push_back(index);
+        index++;
+    }
+
+    for (int i = (int)saltsToDelete.size() - 1; i >= 0; i--) {
+        saltSet.erase(saltSet.begin() + i);
+    }
+
+    LOGV("[AuthKeyInfo authSaltForClientMessageId] -> saltSet count %lu", saltSet.size());
+
+    return bestSalt;
 }

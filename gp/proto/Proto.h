@@ -20,9 +20,11 @@ namespace gpproto
 {
     class TransportScheme;
     class IncomingMessage;
+    class PreparedMessage;
     class ProtoInternalMessage;
     class InputStream;
     class MessageService;
+    class OutputStream;
     struct TimeFixContext;
 
     typedef enum : uint32_t {
@@ -46,7 +48,7 @@ namespace gpproto
         explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
                 : useUnauthorizedMode(useUnauthorizedMode),
                   datacenterId(datacenterId),
-                  context(std::move(context)), sessionInfo(std::make_unique<Session>(context)) {};
+                  context(std::move(context)), sessionInfo(std::make_shared<Session>(context)) {};
 
         //~Proto() = default;
 
@@ -76,7 +78,7 @@ namespace gpproto
     private:
         std::shared_ptr<Context> context;
         std::shared_ptr<AuthKeyInfo> authInfo;
-        std::unique_ptr<Session> sessionInfo;
+        std::shared_ptr<Session> sessionInfo;
 
         uint32_t protoState = 0;
 
@@ -113,10 +115,15 @@ namespace gpproto
         bool canAskServiceTransactions() const;
         bool timeFixAndSaltMissing() const;
 
-        std::shared_ptr<StreamSlice> decryptIncomingTransportData(const std::shared_ptr<StreamSlice>& data);
+        std::shared_ptr<StreamSlice> decryptIncomingTransportData(const std::shared_ptr<StreamSlice>& data) const;
         std::vector<std::shared_ptr<IncomingMessage>> parseIncomingMessages(std::shared_ptr<StreamSlice> data,
                                                                             int64_t &dataMessageId, bool &parseError);
         std::shared_ptr<ProtoInternalMessage> parseMessage(const std::shared_ptr<StreamSlice>& data);
+
+        std::shared_ptr<StreamSlice> dataForEncryptedMessage(const std::shared_ptr<PreparedMessage>& message, const std::shared_ptr<Session>& session) const;
+        std::shared_ptr<StreamSlice> dataForEncryptedContainer(const std::vector<std::shared_ptr<PreparedMessage>>& messages, const std::shared_ptr<Session>& session) const;
+        std::shared_ptr<StreamSlice> paddedData(const std::shared_ptr<StreamSlice>& data);
+        void paddedData(OutputStream& os) const;
 
         void processIncomingMessage(const std::shared_ptr<IncomingMessage>& message);
 
@@ -127,6 +134,7 @@ namespace gpproto
         void resetSessionInfo();
 
         void timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>>& saltlist, bool replace);
+
     };
 }
 

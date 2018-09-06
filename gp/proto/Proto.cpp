@@ -2,20 +2,28 @@
 // Created by Jaloliddin Erkiniy on 8/10/18.
 //
 
-#include "Proto.h"
+#include "gp/proto/Proto.h"
+
 #include "gp/utils/Logging.h"
-#include "gp/network/TcpTransport.h"
-#include "gp/network/TransportScheme.h"
 #include "gp/utils/Crypto.h"
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/InputStream.h"
+#include "gp/network/TcpTransport.h"
+#include "gp/network/TransportScheme.h"
+#include "gp/network/IncomingMessage.h"
+#include "gp/network/OutgoingMessage.h"
+
 #include "gp/proto/MessageEncryptionKey.h"
 #include "gp/proto/InternalParser.h"
-#include "gp/network/IncomingMessage.h"
 #include "gp/proto/TimeFixContext.h"
 #include "gp/proto/MessageService.h"
 #include "gp/proto/TimeSyncMessageService.h"
 #include "gp/proto/TransportTransaction.h"
+#include "gp/proto/PreparedMessage.h"
+#include "gp/proto/MessageTransaction.h"
+#include "gp/proto/DatacenterSaltsetInfo.h"
+
+#include <unordered_map>
 
 using namespace gpproto;
 
@@ -209,7 +217,7 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
     });
 }
 
-std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shared_ptr<StreamSlice> &data) {
+std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shared_ptr<StreamSlice> &data) const {
 
     if (data->size < 24 + 36) {
         LOGE("[Proto decryptIncomingTransportData] -> received less data than 24 + 36 bytes");
@@ -625,4 +633,250 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                                          std::function<void(
                                                  std::vector<TransportTransaction>)> transactionsReady) {
 
+    Proto::queue()->async([self = shared_from_this(), &transport, transportSpecificTransaction, transactionsReady] {
+        if (self->transport == nullptr || !self->transport->isEqual(transport)) {
+            transactionsReady({});
+            return;
+        }
+
+        if (self->canAskTransactions())
+        {
+            std::vector<std::shared_ptr<MessageTransaction>> messageTransactions;
+            std::vector<std::shared_ptr<TransportTransaction>> transportTransactions;
+
+            if (auto& transaction = transportSpecificTransaction) {
+                if (!self->useUnauthorizedMode)
+                    messageTransactions.push_back(transaction);
+            }
+
+            std::vector<std::shared_ptr<PreparedMessage>> preparedMessages;
+
+            std::vector<std::shared_ptr<StreamSlice>> transactionPayloadList;
+
+            bool hasHighPriorityMessages = false;
+            bool transactionExpectsDataInResponse = false;
+
+            for (auto& service : self->messageServices)
+            {
+                if (auto messageTransaction = service.second->protoMessageTransaction(self))
+                    messageTransactions.push_back(messageTransaction);
+            }
+
+            if (self->sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount) || self->forceAcks)
+            {
+                self->forceAcks = false;
+
+                const auto scheduledMessageConfirmations = self->sessionInfo->getScheduledConfirmationMessageIds();
+
+                LOGV("[Proto transportReadyForTransaction] -> sending message acks");
+
+                auto msgsAckStream = std::make_shared<OutputStream>();
+                msgsAckStream->writeUInt32(0x62d6b459);
+                msgsAckStream->writeUInt32(0x1cb5c415); //vector
+                msgsAckStream->writeInt32(static_cast<int32_t>(scheduledMessageConfirmations.size()));
+
+                for (auto& id : scheduledMessageConfirmations)
+                    msgsAckStream->writeInt64(id);
+
+                auto outgoingMessage = std::make_shared<OutgoingMessage>(0, 0, false, msgsAckStream->currentBytes());
+                auto messageTransaction = std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{ outgoingMessage }, [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {}, []{}, [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+
+                });
+
+                messageTransactions.push_back(std::move(messageTransaction));
+
+                std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage;
+
+                bool saltSetEmpty = false;
+                bool monotonicityViolated = false;
+
+                int64_t messageSalt = 0;
+                if (!self->useUnauthorizedMode) {
+                    messageSalt = self->authInfo->authSaltForClientMessageId(self->sessionInfo->actualClientMessageId());
+                    saltSetEmpty = messageSalt == 0;
+                }
+
+                for (const auto & transaction : messageTransactions)
+                {
+                    for (const auto & outgoingMessage : transaction->payload)
+                    {
+                        if (outgoingMessage->requiresConfirmation)
+                            transactionExpectsDataInResponse = true;
+
+                        int64_t messageId = 0;
+                        int32_t seqNo = 0;
+
+                        if (outgoingMessage->messsageId == 0)
+                        {
+                            seqNo = self->sessionInfo->generateClientSeqNo(outgoingMessage->requiresConfirmation);
+                            messageId = self->sessionInfo->generateClientMessageId(monotonicityViolated);
+                        } else {
+                            seqNo = outgoingMessage->seqNo;
+                            messageId = outgoingMessage->messsageId;
+                        }
+
+                        auto salt = self->authInfo->authSaltForClientMessageId(messageId);
+
+                        if (!monotonicityViolated || self->useUnauthorizedMode)
+                        {
+                            auto preparedMessage = std::make_shared<PreparedMessage>(outgoingMessage->internalId, messageId, seqNo, salt, outgoingMessage->data, outgoingMessage->requiresConfirmation, false);
+                            preparedMessages.push_back(preparedMessage);
+                        }
+                    }
+                }
+
+                for (const auto & transaction : messageTransactions)
+                    transaction->prepared(messageInternalIdToPreparedMessage);
+
+                if (monotonicityViolated || saltSetEmpty)
+                {
+                    for (const auto & transaction : messageTransactions)
+                    {
+                        messageInternalIdToPreparedMessage.clear();
+                        transaction->completed(messageInternalIdToPreparedMessage);
+                    }
+                    transactionsReady({});
+
+                    if (monotonicityViolated)
+                    {
+                        LOGE("[Proto transportReadyForTransaction] -> client message id monotonicity violated");
+                        self->resetSessionInfo();
+                        self->requestTransportTransactions();
+                    }
+                    else {
+                        LOGE("[Proto transportReadyForTransaction] -> initiating time sync due to salt set is empty");
+                        self->initiateTimeSync();
+                    }
+                    return;
+                }
+
+                if (!preparedMessages.empty())
+                {
+                    if (!self->useUnauthorizedMode)
+                    {
+                        if (preparedMessages.size() == 1)
+                        {
+                            auto preparedMessage = preparedMessages[0];
+                            auto messageData = self->dataForEncryptedMessage(preparedMessage, self->sessionInfo);
+
+                            transactionPayloadList.push_back(messageData);
+                        }
+                        else {
+
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+std::shared_ptr<StreamSlice> Proto::dataForEncryptedMessage(const std::shared_ptr<PreparedMessage> &message,
+                                                            const std::shared_ptr<Session> &session) const {
+    OutputStream decryptedOs;
+    decryptedOs.writeInt64(message->salt);
+    decryptedOs.writeInt64(session->id);
+    decryptedOs.writeInt64(message->messageId);
+    decryptedOs.writeInt32(message->seqNo);
+
+    //TODO: maybe compress with gzip in protocol layer
+    decryptedOs.writeInt32(static_cast<int32_t>(message->data->size));
+    decryptedOs.writeData(*message->data);
+
+    auto currentBytes = decryptedOs.currentBytes();
+    auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+
+    paddedData(decryptedOs);
+
+    auto paddedData = decryptedOs.currentBytes();
+
+    auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(authInfo->authKey, messageKey);
+
+    OutputStream encryptedOs;
+    encryptedOs.writeInt64(authInfo->authKeyId);
+    encryptedOs.writeData(*messageKey);
+
+    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+    encryptedOs.writeData(*encryptedData);
+
+    return encryptedOs.currentBytes();
+}
+
+std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<std::shared_ptr<PreparedMessage>> &messages, const std::shared_ptr<Session> &session) const {
+    static const uint32_t containerSignature = 0x73f1f8dc;
+
+    OutputStream containerOs;
+    containerOs.writeUInt32(containerSignature);
+    containerOs.writeInt32((int32_t)messages.size());
+
+    std::vector<int64_t> containerMessageIds;
+    containerMessageIds.reserve(messages.size());
+
+    int64_t salt = 0;
+    for (const auto & preparedMessage : messages)
+    {
+        salt = preparedMessage->salt;
+
+        containerOs.writeInt64(preparedMessage->messageId);
+        containerOs.writeInt32(preparedMessage->seqNo);
+        containerOs.writeInt32(static_cast<int32>(preparedMessage->data->size));
+        containerOs.writeData(*preparedMessage->data);
+
+        containerMessageIds.push_back(preparedMessage->messageId);
+    }
+
+    auto containerData = containerOs.currentBytes();
+    //TODO: maybe compress
+
+    OutputStream decryptedOs;
+    bool monotonityViolated = false;
+
+    auto containerMessageId = session->generateClientMessageId(monotonityViolated);
+
+    if (!containerMessageIds.empty())
+        session->addContainerMessageIdMapping(containerMessageId, containerMessageIds);
+
+    auto containerSeqNo = session->generateClientSeqNo(false);
+
+    decryptedOs.writeInt64(salt);
+    decryptedOs.writeInt64(session->id);
+    decryptedOs.writeInt64(containerMessageId);
+    decryptedOs.writeInt64(containerSeqNo);
+    decryptedOs.writeInt32(static_cast<int32_t>(containerData->size));
+
+    decryptedOs.writeData(*containerData);
+
+    auto currentBytes = decryptedOs.currentBytes();
+    auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+
+    paddedData(decryptedOs);
+
+    auto paddedData = decryptedOs.currentBytes();
+
+    auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(authInfo->authKey, messageKey);
+
+    OutputStream encryptedOs;
+    encryptedOs.writeInt64(authInfo->authKeyId);
+    encryptedOs.writeData(*messageKey);
+
+    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+    encryptedOs.writeData(*encryptedData);
+
+    return encryptedOs.currentBytes();
+}
+
+std::shared_ptr<StreamSlice> Proto::paddedData(const std::shared_ptr<StreamSlice> &data) {
+    return nullptr;
+}
+
+void Proto::paddedData(OutputStream &os) const {
+    unsigned char randomBuffer[16];
+    Random::secureBytes(randomBuffer, 16);
+
+    int index = 0;
+    while (os.getCurrentSize() % 16 != 0)
+    {
+        os.writeUInt8(static_cast<uint8_t>(randomBuffer[index]));
+        index++;
+    }
 }

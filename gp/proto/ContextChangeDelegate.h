@@ -8,7 +8,9 @@
 #include <cstdint>
 #include <memory>
 
-namespace gpproto {
+
+namespace gpproto
+{
     class Context;
     class TransportScheme;
     class DatacenterAddress;
