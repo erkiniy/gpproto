@@ -14,7 +14,8 @@ namespace gpproto
     class Transport {
     public:
         Transport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)
-                : context(std::move(context)),
+                : internalId(Transport::getNextInternalId()),
+                  context(std::move(context)),
                   datacenterId(datacenterId),
                   address(std::move(address)),
                   delegate(delegate)
@@ -36,12 +37,18 @@ namespace gpproto
             return std::addressof(*this) == std::addressof(obj);
         }
 
+        const int internalId;
         std::shared_ptr<Context> context;
         const int32_t datacenterId;
         std::shared_ptr<DatacenterAddress> address;
 
     protected:
         std::weak_ptr<TransportDelegate> delegate;
+    private:
+        static int getNextInternalId() {
+            static int internalId = 0;
+            return internalId++;
+        }
     };
 }
 

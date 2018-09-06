@@ -64,7 +64,7 @@ namespace gpproto
 
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
-        void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<TransportTransaction>)> transactionsReady) override;
+        void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) override;
 
         void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) override;
 
@@ -122,6 +122,7 @@ namespace gpproto
 
         std::shared_ptr<StreamSlice> dataForEncryptedMessage(const std::shared_ptr<PreparedMessage>& message, const std::shared_ptr<Session>& session) const;
         std::shared_ptr<StreamSlice> dataForEncryptedContainer(const std::vector<std::shared_ptr<PreparedMessage>>& messages, const std::shared_ptr<Session>& session) const;
+        std::shared_ptr<StreamSlice> dataForPlainMessage(const std::shared_ptr<PreparedMessage>& message) const;
         std::shared_ptr<StreamSlice> paddedData(const std::shared_ptr<StreamSlice>& data);
         void paddedData(OutputStream& os) const;
 

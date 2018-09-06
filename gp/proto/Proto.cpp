@@ -631,7 +631,7 @@ void Proto::timeSyncServiceCompleted(const TimeSyncMessageService &service, doub
 void Proto::transportReadyForTransaction(const Transport &transport,
                                          std::shared_ptr<MessageTransaction> transportSpecificTransaction,
                                          std::function<void(
-                                                 std::vector<TransportTransaction>)> transactionsReady) {
+                                                 std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) {
 
     Proto::queue()->async([self = shared_from_this(), &transport, transportSpecificTransaction, transactionsReady] {
         if (self->transport == nullptr || !self->transport->isEqual(transport)) {
@@ -662,8 +662,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                     messageTransactions.push_back(messageTransaction);
             }
 
-            if (self->sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount) || self->forceAcks)
-            {
+            if (self->sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount) || self->forceAcks) {
                 self->forceAcks = false;
 
                 const auto scheduledMessageConfirmations = self->sessionInfo->getScheduledConfirmationMessageIds();
@@ -675,98 +674,213 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                 msgsAckStream->writeUInt32(0x1cb5c415); //vector
                 msgsAckStream->writeInt32(static_cast<int32_t>(scheduledMessageConfirmations.size()));
 
-                for (auto& id : scheduledMessageConfirmations)
+                for (auto &id : scheduledMessageConfirmations)
                     msgsAckStream->writeInt64(id);
 
                 auto outgoingMessage = std::make_shared<OutgoingMessage>(0, 0, false, msgsAckStream->currentBytes());
-                auto messageTransaction = std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{ outgoingMessage }, [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {}, []{}, [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                auto messageTransaction = std::make_shared<MessageTransaction>(
+                        std::initializer_list<std::shared_ptr<OutgoingMessage>>{outgoingMessage},
+                        [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {},
+                        [] {},
+                        [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
 
-                });
+                        });
 
                 messageTransactions.push_back(std::move(messageTransaction));
+            }
 
-                std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage;
+            std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage;
 
-                bool saltSetEmpty = false;
-                bool monotonicityViolated = false;
+            bool saltSetEmpty = false;
+            bool monotonicityViolated = false;
 
-                int64_t messageSalt = 0;
-                if (!self->useUnauthorizedMode) {
-                    messageSalt = self->authInfo->authSaltForClientMessageId(self->sessionInfo->actualClientMessageId());
-                    saltSetEmpty = messageSalt == 0;
-                }
+            int64_t messageSalt = 0;
+            if (!self->useUnauthorizedMode) {
+                messageSalt = self->authInfo->authSaltForClientMessageId(self->sessionInfo->actualClientMessageId());
+                saltSetEmpty = messageSalt == 0;
+            }
 
-                for (const auto & transaction : messageTransactions)
+            for (const auto & transaction : messageTransactions)
+            {
+                for (const auto & outgoingMessage : transaction->payload)
                 {
-                    for (const auto & outgoingMessage : transaction->payload)
+                    if (outgoingMessage->requiresConfirmation)
+                        transactionExpectsDataInResponse = true;
+
+                    int64_t messageId = 0;
+                    int32_t seqNo = 0;
+
+                    if (outgoingMessage->messsageId == 0)
                     {
-                        if (outgoingMessage->requiresConfirmation)
-                            transactionExpectsDataInResponse = true;
-
-                        int64_t messageId = 0;
-                        int32_t seqNo = 0;
-
-                        if (outgoingMessage->messsageId == 0)
-                        {
-                            seqNo = self->sessionInfo->generateClientSeqNo(outgoingMessage->requiresConfirmation);
-                            messageId = self->sessionInfo->generateClientMessageId(monotonicityViolated);
-                        } else {
-                            seqNo = outgoingMessage->seqNo;
-                            messageId = outgoingMessage->messsageId;
-                        }
-
-                        auto salt = self->authInfo->authSaltForClientMessageId(messageId);
-
-                        if (!monotonicityViolated || self->useUnauthorizedMode)
-                        {
-                            auto preparedMessage = std::make_shared<PreparedMessage>(outgoingMessage->internalId, messageId, seqNo, salt, outgoingMessage->data, outgoingMessage->requiresConfirmation, false);
-                            preparedMessages.push_back(preparedMessage);
-                        }
+                        seqNo = self->sessionInfo->generateClientSeqNo(outgoingMessage->requiresConfirmation);
+                        messageId = self->sessionInfo->generateClientMessageId(monotonicityViolated);
+                    } else {
+                        seqNo = outgoingMessage->seqNo;
+                        messageId = outgoingMessage->messsageId;
                     }
-                }
 
-                for (const auto & transaction : messageTransactions)
-                    transaction->prepared(messageInternalIdToPreparedMessage);
+                    auto salt = self->authInfo->authSaltForClientMessageId(messageId);
 
-                if (monotonicityViolated || saltSetEmpty)
-                {
-                    for (const auto & transaction : messageTransactions)
+                    if (!monotonicityViolated || self->useUnauthorizedMode)
                     {
-                        messageInternalIdToPreparedMessage.clear();
-                        transaction->completed(messageInternalIdToPreparedMessage);
-                    }
-                    transactionsReady({});
-
-                    if (monotonicityViolated)
-                    {
-                        LOGE("[Proto transportReadyForTransaction] -> client message id monotonicity violated");
-                        self->resetSessionInfo();
-                        self->requestTransportTransactions();
-                    }
-                    else {
-                        LOGE("[Proto transportReadyForTransaction] -> initiating time sync due to salt set is empty");
-                        self->initiateTimeSync();
-                    }
-                    return;
-                }
-
-                if (!preparedMessages.empty())
-                {
-                    if (!self->useUnauthorizedMode)
-                    {
-                        if (preparedMessages.size() == 1)
-                        {
-                            auto preparedMessage = preparedMessages[0];
-                            auto messageData = self->dataForEncryptedMessage(preparedMessage, self->sessionInfo);
-
-                            transactionPayloadList.push_back(messageData);
-                        }
-                        else {
-
-                        }
+                        auto preparedMessage = std::make_shared<PreparedMessage>(outgoingMessage->internalId, messageId, seqNo, salt, outgoingMessage->data, outgoingMessage->requiresConfirmation, false);
+                        preparedMessages.push_back(preparedMessage);
                     }
                 }
             }
+
+            for (const auto & transaction : messageTransactions)
+                transaction->prepared(messageInternalIdToPreparedMessage);
+
+            if (monotonicityViolated || saltSetEmpty)
+            {
+                for (const auto & transaction : messageTransactions)
+                {
+                    messageInternalIdToPreparedMessage.clear();
+                    transaction->completed(messageInternalIdToPreparedMessage);
+                }
+                transactionsReady({});
+
+                if (monotonicityViolated)
+                {
+                    LOGE("[Proto transportReadyForTransaction] -> client message id monotonicity violated");
+                    self->resetSessionInfo();
+                    self->requestTransportTransactions();
+                }
+                else {
+                    LOGE("[Proto transportReadyForTransaction] -> initiating time sync due to salt set is empty");
+                    self->initiateTimeSync();
+                }
+                return;
+            }
+
+            if (!preparedMessages.empty())
+            {
+                if (!self->useUnauthorizedMode)
+                {
+                    if (preparedMessages.size() == 1)
+                    {
+                        auto preparedMessage = preparedMessages[0];
+                        auto messageData = self->dataForEncryptedMessage(preparedMessage, self->sessionInfo);
+
+                        transactionPayloadList.push_back(messageData);
+                    }
+                    else {
+                        std::sort(preparedMessages.begin(), preparedMessages.end(), [](const std::shared_ptr<PreparedMessage> & $0, const std::shared_ptr<PreparedMessage> & $1) -> bool {
+                            return $0->messageId < $1->messageId && $0->hasHighPriority && !$1->hasHighPriority;
+                        });
+                        auto containerData = self->dataForEncryptedContainer(preparedMessages, self->sessionInfo);
+
+                        transactionPayloadList.push_back(containerData);
+                    }
+                } else {
+                    for (const auto & preparedMessage : preparedMessages)
+                    {
+                        auto messageData = self->dataForPlainMessage(preparedMessage);
+                        transactionPayloadList.push_back(messageData);
+                    }
+                }
+
+                if (!transactionPayloadList.empty())
+                {
+                    for (const auto & payload : transactionPayloadList)
+                    {
+                        auto transportTransaction = std::make_shared<TransportTransaction>(payload, [messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage)](bool success, int transactionId) mutable {
+                            Proto::queue()->async([messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage), success] {
+                                if (success)
+                                {
+                                    for (const auto & transaction : messageTransactions)
+                                        transaction->completed(std::move(messageInternalIdToPreparedMessage));
+                                }
+                                else
+                                {
+                                    for (const auto & transaction : messageTransactions)
+                                        transaction->failed();
+                                }
+                            });
+
+                            }, transactionExpectsDataInResponse);
+
+                        transportTransactions.push_back(transportTransaction);
+                    }
+
+                    transactionsReady(std::move(transportTransactions));
+                }
+                else {
+                    transactionsReady({});
+                    return;
+                }
+            }
+            else {
+                transactionsReady({});
+                return;
+            }
+        }
+        else if (self->canAskServiceTransactions() && self->timeFixAndSaltMissing() && self->timeFixContext == nullptr) {
+
+            LOGV("[Proto transportReadyForTransaction] -> initiating time sync");
+            bool monotonicityViolated = false;
+
+            auto timeFixMessageId = self->sessionInfo->generateClientMessageId(monotonicityViolated);
+            auto timeFixSeqNo = self->sessionInfo->generateClientSeqNo(false);
+
+            LOGV("[Proto transportReadyForTransaction] -> Time fix message_id %lld", timeFixMessageId);
+
+            int64_t randomId = Random::secureInt64();
+
+            LOGV("[Proto transportReadyForTransaction] -> Time fix random_id %lld", randomId);
+
+            OutputStream pingBuffer;
+            pingBuffer.writeUInt32(0x7abe77ec);
+            pingBuffer.writeInt64(randomId);
+
+            auto messageData = pingBuffer.currentBytes();
+
+            OutputStream decryptedOs;
+            decryptedOs.writeInt64(0); //salt = 0 to receive bad messageNotification
+            decryptedOs.writeInt64(self->sessionInfo->id);
+            decryptedOs.writeInt64(timeFixMessageId);
+            decryptedOs.writeInt32(timeFixSeqNo);
+
+            decryptedOs.writeInt32((int32_t)messageData->size);
+            decryptedOs.writeData(*messageData);
+
+            auto currentBytes = decryptedOs.currentBytes();
+            auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+
+            self->paddedData(decryptedOs);
+
+            auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(self->authInfo->authKey, messageKey);
+
+            OutputStream encryptedOs;
+            encryptedOs.writeInt64(self->authInfo->authKeyId);
+            encryptedOs.writeData(*messageKey);
+
+            auto paddedData = decryptedOs.currentBytes();
+
+            auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+            encryptedOs.writeData(*encryptedData);
+
+            auto transportTransaction = std::make_shared<TransportTransaction>(encryptedOs.currentBytes(), [self, timeFixMessageId, timeFixSeqNo](bool success, int transactionId) {
+                Proto::queue()->async([self, timeFixMessageId, timeFixSeqNo, success] {
+                    if (success)
+                    {
+                        LOGV("[Proto transportReadyForTransaction] -> Time fix transaction success with message_id %lld", timeFixMessageId);
+                        self->timeFixContext = std::make_unique<TimeFixContext>(timeFixMessageId, timeFixSeqNo, getAbsoluteSystemTime());
+                    }
+                    else {
+                        self->requestTransportTransactions();
+                    }
+                });
+
+            }, true);
+
+            transactionsReady({transportTransaction});
+            return;
+        }
+        else {
+            transactionsReady({});
+            return;
         }
     });
 }
@@ -774,6 +888,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
 std::shared_ptr<StreamSlice> Proto::dataForEncryptedMessage(const std::shared_ptr<PreparedMessage> &message,
                                                             const std::shared_ptr<Session> &session) const {
     OutputStream decryptedOs;
+
     decryptedOs.writeInt64(message->salt);
     decryptedOs.writeInt64(session->id);
     decryptedOs.writeInt64(message->messageId);
@@ -806,6 +921,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     static const uint32_t containerSignature = 0x73f1f8dc;
 
     OutputStream containerOs;
+
     containerOs.writeUInt32(containerSignature);
     containerOs.writeInt32((int32_t)messages.size());
 
@@ -863,6 +979,18 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     encryptedOs.writeData(*encryptedData);
 
     return encryptedOs.currentBytes();
+}
+
+std::shared_ptr<StreamSlice> Proto::dataForPlainMessage(
+        const std::shared_ptr<PreparedMessage> &message) const {
+    OutputStream os;
+
+    os.writeInt64(0);
+    os.writeInt64(message->messageId);
+    os.writeInt32(static_cast<int32_t>(message->data->size));
+    os.writeData(*message->data);
+
+    return os.currentBytes();
 }
 
 std::shared_ptr<StreamSlice> Proto::paddedData(const std::shared_ptr<StreamSlice> &data) {

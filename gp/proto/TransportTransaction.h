@@ -14,7 +14,7 @@ namespace gpproto
 
     class TransportTransaction {
     public:
-        TransportTransaction(const std::shared_ptr<StreamSlice>& data, const std::function<void(bool, int)>& completion, bool expectsDataInResponse)
+        TransportTransaction(std::shared_ptr<StreamSlice> data, std::function<void(bool, int)> completion, bool expectsDataInResponse)
                 : data(std::move(data)),
                   completion(std::move(completion)),
                   expectsDataInResponse(expectsDataInResponse) {};

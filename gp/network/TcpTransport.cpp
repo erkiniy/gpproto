@@ -2,7 +2,9 @@
 // Created by Jaloliddin Erkiniy on 8/28/18.
 //
 
-#include "TcpTransport.h"
+#include "gp/network/TcpTransport.h"
+#include "gp/proto/MessageTransaction.h"
+#include "gp/proto/TransportTransaction.h"
 
 using namespace gpproto;
 
@@ -73,6 +75,33 @@ void TcpTransport::setDelegateNeedsTransaction() {
 
 void TcpTransport::requestTransactionFromDelegate() {
     LOGV("[TcpTransport -> requestTransactionFromDelegate]");
+
+    if (transportContext == nullptr)
+        return;
+
+    auto self = shared_from_this();
+
+    if (auto strongDelegate = delegate.lock())
+    {
+        strongDelegate->transportReadyForTransaction(*self, nullptr, [weakSelf = weak_from_this()](std::vector<std::shared_ptr<TransportTransaction>> readyTransactions){
+            if (auto strongSelf = weakSelf.lock())
+            {
+                for (const auto & transaction : readyTransactions)
+                {
+                    if (transaction->data->size != 0)
+                    {
+                        if (strongSelf->transportContext != nullptr && strongSelf->transportContext->connection != nullptr) {
+                            strongSelf->transportContext->connection->sendDatas({transaction->data});
+                            transaction->completion(true, strongSelf->internalId);
+                        }
+                        else {
+                            transaction->completion(false, strongSelf->internalId);
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 
 //MARK: Delegate methods
@@ -128,16 +157,16 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
             return;
 
         if (auto strongDelegate = strongSelf->delegate.lock())
+        {
             strongDelegate->transportHasIncomingData(*strongSelf, slice, true, [weakSelf = weak_from_this()](bool success) {
-                if (auto _strongSelf = weakSelf.lock())
-                {
-                    if (success)
-                        _strongSelf->connectionIsValid();
-                    else
-                        _strongSelf->connectionIsInvalid();
-                }
-            });
-
+                 if (auto _strongSelf = weakSelf.lock()) {
+                     if (success)
+                         _strongSelf->connectionIsValid();
+                     else
+                         _strongSelf->connectionIsInvalid();
+                 }
+             });
+        }
     });
 }
 
@@ -176,7 +205,17 @@ void TcpTransport::startIfNeeded() {
 
 
 void TcpTransport::updateConnectionState() {
+    TcpTransport::queue()->async([self = shared_from_this()] {
 
+        if (self->transportContext == nullptr)
+            return;
+
+        if (auto strongDelegate = self->delegate.lock())
+        {
+            strongDelegate->transportNetworkAvailabilityChanged(*self, self->transportContext->networkIsAvailable);
+            strongDelegate->transportNetworkConnectionStateChanged(*self, self->transportContext->connected);
+        }
+    });
 }
 
 void TcpTransport::connectionIsValid() {
