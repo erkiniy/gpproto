@@ -161,21 +161,19 @@ add_subdirectory(gputils)
 add_subdirectory(test)
 
 set(GPCORE_SOURCE
+        gp/proto/Proto.h
+        gp/proto/Proto.cpp
+
         gp/proto/Context.h
         gp/proto/Context.cpp
 
         gp/proto/Core.cpp
         gp/proto/Core.h
 
-        gp/proto/gp_client.h
-        gp/proto/gp_client.cpp
-
         gp/proto/ClientSync.cpp
         gp/proto/ClientSync.h
 
         gp/network/ProtoError.h
-
-        gp/proto/gp_client_data.h
 
         gp/network/Transport.h
 
@@ -201,7 +199,45 @@ set(GPCORE_SOURCE
 
         gp/network/IncomingMessage.h
         gp/network/OutgoingMessage.h
-        gp/network/MessageTransaction.h gp/network/TcpTransportContext.cpp gp/network/TcpTransportContext.h gp/network/TcpTransportContextDelegate.h gp/network/TransportScheme.cpp gp/network/TransportScheme.h gp/proto/ContextChangeDelegate.h gp/proto/MessageEncryptionKey.cpp gp/proto/MessageEncryptionKey.h gp/proto/ProtoInternalMessage.h gp/proto/InternalParser.h gp/proto/TimeFixContext.h gp/proto/MessageService.h gp/proto/MessageTransaction.h gp/proto/RequestMessageService.cpp gp/proto/RequestMessageService.h gp/proto/TimeSyncMessageService.cpp gp/proto/TimeSyncMessageService.h gp/proto/TransportTransaction.h gp/proto/PreparedMessage.h gp/proto/DatacenterAuthAction.h gp/proto/DatacenterAuthAction.cpp gp/proto/DatacenterAuthMessageService.cpp gp/proto/DatacenterAuthMessageService.h)
+        gp/network/MessageTransaction.h
+
+        gp/network/TcpTransportContext.cpp
+        gp/network/TcpTransportContext.h
+
+        gp/network/TcpTransportContextDelegate.h
+
+        gp/network/TransportScheme.cpp
+        gp/network/TransportScheme.h
+
+        gp/proto/ContextChangeDelegate.h
+
+        gp/proto/MessageEncryptionKey.cpp
+        gp/proto/MessageEncryptionKey.h
+
+        gp/proto/ProtoInternalMessage.h
+
+        gp/proto/InternalParser.h
+
+        gp/proto/TimeFixContext.h
+
+        gp/proto/MessageService.h
+
+        gp/proto/MessageTransaction.h
+
+        gp/proto/RequestMessageService.cpp
+        gp/proto/RequestMessageService.h
+
+        gp/proto/TimeSyncMessageService.cpp
+        gp/proto/TimeSyncMessageService.h
+
+        gp/proto/TransportTransaction.h
+        gp/proto/PreparedMessage.h
+
+        gp/proto/DatacenterAuthAction.h
+        gp/proto/DatacenterAuthAction.cpp
+
+        gp/proto/DatacenterAuthMessageService.cpp
+        gp/proto/DatacenterAuthMessageService.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
@@ -209,17 +245,18 @@ target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
 
 set(GPCLIENT_SOURCE
-        gp/proto/Proto.h
-        gp/proto/Proto.cpp)
+        gp/proto/gp_client.h
+        gp/proto/gp_client.cpp
+        gp/proto/gp_client_data.h)
 
-add_library(gpproto SHARED ${GPCLIENT_SOURCE})
-target_include_directories(gpproto PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-target_link_libraries(gpproto PRIVATE gpcore)
+add_library(gpclient SHARED ${GPCLIENT_SOURCE})
+target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(gpclient PRIVATE gpcore)
 
 add_library(GPStatic INTERFACE)
-target_link_libraries(GPStatic INTERFACE gpproto)
+target_link_libraries(GPStatic INTERFACE gpclient)
 
-install(TARGETS gpproto gpcore GPStatic EXPORT GPTargets
+install(TARGETS gpclient gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
@@ -230,4 +267,4 @@ install(EXPORT GPTargets
         NAMESPACE gpproto::
         DESTINATION lib/cmake/gp)
 
-install(FILES gp/proto/Proto.h DESTINATION include/gp/proto)
+install(FILES gp/proto/gp_client.h gp/proto/gp_client_data.h DESTINATION include/gp/proto)

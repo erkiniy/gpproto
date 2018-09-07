@@ -2,7 +2,7 @@
 // Created by Jaloliddin Erkiniy on 8/17/18.
 //
 
-#include "BigNum.h"
+#include "gp/utils/BigNum.h"
 #include <limits>
 #include <openssl/bn.h>
 
@@ -168,6 +168,18 @@ std::string BigNum::to_binary(int exact_size) const {
     return res;
 }
 
+std::shared_ptr<StreamSlice> BigNum::to_binary_slice() const {
+    int num_size = get_num_bytes();
+    auto res = (unsigned char *)malloc((size_t)num_size);
+    auto resLen = (size_t)BN_bn2bin(impl_->big_num, res);
+
+    auto resSlice = std::make_shared<StreamSlice>(resLen);
+    memcpy(resSlice->begin(), res, resLen);
+
+    free(res);
+    return resSlice;
+}
+
 std::string BigNum::to_decimal() const {
     char *result = BN_bn2dec(impl_->big_num);
     std::string res(result);
@@ -194,8 +206,6 @@ void BigNum::mul(BigNum &r, BigNum &a, BigNum &b, BigNumContext &context) {
 void BigNum::mod_mul(BigNum &r, BigNum &a, BigNum &b, const BigNum &m, BigNumContext &context) {
     int result = BN_mod_mul(r.impl_->big_num, a.impl_->big_num, b.impl_->big_num, m.impl_->big_num,
                             context.impl_->big_num_context);
-
-
 }
 
 void BigNum::div(BigNum *quotient, BigNum *remainder, const BigNum &dividend, const BigNum &divisor,

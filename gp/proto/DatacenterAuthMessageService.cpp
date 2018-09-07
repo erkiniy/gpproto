@@ -7,6 +7,7 @@
 #include "gp/proto/PreparedMessage.h"
 #include "gp/proto/MessageTransaction.h"
 #include "gp/proto/InternalParser.h"
+#include "gp/proto/DatacenterSaltsetInfo.h"
 #include "gp/network/IncomingMessage.h"
 #include "gp/proto/ProtoInternalMessage.h"
 #include "gp/network/OutgoingMessage.h"
@@ -14,6 +15,8 @@
 #include "gp/utils/Random.h"
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/OutputStream.h"
+#include "gp/utils/BigNum.h"
+
 using namespace gpproto;
 
 static std::unordered_map<uint64_t, std::string> defaultServerPublicKeys() {
@@ -307,8 +310,199 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
                     return;
                 }
 
+                auto innerDataG = dhInnerData->g;
 
+                if (!Crypto::isSafeG(innerDataG))
+                {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> g is not safe. G = %d", innerDataG);
+                    reset(proto);
+                    return;
+                }
 
+                auto innerDataGa = dhInnerData->ga;
+                auto innerDataDhPrime = dhInnerData->dhPrime;
+
+                //TODO: is safe Ga;
+
+                auto b = std::make_shared<StreamSlice>(256);
+                Random::secureBytes(b->begin(), 256);
+
+                b->begin()[0] &= 0x7f;
+
+                auto tempG = innerDataG;
+                byteSwapInt32(tempG);
+
+                auto g = std::make_shared<StreamSlice>(4);
+                memcpy(g->begin(), &tempG, 4);
+
+                auto startTime = getAbsoluteSystemTime();
+                auto g_b = Crypto::mod_exp(g, b, innerDataDhPrime);
+
+                LOGV("[DatacenterAuthMessageService protoDidReceiveMessage] -> mod_pow lasted %lf seconds", getAbsoluteSystemTime() - startTime);
+
+                auto authKey = Crypto::mod_exp(innerDataGa, b, innerDataDhPrime);
+                auto authKeyIdHash = Crypto::sha256(*authKey)->subData(24, 32);
+
+                int64_t authKeyId = 0;
+                memcpy(&authKeyId, authKeyIdHash->rbegin(), 8);
+
+                auto serverSaltData = std::make_shared<StreamSlice>(8);
+
+                if (newNonce->size < 8 || serverNonce->size < 8)
+                {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> new nonce and server nonce length must be at least 8 bytes");
+                    reset(proto);
+                    return;
+                }
+
+                for (int i = 0; i < 8; ++i)
+                {
+                    auto nN = newNonce->begin()[i];
+                    auto sN = serverNonce->begin()[i];
+                    auto sS = nN ^ sN;
+
+                    memcpy(serverSaltData->begin() + i, &sS, 1);
+                }
+
+                int64_t serverSalt = 0;
+                memcpy(&serverSalt, serverSaltData->rbegin(), 8);
+                this->authKey = std::make_shared<AuthKeyInfo>(authKey, authKeyId, std::initializer_list<std::shared_ptr<DatacenterSaltsetInfo>>{std::make_shared<DatacenterSaltsetInfo>(serverSalt, (int64_t)(message->timestamp) * 4294967296, (int64_t)(message->timestamp + 60) * 4294967296)});
+
+                OutputStream clientDhInnerDataBuffer;
+                clientDhInnerDataBuffer.writeUInt32(0x706fb308);
+                clientDhInnerDataBuffer.writeData(*nonce);
+                clientDhInnerDataBuffer.writeData(*serverNonce);
+                clientDhInnerDataBuffer.writeInt64(0);
+                clientDhInnerDataBuffer.writeBytes(*g_b);
+
+                auto clientInnerDataBytes = clientDhInnerDataBuffer.currentBytes();
+                OutputStream clientDataWithHashStream;
+
+                auto clientDataBytesHash = Crypto::sha1(*clientInnerDataBytes);
+                clientDataWithHashStream.writeData(*clientDataBytesHash);
+                clientDataWithHashStream.writeData(*clientInnerDataBytes);
+
+                while (clientDataWithHashStream.getCurrentSize() % 16 != 0)
+                {
+                    unsigned char randomByte;
+                    Random::secureBytes(&randomByte, 1);
+                    clientDataWithHashStream.writeUInt8(reinterpret_cast<uint8_t>(randomByte));
+                }
+
+                auto clientDataWithHash = clientDataWithHashStream.currentBytes();
+
+                encryptedClientData = Crypto::aes_cbc_encrypt(aesKey, &aesIV, *clientDataWithHash);
+                stage = DatacenterAuthStage::keyVerification;
+                currentStateMessageId = 0;
+                currentStateMessageSeqNo = 0;
+                currentStateTransactionId = 0;
+
+                proto->requestTransportTransactions();
+            }
+            else
+            {
+                LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> couldn't set dh params");
+                reset(proto);
+                return;
+            }
+        }
+    }
+    else if (stage == DatacenterAuthStage::keyVerification && message->body != nullptr)
+    {
+        if (auto setClientDhParamsResponseMessage = std::dynamic_pointer_cast<ClientDhParamsResponseMessage>(message->body))
+        {
+            if (nonce != setClientDhParamsResponseMessage->serverNonce || serverNonce != setClientDhParamsResponseMessage->serverNonce)
+                return;
+
+            auto authKeyAuxHashFull = Crypto::sha1(*authKey->authKey);
+            auto authKeyAuxHash = authKeyAuxHashFull->subData(0, 8);
+
+            std::shared_ptr<StreamSlice> newNonce1;
+            {
+                OutputStream newNonce1s;
+                newNonce1s.writeData(*newNonce);
+                uint8_t tmp1 = 1;
+                newNonce1s.writeUInt8(1);
+                newNonce1s.writeData(*authKeyAuxHash);
+
+                newNonce1 = newNonce1s.currentBytes();
+            }
+
+            auto newNonceHash1Full = Crypto::sha1(*newNonce1);
+            auto newNonceHash1 = newNonceHash1Full->subData((int)newNonceHash1Full->size - 16, newNonceHash1Full->size);
+
+            std::shared_ptr<StreamSlice> newNonce2;
+            {
+                OutputStream newNonce2s;
+                newNonce2s.writeData(*newNonce);
+                uint8_t tmp2 = 2;
+                newNonce2s.writeUInt8(1);
+                newNonce2s.writeData(*authKeyAuxHash);
+
+                newNonce2 = newNonce2s.currentBytes();
+            }
+
+            auto newNonceHash2Full = Crypto::sha1(*newNonce2);
+            auto newNonceHash2 = newNonceHash2Full->subData((int)newNonceHash2Full->size - 16, newNonceHash2Full->size);
+
+            std::shared_ptr<StreamSlice> newNonce3;
+            {
+                OutputStream newNonce3s;
+                newNonce3s.writeData(*newNonce);
+                uint8_t tmp3 = 3;
+                newNonce3s.writeUInt8(1);
+                newNonce3s.writeData(*authKeyAuxHash);
+
+                newNonce3 = newNonce3s.currentBytes();
+            }
+
+            auto newNonceHash3Full = Crypto::sha1(*newNonce3);
+            auto newNonceHash3 = newNonceHash3Full->subData((int)newNonceHash3Full->size - 16, newNonceHash3Full->size);
+
+            if (auto setClientDhParamsResponseOkMessage = std::dynamic_pointer_cast<ClientDhParamsResponseOkMessage>(setClientDhParamsResponseMessage))
+            {
+                if (setClientDhParamsResponseOkMessage->nextNonceHash1 == newNonceHash1)
+                {
+                    stage = DatacenterAuthStage::done;
+                    currentStateMessageId = 0;
+                    currentStateMessageSeqNo = 0;
+                    currentStateTransactionId = 0;
+
+                    if (auto strongDelegate = delegate.lock())
+                        strongDelegate->authMessageServiceCompletedWithAuthKey(*this, this->authKey, (int64_t)message->timestamp * 4294967296);
+                } else {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> SetClientDhParamsResponseOkMessage nextNonce1 mismatch");
+                    reset(proto);
+                    return;
+                }
+            }
+            else if (auto setClientDhParamsResponseRetryMessage = std::dynamic_pointer_cast<ClientDhParamsResponseRetryMessage>(setClientDhParamsResponseMessage))
+            {
+                if (setClientDhParamsResponseRetryMessage->nextNonceHash2 == newNonceHash2)
+                {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> retry DH");
+                    reset(proto);
+                    return;
+                }
+                else {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> invalid DH answer nonce hash 2");
+                    reset(proto);
+                    return;
+                }
+            }
+            else if (auto setClientDhParamsResponseFailMessage = std::dynamic_pointer_cast<ClientDhParamsResponseFailMessage>(setClientDhParamsResponseMessage))
+            {
+                if (setClientDhParamsResponseFailMessage->nextNonceHash3 == newNonceHash3)
+                {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> fail DH");
+                    reset(proto);
+                    return;
+                }
+                else {
+                    LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> invalid DH params response");
+                    reset(proto);
+                    return;
+                }
             }
         }
     }
@@ -332,10 +526,11 @@ void gpproto::DatacenterAuthMessageService::protoErrorReceived(const std::shared
 }
 
 void gpproto::DatacenterAuthMessageService::protoWillAddService(const std::shared_ptr<gpproto::Proto> &proto) {
-
+    LOGV("DatacenterAuthMessageService will addService");
 }
 
 void gpproto::DatacenterAuthMessageService::protoDidAddService(const std::shared_ptr<gpproto::Proto> &proto) {
+    LOGV("DatacenterAuthMessageService did addService");
     proto->requestTransportTransactions();
 }
 

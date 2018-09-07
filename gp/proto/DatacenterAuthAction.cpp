@@ -16,16 +16,18 @@ void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t dat
     this->datacenterId = datacenterId;
     this->context = context;
 
+    LOGV("Start execution of Auth action at %lf", startTime);
+
     if (datacenterId != 0 && context != nullptr)
     {
         if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
             complete();
         else {
             proto = std::make_shared<Proto>(context, datacenterId, true);
+
             auto authService = std::make_shared<DatacenterAuthMessageService>(context);
             auto self = shared_from_this();
             auto delegate = std::dynamic_pointer_cast<DatacenterAuthMessageServiceDelegate>(self);
-
             authService->setDelegate(delegate);
             proto->addMessageService(authService);
         }

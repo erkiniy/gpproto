@@ -43,15 +43,29 @@ std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) 
 }
 
 void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
-    setAuthKeyInfoForDatacenterId(keyInfo, id);
+    Context::queue()->async([self = shared_from_this(), keyInfo, id] {
+        self->setAuthKeyInfoForDatacenterId(keyInfo, id);
 
-    //TODO: notify listeners;
+        if (keyInfo != nullptr && id != 0)
+        {
+            LOGV("[Context updateAuthKeyInfoForDatacenterId] -> auth info updated");
+            //TODO: keychain
+
+            for (const auto & listener : self->changeListeners)
+            {
+                if (auto strongListener = listener.second.lock())
+                    strongListener->contextDatacenterAuthInfoUpdated(*self, id, keyInfo);
+            }
+        }
+    });
+
 }
 
 void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
 
-    Context::queue()->async([&, keyInfo, id] {
-        authInfoByDatacenterId[id] = keyInfo;
+    Context::queue()->async([self = shared_from_this(), keyInfo, id] {
+        if (keyInfo != nullptr && id != 0)
+            self->authInfoByDatacenterId[id] = keyInfo;
     });
 #warning implement storing to keychain
 
@@ -99,6 +113,7 @@ void Context::setDatacenterSeedAddress(gpproto::DatacenterAddress &&address, int
     Context::queue()->async([strongSelf = shared_from_this(), addr, id] {
         strongSelf->datacenterSeedAddressByDatacenterId[id] = addr;
     });
+
 }
 
 std::shared_ptr<TransportScheme> Context::transportSchemeForDatacenterId(int32_t id) {
@@ -122,15 +137,21 @@ std::shared_ptr<TransportScheme> Context::transportSchemeForDatacenterId(int32_t
 }
 
 void Context::transportSchemeForDatacenterIdRequired(int32_t id) {
+    Context::queue()->async([self = shared_from_this(), id] {
+        auto scheme = self->transportSchemeForDatacenterId(id);
 
+        self->updateTransportSchemeForDatacenterId(scheme, id);
+    });
 }
 
 void Context::addressSetForDatacenterIdRequired(int32_t id) {
 #warning Implement getConfig
+
 }
 
 void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
     Context::queue()->async([self = shared_from_this(), id] {
+
         auto it = self->datacenterAuthActionsByDatacenterId.find(id);
 
         if (it == self->datacenterAuthActionsByDatacenterId.end())
@@ -154,5 +175,40 @@ void Context::datacenterAuthActionCompleted(const DatacenterAuthAction &action) 
             else
                 ++it;
         }
+
     });
+}
+
+void Context::updateTransportSchemeForDatacenterId(std::shared_ptr<TransportScheme> scheme, int32_t datacenterId) {
+    Context::queue()->async([self = shared_from_this(), scheme, datacenterId] {
+        if (scheme != nullptr && datacenterId != 0)
+        {
+            for (const auto listener : self->changeListeners)
+            {
+                if (auto strongListener = listener.second.lock())
+                    strongListener->contextDatacenterTransportSchemeUpdated(*self, datacenterId, scheme);
+            }
+        }
+    });
+}
+
+void Context::addChangeListener(std::shared_ptr<ContextChangeListener> listener) {
+    Context::queue()->async([self = shared_from_this(), listener] {
+        auto it = self->changeListeners.find(listener->internalId);
+
+        LOGV("Inside");
+        if (it == self->changeListeners.end())
+            self->changeListeners[listener->internalId] = listener;
+
+    });
+}
+
+void Context::removeChangeListener(std::shared_ptr<ContextChangeListener> listener) {
+    Context::queue()->sync([self = shared_from_this(), listener] {
+        auto it = self->changeListeners.find(listener->internalId);
+
+        if (it != self->changeListeners.end())
+            self->changeListeners.erase(it);
+    });
+
 }

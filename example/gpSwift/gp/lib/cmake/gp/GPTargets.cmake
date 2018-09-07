@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget gpproto::gpnet gpproto::gputils gpproto::gpproto gpproto::gpcore gpproto::GPStatic)
+foreach(_expectedTarget gpproto::gpnet gpproto::gputils gpproto::gpclient gpproto::gpcore gpproto::GPStatic)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -66,10 +66,10 @@ set_target_properties(gpproto::gputils PROPERTIES
   INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:OpenSSL::Crypto>;/usr/lib/libz.dylib;/usr/lib/libz.dylib"
 )
 
-# Create imported target gpproto::gpproto
-add_library(gpproto::gpproto SHARED IMPORTED)
+# Create imported target gpproto::gpclient
+add_library(gpproto::gpclient SHARED IMPORTED)
 
-set_target_properties(gpproto::gpproto PROPERTIES
+set_target_properties(gpproto::gpclient PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 
@@ -86,7 +86,7 @@ add_library(gpproto::GPStatic INTERFACE IMPORTED)
 
 set_target_properties(gpproto::GPStatic PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "gpproto::gpproto"
+  INTERFACE_LINK_LIBRARIES "gpproto::gpclient"
 )
 
 if(CMAKE_VERSION VERSION_LESS 3.0.0)

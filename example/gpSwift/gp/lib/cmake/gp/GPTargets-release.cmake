@@ -25,15 +25,15 @@ set_target_properties(gpproto::gputils PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS gpproto::gputils )
 list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gputils "${_IMPORT_PREFIX}/lib/libgputils.a" )
 
-# Import target "gpproto::gpproto" for configuration "Release"
-set_property(TARGET gpproto::gpproto APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-set_target_properties(gpproto::gpproto PROPERTIES
-  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libgpproto.dylib"
-  IMPORTED_SONAME_RELEASE "@rpath/libgpproto.dylib"
+# Import target "gpproto::gpclient" for configuration "Release"
+set_property(TARGET gpproto::gpclient APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(gpproto::gpclient PROPERTIES
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libgpclient.dylib"
+  IMPORTED_SONAME_RELEASE "@rpath/libgpclient.dylib"
   )
 
-list(APPEND _IMPORT_CHECK_TARGETS gpproto::gpproto )
-list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gpproto "${_IMPORT_PREFIX}/lib/libgpproto.dylib" )
+list(APPEND _IMPORT_CHECK_TARGETS gpproto::gpclient )
+list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gpclient "${_IMPORT_PREFIX}/lib/libgpclient.dylib" )
 
 # Import target "gpproto::gpcore" for configuration "Release"
 set_property(TARGET gpproto::gpcore APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)

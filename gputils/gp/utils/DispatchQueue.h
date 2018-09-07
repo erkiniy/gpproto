@@ -23,7 +23,9 @@ namespace gpproto {
         DispatchQueue(std::string name) : _name(name), _finished(false), _asyncSemaphore(), _syncSemaphore(),
                                           _runningSynchronous(false) {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
+            _threadIdMutex.lock();
             this->_threadId = _thread.get_id();
+            _threadIdMutex.unlock();
             this->_jobs = std::list<DispatchWork>();
             printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
@@ -42,8 +44,12 @@ namespace gpproto {
 
         void asyncForce(DispatchWork work);
 
-        bool isCurrentQueue() {
-            return std::this_thread::get_id() == this->_threadId;
+        bool isCurrentQueue() const {
+            bool current = false;
+            _threadIdMutex.lock();
+            current = std::this_thread::get_id() == this->_threadId;
+            _threadIdMutex.unlock();
+            return current;
         }
 
         const std::string& name() const {
@@ -56,6 +62,7 @@ namespace gpproto {
         std::thread _thread;
         std::thread::id _threadId;
         std::mutex _mutex;
+        mutable std::mutex _threadIdMutex;
 
         bool _finished;
         bool _runningSynchronous;
@@ -69,7 +76,6 @@ namespace gpproto {
             while (!_finished) {
                 maybeDispatchWorker();
             }
-
         }
 
         void maybeDispatchWorker() {

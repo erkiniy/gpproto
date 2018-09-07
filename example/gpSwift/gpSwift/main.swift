@@ -10,11 +10,9 @@ import Foundation
 
 print("Hello, World!")
 
-let impl = ProtoImpl()
-
-DispatchQueue.global().async {
-    impl?.start()
-}
+let client = gp_client_create()
+gp_client_pause(client)
+gp_client_resume(client)
 
 while (true) {
     Thread.sleep(forTimeInterval: 1.0)

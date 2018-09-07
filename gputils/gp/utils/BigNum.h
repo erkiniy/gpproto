@@ -62,6 +62,8 @@ namespace gpproto {
 
         std::string to_binary(int exact_size = -1) const;
 
+        std::shared_ptr<StreamSlice> to_binary_slice() const;
+
         std::string to_decimal() const;
 
         void operator+=(uint32 value);

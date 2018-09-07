@@ -17,6 +17,7 @@ namespace gpproto
     class StreamSlice;
 
     class DatacenterAuthMessageServiceDelegate {
+    public:
         virtual void authMessageServiceCompletedWithAuthKey(const DatacenterAuthMessageService& service, std::shared_ptr<AuthKeyInfo> authKey, int64_t timestamp) = 0;
     };
 

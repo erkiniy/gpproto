@@ -10,13 +10,19 @@
 #include "gp/utils/StreamSlice.h"
 #include "gp_client_data.h"
 
-namespace gpproto {
+namespace gpproto
+{
+    class Proto;
+    class Context;
+
     class ClientSync final {
     public:
         //struct gp_rx_event;
 
-        ClientSync() = default;
-        ~ClientSync() {}
+        ClientSync();
+        ClientSync(const ClientSync&) = delete;
+
+        ~ClientSync() = default;
 
         int send(const unsigned char *data, size_t length);
         gp_rx_event* receive(double& timeout);
@@ -26,6 +32,7 @@ namespace gpproto {
 
     private:
         gp_rx_event *currentOutputEvent;
+        std::shared_ptr<Proto> proto;
     };
 }
 

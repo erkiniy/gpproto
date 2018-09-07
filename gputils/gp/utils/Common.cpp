@@ -56,3 +56,13 @@ void byteSwapUInt32(uint32_t& number) {
     number = result;
 }
 
+void byteSwapInt32(int32_t& number) {
+    int32_t result = 0;
+
+    for (uint8_t i = 0; i < sizeof(number); ++i)
+        result |= number & ((int32_t)0xff << (i * 8));
+
+    number = result;
+}
+
+

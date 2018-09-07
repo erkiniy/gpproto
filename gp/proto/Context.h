@@ -15,6 +15,23 @@ namespace gpproto
 {
     class TransportScheme;
 
+    class ContextChangeListener {
+    public:
+        ContextChangeListener() : internalId(nextInternalId()) {};
+
+        const int internalId;
+
+        virtual void contextDatacenterAddressSetUpdated(const Context& context, int32_t datacenterId, std::vector<std::shared_ptr<DatacenterAddress>> addressSet) = 0;
+        virtual void contextDatacenterAuthInfoUpdated(const Context& context, int32_t datacenterId, std::shared_ptr<AuthKeyInfo> authInfo) = 0;
+        virtual void contextDatacenterTransportSchemeUpdated(const Context& context, int32_t datacenterId, std::shared_ptr<TransportScheme> scheme) = 0;
+
+    private:
+        static int nextInternalId() {
+            static std::atomic_int id;
+            return id++;
+        }
+    };
+
 class Context final : public std::enable_shared_from_this<Context>, public DatacenterAuthActionDelegate {
     public:
         Context() = default;
@@ -50,6 +67,8 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
 
         std::shared_ptr<TransportScheme> transportSchemeForDatacenterId(int32_t id);
 
+        void updateTransportSchemeForDatacenterId(std::shared_ptr<TransportScheme> scheme, int32_t datacenterId);
+
         void addressSetForDatacenterIdRequired(int32_t id);
 
         void authInfoForDatacenterWithIdRequired(int32_t id);
@@ -58,12 +77,16 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
 
         void datacenterAuthActionCompleted(const DatacenterAuthAction& action) override;
 
+        void addChangeListener(std::shared_ptr<ContextChangeListener> listener);
+        void removeChangeListener(std::shared_ptr<ContextChangeListener> listener);
+
 private:
         double globalTimeDifference;
         std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
+        std::unordered_map<int, std::weak_ptr<ContextChangeListener>> changeListeners;
     };
 }
 

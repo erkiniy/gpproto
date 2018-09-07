@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		92FB5EFD212D51E2005F4442 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FB5EFC212D51E2005F4442 /* main.swift */; };
-		92FB5F0D212D54CC005F4442 /* libgpproto.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 92FB5F0C212D54CC005F4442 /* libgpproto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		92FB5F0E212D54DA005F4442 /* libgpproto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FB5F0C212D54CC005F4442 /* libgpproto.dylib */; };
 		92FB5F12212D59F6005F4442 /* ProtoImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92FB5F11212D59F6005F4442 /* ProtoImpl.mm */; };
+		C055D12F2143276E00F9CE05 /* libgpclient.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = C055D12E2143276D00F9CE05 /* libgpclient.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C055D1302143278600F9CE05 /* libgpclient.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C055D12E2143276D00F9CE05 /* libgpclient.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -20,7 +20,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				92FB5F0D212D54CC005F4442 /* libgpproto.dylib in CopyFiles */,
+				C055D12F2143276E00F9CE05 /* libgpclient.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -30,9 +30,9 @@
 		92FB5EF9212D51E2005F4442 /* gpSwift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gpSwift; sourceTree = BUILT_PRODUCTS_DIR; };
 		92FB5EFC212D51E2005F4442 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		92FB5F03212D521A005F4442 /* gpSwift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "gpSwift-Bridging-Header.h"; sourceTree = "<group>"; };
-		92FB5F0C212D54CC005F4442 /* libgpproto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpproto.dylib; path = gp/lib/libgpproto.dylib; sourceTree = "<group>"; };
 		92FB5F10212D59F6005F4442 /* ProtoImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtoImpl.h; sourceTree = "<group>"; };
 		92FB5F11212D59F6005F4442 /* ProtoImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ProtoImpl.mm; sourceTree = "<group>"; };
+		C055D12E2143276D00F9CE05 /* libgpclient.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpclient.dylib; path = gp/lib/libgpclient.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92FB5F0E212D54DA005F4442 /* libgpproto.dylib in Frameworks */,
+				C055D1302143278600F9CE05 /* libgpclient.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,7 +78,7 @@
 		92FB5F06212D52D6005F4442 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				92FB5F0C212D54CC005F4442 /* libgpproto.dylib */,
+				C055D12E2143276D00F9CE05 /* libgpclient.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -263,11 +263,13 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					gp/lib,
 					"$(PROJECT_DIR)/gp/lib",
 				);
+				OTHER_LDFLAGS = "-lgpclient";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "gpSwift/gpSwift-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -288,6 +290,7 @@
 					gp/lib,
 					"$(PROJECT_DIR)/gp/lib",
 				);
+				OTHER_LDFLAGS = "-lgpclient";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "gpSwift/gpSwift-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;

@@ -35,7 +35,7 @@ namespace gpproto
         ProtoStatePaused = 16
     } ProtoState;
 
-    class Proto final : public TransportDelegate, public std::enable_shared_from_this<Proto>, public TimeSyncMessageServiceDelegate {
+    class Proto final : public TransportDelegate, public std::enable_shared_from_this<Proto>, public TimeSyncMessageServiceDelegate, public ContextChangeListener {
     public:
 
         static std::shared_ptr<DispatchQueue> queue() {
@@ -48,10 +48,22 @@ namespace gpproto
         explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
                 : useUnauthorizedMode(useUnauthorizedMode),
                   datacenterId(datacenterId),
-                  context(std::move(context)),
-                  sessionInfo(std::make_shared<Session>(context)) {};
+                  authInfo(context->getAuthKeyInfoForDatacenterId(datacenterId)),
+                  context(context),
+                  sessionInfo(std::make_shared<Session>(context)) {
+//            auto self = shared_from_this();
+//
+//            Context::queue()->async([self] {
+//                auto listener = std::static_pointer_cast<ContextChangeListener>(self);
+//                LOGV("Before Adding listener");
+//                self->context->addChangeListener(listener);
+//            });
+        };
 
-        //~Proto() = default;
+        ~Proto() {
+            auto strongSelf = shared_from_this();
+            this->context->removeChangeListener(strongSelf);
+        };
 
         void pause();
         void resume();
@@ -63,6 +75,10 @@ namespace gpproto
 
         const int32_t datacenterId;
 
+        void contextDatacenterAddressSetUpdated(const Context& context, int32_t datacenterId, std::vector<std::shared_ptr<DatacenterAddress>> addressSet) override;
+        void contextDatacenterAuthInfoUpdated(const Context& context, int32_t datacenterId, std::shared_ptr<AuthKeyInfo> authInfo) override;
+        void contextDatacenterTransportSchemeUpdated(const Context& context, int32_t datacenterId, std::shared_ptr<TransportScheme> scheme) override;
+
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
         void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) override;
@@ -73,7 +89,7 @@ namespace gpproto
 
         void requestTransportTransactions();
 
-        void addMessageService(const std::shared_ptr<MessageService>& service);
+        void addMessageService(std::shared_ptr<MessageService> service);
         void removeMessageService(const std::shared_ptr<MessageService>& service);
 
     private:

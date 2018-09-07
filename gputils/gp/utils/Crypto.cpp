@@ -353,3 +353,22 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &public
     return result;
 }
 
+
+bool Crypto::isSafeG(int32_t g) {
+    return g >= 2 && g <= 7;
+}
+
+std::shared_ptr<StreamSlice> Crypto::mod_exp(const std::shared_ptr<StreamSlice> &base,
+                                             const std::shared_ptr<StreamSlice> &exp,
+                                             const std::shared_ptr<StreamSlice> &modulus) {
+    BigNumContext ctx;
+    auto bnBase = BigNum::from_binary(*base);
+    auto bnExp = BigNum::from_binary(*exp);
+    auto bnMod = BigNum::from_binary(*modulus);
+
+    auto bnRest = BigNum();
+    BigNum::mod_exp(bnRest, bnBase, bnExp, bnMod, ctx);
+
+    auto result = bnRest.to_binary_slice();
+    return result;
+}

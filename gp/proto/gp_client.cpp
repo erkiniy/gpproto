@@ -2,8 +2,8 @@
 // Created by Jaloliddin Erkiniy on 8/22/18.
 //
 
-#include "gp_client.h"
-#include "ClientSync.h"
+#include "gp/proto/gp_client.h"
+#include "gp/proto/ClientSync.h"
 
 void *gp_client_create() {
     return new gpproto::ClientSync;
@@ -27,11 +27,13 @@ gp_rx_event *gp_client_receive(void *client, double timeout) {
 }
 
 void gp_client_pause(void *client) {
-
+    auto c = static_cast<gpproto::ClientSync *>(client);
+    c->pause();
 }
 
 void gp_client_resume(void *client) {
-
+    auto c = static_cast<gpproto::ClientSync *>(client);
+    c->resume();
 }
 
 void gp_client_reset_credentials(void *client) {
