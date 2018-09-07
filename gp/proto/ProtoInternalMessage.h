@@ -19,13 +19,15 @@ namespace gpproto
 
     class ResPqMessage : public ProtoInternalMessage {
     public:
-        ResPqMessage(std::shared_ptr<StreamSlice>& nonce, std::shared_ptr<StreamSlice>& serverNonce, uint64_t serverPublicKeyFingerprints)
+        ResPqMessage(std::shared_ptr<StreamSlice>& nonce, std::shared_ptr<StreamSlice>& serverNonce, std::shared_ptr<StreamSlice>& pq, uint64_t serverPublicKeyFingerprints)
                 : nonce(std::move(nonce)),
                   serverNonce(std::move(serverNonce)),
+                  pq(std::move(pq)),
                   serverPublicKeyFingerprints(serverPublicKeyFingerprints) {};
 
         const std::shared_ptr<StreamSlice> nonce;
         const std::shared_ptr<StreamSlice> serverNonce;
+        const std::shared_ptr<StreamSlice> pq;
         const uint64_t serverPublicKeyFingerprints;
     };
 

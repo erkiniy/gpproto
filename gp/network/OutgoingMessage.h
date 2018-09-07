@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <atomic>
 
 namespace gpproto
 {
@@ -24,7 +25,7 @@ namespace gpproto
 
     private:
         static int getNextInternalId() {
-            static int id = 0;
+            static std::atomic_int id = 0;
             return id++;
         }
     };

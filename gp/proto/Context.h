@@ -9,11 +9,13 @@
 #include "gp/utils/DispatchQueue.h"
 #include "gp/proto/AuthKeyInfo.h"
 #include "gp/proto/DatacenterAddress.h"
+#include "gp/proto/DatacenterAuthAction.h"
 
-namespace gpproto {
+namespace gpproto
+{
     class TransportScheme;
 
-    class Context final : public std::enable_shared_from_this<Context> {
+class Context final : public std::enable_shared_from_this<Context>, public DatacenterAuthActionDelegate {
     public:
         Context() = default;
 
@@ -34,7 +36,9 @@ namespace gpproto {
 
         std::shared_ptr<AuthKeyInfo> getAuthKeyInfoForDatacenterId(int32_t id);
 
-        void setAuthKeyInfoForDatacenterId(AuthKeyInfo&& keyInfo, int32_t id);
+        void setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id);
+
+        void updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id);
 
         std::shared_ptr<DatacenterAddress> getDatacenterAddressForDatacenterId(int32_t id);
 
@@ -52,11 +56,14 @@ namespace gpproto {
 
         void transportSchemeForDatacenterIdRequired(int32_t id);
 
-    private:
+        void datacenterAuthActionCompleted(const DatacenterAuthAction& action) override;
+
+private:
         double globalTimeDifference;
         std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
+        std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
     };
 }
 

@@ -38,3 +38,21 @@ double getAbsoluteSystemTime() {
     return static_cast<double>(timestamp);
 }
 
+void byteSwapUInt64(uint64_t& number) {
+    uint64_t result = 0;
+
+    for (uint8_t i = 0; i < sizeof(number); ++i)
+        result |= number & ((uint64_t)0xff << (i * 8));
+
+    number = result;
+}
+
+void byteSwapUInt32(uint32_t& number) {
+    uint32_t result = 0;
+
+    for (uint8_t i = 0; i < sizeof(number); ++i)
+        result |= number & ((uint32_t)0xff << (i * 8));
+
+    number = result;
+}
+

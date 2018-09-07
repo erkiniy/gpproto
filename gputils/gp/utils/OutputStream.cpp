@@ -38,6 +38,10 @@ void OutputStream::writeInt64(int64_t number) {
     writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
 }
 
+void OutputStream::writeUInt64(uint64_t number) {
+    writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
+}
+
 void OutputStream::writeDouble(double number) {
     writeNumber(reinterpret_cast<const unsigned char *>(&number), sizeof(number));
 }

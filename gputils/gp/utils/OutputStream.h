@@ -37,6 +37,7 @@ namespace gpproto {
         void writeInt32(int32_t number);
         void writeUInt32(uint32_t number);
         void writeInt64(int64_t number);
+        void writeUInt64(uint64_t number);
 
         void writeDouble(double number);
 

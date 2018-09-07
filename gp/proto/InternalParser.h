@@ -48,7 +48,7 @@ namespace gpproto::InternalParser {
                 auto pq = is.readBytes();
                 auto serverPublicKeySignature = is.readUInt64();
 
-                return std::make_shared<ResPqMessage>(nonce, serverNonce, serverPublicKeySignature);
+                return std::make_shared<ResPqMessage>(nonce, serverNonce, pq, serverPublicKeySignature);
             }
             case 0xcb73e0c5: {
                 auto nonce = is.readData(16);

@@ -9,6 +9,8 @@
 #include "gp/network/TransportDelegate.h"
 #include "gp/proto/DatacenterAddress.h"
 
+#include <atomic>
+
 namespace gpproto
 {
     class Transport {
@@ -46,7 +48,7 @@ namespace gpproto
         std::weak_ptr<TransportDelegate> delegate;
     private:
         static int getNextInternalId() {
-            static int internalId = 0;
+            static std::atomic_int internalId = 0;
             return internalId++;
         }
     };

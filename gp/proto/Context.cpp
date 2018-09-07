@@ -5,6 +5,7 @@
 #include <chrono>
 #include "gp/proto/Context.h"
 #include "gp/network/TransportScheme.h"
+#include <tuple>
 
 using namespace gpproto;
 
@@ -41,11 +42,16 @@ std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) 
     return info;
 }
 
-void Context::setAuthKeyInfoForDatacenterId(AuthKeyInfo&& keyInfo, int32_t id) {
-    auto info = std::make_shared<AuthKeyInfo>(std::move(keyInfo));
+void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
+    setAuthKeyInfoForDatacenterId(keyInfo, id);
 
-    Context::queue()->async([&, info, id] {
-        authInfoByDatacenterId[id] = info;
+    //TODO: notify listeners;
+}
+
+void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
+
+    Context::queue()->async([&, keyInfo, id] {
+        authInfoByDatacenterId[id] = keyInfo;
     });
 #warning implement storing to keychain
 
@@ -124,5 +130,29 @@ void Context::addressSetForDatacenterIdRequired(int32_t id) {
 }
 
 void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
+    Context::queue()->async([self = shared_from_this(), id] {
+        auto it = self->datacenterAuthActionsByDatacenterId.find(id);
 
+        if (it == self->datacenterAuthActionsByDatacenterId.end())
+        {
+            auto authAction = std::make_shared<DatacenterAuthAction>();
+            authAction->setDelegate(self);
+            self->datacenterAuthActionsByDatacenterId[id] = authAction;
+
+            authAction->execute(self, id);
+        }
+    });
+}
+
+void Context::datacenterAuthActionCompleted(const DatacenterAuthAction &action) {
+    Context::queue()->async([self = shared_from_this(), &action] {
+
+        for (auto it = self->datacenterAuthActionsByDatacenterId.begin(); it != self->datacenterAuthActionsByDatacenterId.end(); )
+        {
+            if (it->second->internalId == action.internalId)
+                self->datacenterAuthActionsByDatacenterId.erase(it++);
+            else
+                ++it;
+        }
+    });
 }

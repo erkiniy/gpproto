@@ -866,7 +866,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                     if (success)
                     {
                         LOGV("[Proto transportReadyForTransaction] -> Time fix transaction success with message_id %lld", timeFixMessageId);
-                        self->timeFixContext = std::make_unique<TimeFixContext>(timeFixMessageId, timeFixSeqNo, getAbsoluteSystemTime());
+                        self->timeFixContext = std::make_shared<TimeFixContext>(timeFixMessageId, timeFixSeqNo, getAbsoluteSystemTime());
                     }
                     else {
                         self->requestTransportTransactions();
@@ -981,8 +981,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     return encryptedOs.currentBytes();
 }
 
-std::shared_ptr<StreamSlice> Proto::dataForPlainMessage(
-        const std::shared_ptr<PreparedMessage> &message) const {
+std::shared_ptr<StreamSlice> Proto::dataForPlainMessage(const std::shared_ptr<PreparedMessage> &message) const {
     OutputStream os;
 
     os.writeInt64(0);
@@ -991,10 +990,6 @@ std::shared_ptr<StreamSlice> Proto::dataForPlainMessage(
     os.writeData(*message->data);
 
     return os.currentBytes();
-}
-
-std::shared_ptr<StreamSlice> Proto::paddedData(const std::shared_ptr<StreamSlice> &data) {
-    return nullptr;
 }
 
 void Proto::paddedData(OutputStream &os) const {

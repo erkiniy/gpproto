@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <cstdint>
+#include <atomic>
 
 namespace gpproto
 {
@@ -49,7 +50,7 @@ namespace gpproto
 
     private:
         static int getNextInternalId() {
-            static int sharedInternalId = 0;
+            static std::atomic_int sharedInternalId = 0;
             return sharedInternalId++;
         }
     };

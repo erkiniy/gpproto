@@ -60,6 +60,12 @@ namespace gpproto {
             return bytes + size;
         }
 
+        void removeLast() {
+            if (size > 0)
+                size--;
+            //TODO: realloc
+        }
+
 //        inline StreamSlice operator + (const StreamSlice& s1, const StreamSlice& s2) {
 //            auto s = StreamSlice(s1.size + s2.size);
 //            memcpy(s.begin(), s1.rbegin(), s1.size);

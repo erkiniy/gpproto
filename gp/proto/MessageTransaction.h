@@ -9,6 +9,7 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
+#include <atomic>
 
 namespace gpproto
 {
@@ -38,7 +39,7 @@ namespace gpproto
 
     private:
         static int getNextInternalId() {
-            static int internalId = 0;
+            static std::atomic_int internalId = 0;
             return internalId++;
         }
     };

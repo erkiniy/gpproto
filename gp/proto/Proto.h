@@ -48,7 +48,8 @@ namespace gpproto
         explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
                 : useUnauthorizedMode(useUnauthorizedMode),
                   datacenterId(datacenterId),
-                  context(std::move(context)), sessionInfo(std::make_shared<Session>(context)) {};
+                  context(std::move(context)),
+                  sessionInfo(std::make_shared<Session>(context)) {};
 
         //~Proto() = default;
 
@@ -96,7 +97,7 @@ namespace gpproto
 
         double resetSessionInfoLock = 0;
 
-        std::unique_ptr<TimeFixContext> timeFixContext;
+        std::shared_ptr<TimeFixContext> timeFixContext;
 
         void setState(uint32_t state);
 
@@ -123,7 +124,6 @@ namespace gpproto
         std::shared_ptr<StreamSlice> dataForEncryptedMessage(const std::shared_ptr<PreparedMessage>& message, const std::shared_ptr<Session>& session) const;
         std::shared_ptr<StreamSlice> dataForEncryptedContainer(const std::vector<std::shared_ptr<PreparedMessage>>& messages, const std::shared_ptr<Session>& session) const;
         std::shared_ptr<StreamSlice> dataForPlainMessage(const std::shared_ptr<PreparedMessage>& message) const;
-        std::shared_ptr<StreamSlice> paddedData(const std::shared_ptr<StreamSlice>& data);
         void paddedData(OutputStream& os) const;
 
         void processIncomingMessage(const std::shared_ptr<IncomingMessage>& message);

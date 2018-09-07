@@ -58,4 +58,7 @@ using UInt256 = UInt<256>;
 std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex);
 double getAbsoluteSystemTime();
 
+void byteSwapUInt64(uint64_t& number);
+void byteSwapUInt32(uint32_t& number);
+
 #endif //GPPROTO_COMMON_H
