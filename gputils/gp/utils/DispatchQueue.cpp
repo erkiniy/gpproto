@@ -17,11 +17,11 @@ void DispatchQueue::asyncForce(DispatchQueue::DispatchWork work) {
 
 void DispatchQueue::sync(DispatchQueue::DispatchWork work) {
     if (this->isCurrentQueue()) {
+        //LOGV("Sync current %s", this->name().c_str());
         work();
-        LOGV("Sync current %s", this->name().c_str());
     }
     else {
-        LOGV("Sync %s", this->name().c_str());
+        //LOGV("Sync %s", this->name().c_str());
         _mutex.lock();
 
         _runningSynchronous = true;
@@ -38,12 +38,12 @@ void DispatchQueue::sync(DispatchQueue::DispatchWork work) {
 
 void DispatchQueue::_async(DispatchQueue::DispatchWork work, bool force) {
     if (this->isCurrentQueue() && !force) {
+        //LOGV("Async current %s", this->name().c_str());
         work();
-        LOGV("Async current %s", this->name().c_str());
     }
     else
     {
-        LOGV("Async %s", this->name().c_str());
+        //LOGV("Async %s", this->name().c_str());
         _mutex.lock();
 
         _jobs.push_back(work);

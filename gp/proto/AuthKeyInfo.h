@@ -22,7 +22,7 @@ namespace gpproto
 
         ~AuthKeyInfo() = default;
 
-        AuthKeyInfo(const AuthKeyInfo&) = delete;
+        AuthKeyInfo(const AuthKeyInfo&) = default;
 
         AuthKeyInfo(AuthKeyInfo &&) = default;
 

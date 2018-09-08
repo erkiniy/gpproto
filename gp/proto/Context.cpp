@@ -3,9 +3,9 @@
 //
 
 #include <chrono>
+#include <tuple>
 #include "gp/proto/Context.h"
 #include "gp/network/TransportScheme.h"
-#include <tuple>
 
 using namespace gpproto;
 
@@ -15,31 +15,43 @@ double Context::getGlobalTime() {
 }
 
 double Context::getGlobalTimeDifference() {
-    double difference = 0;
-    Context::queue()->sync([&] {
-        difference = globalTimeDifference;
+    double *diffPtr = nullptr;
+
+    Context::queue()->sync([self = shared_from_this(), diffPtr]() mutable {
+        auto diff = self->globalTimeDifference;
+        diffPtr = new double(diff);
     });
+
+    double difference = *diffPtr;
+    delete diffPtr;
+
     return difference;
 }
 
 void Context::setGlobalTimeDifference(double difference) {
-    Context::queue()->async([&, difference] {
-        globalTimeDifference = difference;
+    Context::queue()->async([self = shared_from_this(), difference] {
+        self->globalTimeDifference = difference;
     });
 #warning implement storing to keychain
 }
 
 std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) {
-    std::shared_ptr<AuthKeyInfo> info = nullptr;
+    AuthKeyInfo* infoPtr = nullptr;
 
-    Context::queue()->sync([&, id] {
-        auto it = authInfoByDatacenterId.find(id);
+    Context::queue()->sync([self = shared_from_this(), id, infoPtr]() mutable {
+        auto it = self->authInfoByDatacenterId.find(id);
 
-        if (it != authInfoByDatacenterId.end())
-            info = authInfoByDatacenterId[id];
+        if (it != self->authInfoByDatacenterId.end())
+            infoPtr = new AuthKeyInfo((*self->authInfoByDatacenterId[id]));
+
     });
 
-    return info;
+    if (infoPtr != nullptr) {
+        LOGV("[Context getAuthKeyInfoForDatacenterId] -> auth info found");
+        return std::shared_ptr<AuthKeyInfo>(infoPtr);
+    }
+
+    return nullptr;
 }
 
 void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
@@ -72,16 +84,23 @@ void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo
 }
 
 std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(int32_t id) {
-    std::shared_ptr<DatacenterAddress> address = nullptr;
 
-    Context::queue()->sync([&, id] {
-        auto it = datacenterAddressByDatacenterId.find(id);
+    DatacenterAddress *addressPtr = nullptr;
 
-        if (it != datacenterAddressByDatacenterId.end())
-            address = datacenterAddressByDatacenterId[id];
+    Context::queue()->sync([self = shared_from_this(), id, addressPtr]() mutable {
+        LOGV("[Context getDatacenterAddressForDatacenterId]");
+        auto it = self->datacenterAddressByDatacenterId.find(id);
+
+        if (it != self->datacenterAddressByDatacenterId.end())
+            addressPtr = new DatacenterAddress(*(self->datacenterAddressByDatacenterId[id]));
     });
 
-    return address;
+    LOGV("[Context getDatacenterAddressForDatacenterId] -> returning address %d", addressPtr != nullptr);
+
+    if (addressPtr != nullptr)
+        return std::shared_ptr<DatacenterAddress>(addressPtr);
+
+    return nullptr;
 }
 
 void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id) {
@@ -94,46 +113,55 @@ void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, i
 }
 
 std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacenterId(int32_t id) {
-    std::shared_ptr<DatacenterAddress> address = nullptr;
+    DatacenterAddress *addressPtr = nullptr;
 
-    Context::queue()->sync([&, id] {
-        auto it = datacenterSeedAddressByDatacenterId.find(id);
+    LOGV("[Context getDatacenterSeedAddressForDatacenterId]");
+    Context::queue()->sync([self = shared_from_this(), id, addressPtr]() mutable {
+        auto it = self->datacenterSeedAddressByDatacenterId.find(id);
 
-        if (it != datacenterSeedAddressByDatacenterId.end())
-            address = datacenterSeedAddressByDatacenterId[id];
+        if (it != self->datacenterSeedAddressByDatacenterId.end()) {
+            LOGV("AddressSeed found");
+            addressPtr = new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id]));
+        }
     });
 
-    return address;
+    if (addressPtr != nullptr) {
+        LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> address found");
+        return std::shared_ptr<DatacenterAddress>(addressPtr);
+    }
+
+    LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> addressSeed not found");
+
+    return nullptr;
 }
 
-void Context::setDatacenterSeedAddress(gpproto::DatacenterAddress &&address, int32_t id) {
+void Context::setDatacenterSeedAddress(DatacenterAddress &&address, int32_t id) {
 
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
 
-    Context::queue()->async([strongSelf = shared_from_this(), addr, id] {
-        strongSelf->datacenterSeedAddressByDatacenterId[id] = addr;
+    Context::queue()->async([self = shared_from_this(), addr, id] {
+        self->datacenterSeedAddressByDatacenterId[id] = addr;
     });
 
 }
 
 std::shared_ptr<TransportScheme> Context::transportSchemeForDatacenterId(int32_t id) {
-    auto strongSelf = shared_from_this();
-    std::shared_ptr<TransportScheme> scheme = nullptr;
 
-    Context::queue()->sync([&, strongSelf, id] {
-        std::shared_ptr<DatacenterAddress> address = strongSelf->getDatacenterAddressForDatacenterId(id);
+    LOGV("[Context transportSchemeForDatacenterId] for datacenterId %d", id);
 
-        if (address == nullptr)
-            address = strongSelf->getDatacenterSeedAddressForDatacenterId(id);
+    std::shared_ptr<DatacenterAddress> address = getDatacenterAddressForDatacenterId(id);
 
-        if (address == nullptr)
-            strongSelf->addressSetForDatacenterIdRequired(id);
-        else {
-            scheme = std::make_shared<TransportScheme>(TransportType::Tcp, address);
-        }
-    });
+    if (address == nullptr)
+        address = getDatacenterSeedAddressForDatacenterId(id);
 
-    return scheme;
+    if (address == nullptr)
+        addressSetForDatacenterIdRequired(id);
+    else {
+        LOGV("[Context transportSchemeForDatacenterId] returning scheme");
+        return std::make_shared<TransportScheme>(TransportType::Tcp, address);
+    }
+
+    return nullptr;
 }
 
 void Context::transportSchemeForDatacenterIdRequired(int32_t id) {
@@ -146,11 +174,12 @@ void Context::transportSchemeForDatacenterIdRequired(int32_t id) {
 
 void Context::addressSetForDatacenterIdRequired(int32_t id) {
 #warning Implement getConfig
-
+    LOGV("[Context addressSetForDatacenterIdRequired]");
 }
 
 void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
     Context::queue()->async([self = shared_from_this(), id] {
+        LOGV("[Context authInfoForDatacenterWithIdRequired]");
 
         auto it = self->datacenterAuthActionsByDatacenterId.find(id);
 

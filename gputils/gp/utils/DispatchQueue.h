@@ -24,11 +24,11 @@ namespace gpproto {
                                           _runningSynchronous(false) {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
             this->_jobs = std::list<DispatchWork>();
-            printf("DispatchQueue %s allocated\n", this->_name.c_str());
+            //printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
 
         ~DispatchQueue() {
-            printf("DispatchQueue %s deallocated\n", this->_name.c_str());
+            //printf("DispatchQueue %s deallocated\n", this->_name.c_str());
             _finished = true;
             _jobs.clear();
             _asyncSemaphore.notify();
@@ -68,9 +68,10 @@ namespace gpproto {
 
         void _async(DispatchWork work, bool force);
 
-        void threadWorker() {
+        void threadWorker()
+        {
             _threadIdMutex.lock();
-            this->_threadId = _thread.get_id();
+            _threadId = _thread.get_id();
             _threadIdMutex.unlock();
 
             while (!_finished) {
@@ -78,29 +79,27 @@ namespace gpproto {
             }
         }
 
-        void maybeDispatchWorker() {
+        void maybeDispatchWorker()
+        {
             auto l = std::list<DispatchWork>();
 
             _mutex.lock();
 
-            do {
-                if (!_jobs.empty())
-                {
-                    auto f = _jobs.front();
-                    _jobs.pop_front();
-                    l.push_back(f);
-                }
+            while (!_jobs.empty())
+            {
+                auto f = _jobs.front();
+                _jobs.pop_front();
+                l.push_back(f);
             }
-            while (!_jobs.empty());
 
             _mutex.unlock();
 
+            //printf("Before invoke list number %lu of %s\n", l.size(), name().c_str());
+
             while (!l.empty())
             {
-                auto f = l.front();
+                (*l.begin())();
                 l.pop_front();
-                printf("Before invoke list number %lu of %s\n", l.size(), name().c_str());
-                f();
             }
 
             bool sync = false;
@@ -108,7 +107,7 @@ namespace gpproto {
             _mutex.lock();
             sync = _runningSynchronous;
 
-            if (sync && _jobs.empty())
+            if (sync)
             {
                 _runningSynchronous = false;
                 _syncSemaphore.notify();

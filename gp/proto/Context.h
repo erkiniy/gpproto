@@ -5,11 +5,13 @@
 #ifndef GPPROTO_CONTEXT_H
 #define GPPROTO_CONTEXT_H
 
-#include <unordered_map>
 #include "gp/utils/DispatchQueue.h"
 #include "gp/proto/AuthKeyInfo.h"
 #include "gp/proto/DatacenterAddress.h"
 #include "gp/proto/DatacenterAuthAction.h"
+
+#include <unordered_map>
+#include <mutex>
 
 namespace gpproto
 {
@@ -87,6 +89,8 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::weak_ptr<ContextChangeListener>> changeListeners;
+
+        std::mutex mutex;
     };
 }
 

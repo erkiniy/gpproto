@@ -61,6 +61,7 @@ namespace gpproto
         };
 
         ~Proto() {
+            LOGV("[Proto deallocating]");
             auto strongSelf = shared_from_this();
             this->context->removeChangeListener(strongSelf);
         };

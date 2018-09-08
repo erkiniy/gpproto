@@ -11,6 +11,7 @@
 #endif
 
 #include <stdio.h>
+#include <mutex>
 
 void gp_log_file_set_path(const char* path);
 void gp_log_file_printf(char level, const char* msg, ...);

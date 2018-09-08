@@ -11,31 +11,32 @@
 using namespace gpproto;
 
 void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t datacenterId) {
-    this->startTime = getAbsoluteSystemTime();
+    LOGV("[DatacenterAuthAction execute]");
+    auto self = shared_from_this();
+    Proto::queue()->async([self, context, datacenterId] {
+        self->startTime = getAbsoluteSystemTime();
 
-    this->datacenterId = datacenterId;
-    this->context = context;
+        self->datacenterId = datacenterId;
+        self->context = context;
 
-    LOGV("Start execution of Auth action at %lf", startTime);
+        LOGV("Start execution of Auth action at %lf", self->startTime);
 
-    if (datacenterId != 0 && context != nullptr)
-    {
-        if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
-            complete();
-        else {
-            proto = std::make_shared<Proto>(context, datacenterId, true);
+        if (datacenterId != 0 && context != nullptr)
+        {
+            if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
+                self->complete();
+            else {
+                self->proto = std::make_shared<Proto>(context, datacenterId, true);
 
-            auto authService = std::make_shared<DatacenterAuthMessageService>(context);
-            auto self = shared_from_this();
-            auto delegate = std::dynamic_pointer_cast<DatacenterAuthMessageServiceDelegate>(self);
-            authService->setDelegate(delegate);
-            proto->addMessageService(authService);
+                auto authService = std::make_shared<DatacenterAuthMessageService>(context);
+                authService->setDelegate(self);
+                LOGV("[DatacenterAuthAction execute] after setting delegate");
+                self->proto->addMessageService(authService);
+            }
+        } else {
+            self->fail();
         }
-    }
-    else {
-        fail();
-    }
-
+    });
 }
 
 void DatacenterAuthAction::authMessageServiceCompletedWithAuthKey(const DatacenterAuthMessageService &service,
@@ -67,6 +68,7 @@ void DatacenterAuthAction::cancel() {
 }
 
 void DatacenterAuthAction::cleanup() {
+    LOGV("[DatacenterAuthAction cleanup]");
     if (proto)
     {
         proto->stop();

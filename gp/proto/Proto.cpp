@@ -28,50 +28,50 @@
 using namespace gpproto;
 
 void Proto::setDelegate(std::shared_ptr<ProtoDelegate> delegate) {
-    Proto::queue()->async([&, delegate] {
-        this->delegate = delegate;
+    Proto::queue()->async([self = shared_from_this(), delegate] {
+        self->delegate = delegate;
     });
 }
 
 void Proto::pause() {
-    Proto::queue()->async([&] {
-        LOGV("Pausing proto with old state %du", protoState);
-        if ((protoState & ProtoStatePaused) == 0)
+    Proto::queue()->async([self = shared_from_this()] {
+        LOGV("Pausing proto with old state %d", self->protoState);
+        if ((self->protoState & ProtoStatePaused) == 0)
         {
-            setState(protoState | ProtoStatePaused);
+            self->setState(self->protoState | ProtoStatePaused);
             LOGV("Proto paused");
 
-            setTransport(nullptr);
+            self->setTransport(nullptr);
         }
     });
 }
 
 void Proto::resume() {
-    Proto::queue()->async([&] {
+    Proto::queue()->async([self = shared_from_this()] {
 
-        if (protoState & ProtoStatePaused)
+        if (self->protoState & ProtoStatePaused)
         {
-            setState(protoState & (~ProtoStatePaused));
+            self->setState(self->protoState & (~ProtoStatePaused));
             LOGV("Proto resumed");
 
-            resetTransport();
-            requestTransportTransactions();
+            self->resetTransport();
+            self->requestTransportTransactions();
         }
     });
 }
 
 void Proto::stop() {
-    Proto::queue()->async([&] {
-        if ((protoState & ProtoStateStopped) == 0)
+    Proto::queue()->async([self = shared_from_this()] {
+        if ((self->protoState & ProtoStateStopped) == 0)
         {
-            setState(protoState | ProtoStateStopped);
+            self->setState(self->protoState | ProtoStateStopped);
             LOGV("Proto stopped");
 
-            if (transport)
+            if (self->transport)
             {
-                transport->setDelegate(nullptr);
-                transport->stop();
-                setTransport(nullptr);
+                self->transport->setDelegate(nullptr);
+                self->transport->stop();
+                self->setTransport(nullptr);
             }
         }
     });
@@ -108,7 +108,7 @@ void Proto::contextDatacenterAuthInfoUpdated(const Context &context, int32_t dat
 }
 
 void Proto::contextDatacenterAddressSetUpdated(const gpproto::Context &context, int32_t datacenterId,
-                                               std::vector<std::shared_ptr<gpproto::DatacenterAddress>> addressSet) {}
+                                               std::vector<std::shared_ptr<DatacenterAddress>> addressSet) {}
 
 bool Proto::canAskTransactions() const {
     return (protoState & (ProtoStateAwaitingAuthorization | ProtoStateAwaitingTimeFixAndSalts | ProtoStateStopped)) == 0;
@@ -136,7 +136,7 @@ bool Proto::isPaused() {
 
 void Proto::setTransport(std::shared_ptr<Transport> transport) {
     Proto::queue()->async([strongSelf = shared_from_this(), transport] {
-        LOGV("[Proto setTransport] -> changing transport");
+        LOGV("[Proto setTransport] -> changing transport to %s", transport == nullptr ? "nullptr" : "tcp_transport");
 
         strongSelf->allTransactionsMayHaveFailed();
 
@@ -152,47 +152,47 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
-
-        if (strongSelf->protoState & ProtoStateStopped)
+    Proto::queue()->async([self = shared_from_this()] {
+        LOGV("[Proto resetTransport]");
+        if (self->protoState & ProtoStateStopped)
             return;
 
-        if (auto _transport = strongSelf->transport)
+        if (auto _transport = self->transport)
         {
             _transport->setDelegate(nullptr);
             _transport->stop();
 
-            strongSelf->setTransport(nullptr);
+            self->setTransport(nullptr);
         }
 
-        strongSelf->transportScheme = strongSelf->context->transportSchemeForDatacenterId(strongSelf->datacenterId);
+        self->transportScheme = self->context->transportSchemeForDatacenterId(self->datacenterId);
 
-        if (strongSelf->transportScheme == nullptr)
+        if (self->transportScheme == nullptr)
         {
-            if ((strongSelf->protoState & ProtoStateAwaitingTransportScheme) == 0)
+            if ((self->protoState & ProtoStateAwaitingTransportScheme) == 0)
             {
                 LOGV("[Proto resetTransport] -> awaitingTransportScheme");
 
-                strongSelf->setState(strongSelf->protoState | ProtoStateAwaitingTransportScheme);
-                strongSelf->context->transportSchemeForDatacenterIdRequired(strongSelf->datacenterId);
+                self->setState(self->protoState | ProtoStateAwaitingTransportScheme);
+                self->context->transportSchemeForDatacenterIdRequired(self->datacenterId);
             }
         }
-        if (!strongSelf->useUnauthorizedMode && strongSelf->context->getAuthKeyInfoForDatacenterId(strongSelf->datacenterId) == nullptr)
+        else if (!self->useUnauthorizedMode && self->context->getAuthKeyInfoForDatacenterId(self->datacenterId) == nullptr)
         {
-            if ((strongSelf->protoState & ProtoStateAwaitingAuthorization) == 0)
+            if ((self->protoState & ProtoStateAwaitingAuthorization) == 0)
             {
-                LOGV("[Proto resetTransport] -> missing authorized key for datacenterId = %d", strongSelf->datacenterId);
+                LOGV("[Proto resetTransport] -> missing authorized key for datacenterId = %d", self->datacenterId);
 
-                strongSelf->setState(strongSelf->protoState | ProtoStateAwaitingAuthorization);
-                strongSelf->context->authInfoForDatacenterWithIdRequired(strongSelf->datacenterId);
+                self->setState(self->protoState | ProtoStateAwaitingAuthorization);
+                self->context->authInfoForDatacenterWithIdRequired(self->datacenterId);
             }
         }
         else
         {
             LOGV("[Proto resetTransport] -> setting created transport");
-            auto transport = strongSelf->transportScheme->createTransportWithContext(strongSelf->context, strongSelf->datacenterId, strongSelf);
+            auto transport = self->transportScheme->createTransportWithContext(self->context, self->datacenterId, self);
 
-            strongSelf->setTransport(transport);
+            self->setTransport(transport);
         }
     });
 }
@@ -225,7 +225,7 @@ void Proto::updateConnectionState() {
 
 void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr<StreamSlice> data,
                                      bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) {
-    Proto::queue()->async([&, strongSelf = shared_from_this(), data, requestTransactionAfterProcessing, decodeResult] {
+    Proto::queue()->async([&transport, strongSelf = shared_from_this(), data, requestTransactionAfterProcessing, decodeResult] {
 
         if (strongSelf->transport == nullptr || !strongSelf->transport->isEqual(transport) || strongSelf->isStopped())
             return;
@@ -252,7 +252,7 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
             int64_t dataMessageId = 0;
             bool parseError = false;
 
-            auto parsedMessages = parseIncomingMessages(decryptedData, dataMessageId, parseError);
+            auto parsedMessages = strongSelf->parseIncomingMessages(decryptedData, dataMessageId, parseError);
 
             decodeResult(!parseError);
 
@@ -262,7 +262,7 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
             }
 
             for (auto incomingMessage : parsedMessages)
-                processIncomingMessage(incomingMessage);
+                strongSelf->processIncomingMessage(incomingMessage);
         }
     });
 }
@@ -611,8 +611,9 @@ void Proto::resetSessionInfo() {
 
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
     auto strongSelf = shared_from_this();
+    LOGV("[Proto addMessageService]");
     Proto::queue()->async([strongSelf, service] {
-        LOGV("Adding service %d", service->internalId);
+        LOGV("Adding service");
         auto it = strongSelf->messageServices.find(service->internalId);
         if (it == strongSelf->messageServices.end()) {
             LOGV("Will Add");

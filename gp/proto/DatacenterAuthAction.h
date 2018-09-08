@@ -30,6 +30,7 @@ class DatacenterAuthAction : public std::enable_shared_from_this<DatacenterAuthA
         DatacenterAuthAction(const DatacenterAuthAction&) = delete;
 
         ~DatacenterAuthAction() {
+            printf("DatacenterAuthAction dealloc");
             cleanup();
         };
 

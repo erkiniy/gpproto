@@ -15,6 +15,8 @@ namespace gpproto {
         std::string host;
         std::string ip;
         uint16_t port;
+
+        DatacenterAddress(const DatacenterAddress&) = default;
     };
 
     inline bool operator == (const DatacenterAddress& lhs, const DatacenterAddress& rhs) {
