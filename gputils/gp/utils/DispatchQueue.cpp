@@ -15,7 +15,7 @@ void DispatchQueue::asyncForce(DispatchQueue::DispatchWork work) {
     _async(std::move(work), true);
 }
 
-void DispatchQueue::sync(const DispatchQueue::DispatchWork &work) {
+void DispatchQueue::sync(DispatchQueue::DispatchWork work) {
     if (this->isCurrentQueue()) {
         work();
         LOGV("Sync current %s", this->name().c_str());
