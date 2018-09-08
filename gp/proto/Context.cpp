@@ -17,10 +17,10 @@ double Context::getGlobalTime() {
 double Context::getGlobalTimeDifference() {
     double *diffPtr = nullptr;
 
-    Context::queue()->sync([self = shared_from_this(), diffPtr]() mutable {
-        auto diff = self->globalTimeDifference;
-        diffPtr = new double(diff);
-    });
+    mutex.lock();
+    auto diff = globalTimeDifference;
+    mutex.unlock();
+    diffPtr = new double(diff);
 
     double difference = *diffPtr;
     delete diffPtr;
@@ -38,13 +38,12 @@ void Context::setGlobalTimeDifference(double difference) {
 std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) {
     AuthKeyInfo* infoPtr = nullptr;
 
-    Context::queue()->sync([self = shared_from_this(), id, infoPtr]() mutable {
-        auto it = self->authInfoByDatacenterId.find(id);
+    mutex.lock();
+    auto it = authInfoByDatacenterId.find(id);
 
-        if (it != self->authInfoByDatacenterId.end())
-            infoPtr = new AuthKeyInfo((*self->authInfoByDatacenterId[id]));
-
-    });
+    if (it != authInfoByDatacenterId.end())
+        infoPtr = new AuthKeyInfo((*authInfoByDatacenterId[id]));
+    mutex.unlock();
 
     if (infoPtr != nullptr) {
         LOGV("[Context getAuthKeyInfoForDatacenterId] -> auth info found");
@@ -77,7 +76,9 @@ void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo
 
     Context::queue()->async([self = shared_from_this(), keyInfo, id] {
         if (keyInfo != nullptr && id != 0)
+            self->mutex.lock();
             self->authInfoByDatacenterId[id] = keyInfo;
+            self->mutex.unlock();
     });
 #warning implement storing to keychain
 
@@ -87,13 +88,13 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(
 
     DatacenterAddress *addressPtr = nullptr;
 
-    Context::queue()->sync([self = shared_from_this(), id, addressPtr]() mutable {
-        LOGV("[Context getDatacenterAddressForDatacenterId]");
-        auto it = self->datacenterAddressByDatacenterId.find(id);
+    LOGV("[Context getDatacenterAddressForDatacenterId]");
+    mutex.lock();
+    auto it = datacenterAddressByDatacenterId.find(id);
 
-        if (it != self->datacenterAddressByDatacenterId.end())
-            addressPtr = new DatacenterAddress(*(self->datacenterAddressByDatacenterId[id]));
-    });
+    if (it != datacenterAddressByDatacenterId.end())
+        addressPtr = new DatacenterAddress(*(datacenterAddressByDatacenterId[id]));
+    mutex.unlock();
 
     LOGV("[Context getDatacenterAddressForDatacenterId] -> returning address %d", addressPtr != nullptr);
 
@@ -106,8 +107,10 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(
 void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id) {
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
 
-    Context::queue()->async([strongSelf = shared_from_this(), addr, id] {
-        strongSelf->datacenterAddressByDatacenterId[id] = addr;
+    Context::queue()->async([self = shared_from_this(), addr, id] {
+        self->mutex.lock();
+        self->datacenterAddressByDatacenterId[id] = addr;
+        self->mutex.unlock();
     });
 #warning implement storing to keychain
 }
@@ -116,14 +119,14 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacente
     DatacenterAddress *addressPtr = nullptr;
 
     LOGV("[Context getDatacenterSeedAddressForDatacenterId]");
-    Context::queue()->sync([self = shared_from_this(), id, addressPtr]() mutable {
-        auto it = self->datacenterSeedAddressByDatacenterId.find(id);
+    mutex.lock();
+    auto it = datacenterSeedAddressByDatacenterId.find(id);
 
-        if (it != self->datacenterSeedAddressByDatacenterId.end()) {
-            LOGV("AddressSeed found");
-            addressPtr = new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id]));
-        }
-    });
+    if (it != datacenterSeedAddressByDatacenterId.end()) {
+        LOGV("AddressSeed found");
+        addressPtr = new DatacenterAddress(*(datacenterSeedAddressByDatacenterId[id]));
+    }
+    mutex.unlock();
 
     if (addressPtr != nullptr) {
         LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> address found");
@@ -140,7 +143,9 @@ void Context::setDatacenterSeedAddress(DatacenterAddress &&address, int32_t id) 
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
 
     Context::queue()->async([self = shared_from_this(), addr, id] {
+        self->mutex.lock();
         self->datacenterSeedAddressByDatacenterId[id] = addr;
+        self->mutex.unlock();
     });
 
 }
@@ -181,22 +186,32 @@ void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
     Context::queue()->async([self = shared_from_this(), id] {
         LOGV("[Context authInfoForDatacenterWithIdRequired]");
 
+        self->mutex.lock();
+
         auto it = self->datacenterAuthActionsByDatacenterId.find(id);
 
         if (it == self->datacenterAuthActionsByDatacenterId.end())
         {
             auto authAction = std::make_shared<DatacenterAuthAction>();
+            LOGV("[Context authInfoForDatacenterWithIdRequired] -> createdAuthAction");
             authAction->setDelegate(self);
+            LOGV("[Context authInfoForDatacenterWithIdRequired] -> setDelegate");
             self->datacenterAuthActionsByDatacenterId[id] = authAction;
+            LOGV("[Context authInfoForDatacenterWithIdRequired] -> insert");
 
             authAction->execute(self, id);
         }
+        else {
+            LOGV("[Context authInfoForDatacenterWithIdRequired] -> action found");
+        }
+        self->mutex.unlock();
     });
 }
 
 void Context::datacenterAuthActionCompleted(const DatacenterAuthAction &action) {
     Context::queue()->async([self = shared_from_this(), &action] {
 
+        self->mutex.lock();
         for (auto it = self->datacenterAuthActionsByDatacenterId.begin(); it != self->datacenterAuthActionsByDatacenterId.end(); )
         {
             if (it->second->internalId == action.internalId)
@@ -204,6 +219,7 @@ void Context::datacenterAuthActionCompleted(const DatacenterAuthAction &action) 
             else
                 ++it;
         }
+        self->mutex.unlock();
 
     });
 }
@@ -212,7 +228,7 @@ void Context::updateTransportSchemeForDatacenterId(std::shared_ptr<TransportSche
     Context::queue()->async([self = shared_from_this(), scheme, datacenterId] {
         if (scheme != nullptr && datacenterId != 0)
         {
-            for (const auto listener : self->changeListeners)
+            for (const auto& listener : self->changeListeners)
             {
                 if (auto strongListener = listener.second.lock())
                     strongListener->contextDatacenterTransportSchemeUpdated(*self, datacenterId, scheme);

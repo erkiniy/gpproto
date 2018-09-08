@@ -13,13 +13,14 @@ using namespace gpproto;
 void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t datacenterId) {
     LOGV("[DatacenterAuthAction execute]");
     auto self = shared_from_this();
-    Proto::queue()->async([self, context, datacenterId] {
+    //Proto::queue()->async([self, context, datacenterId] {
+
         self->startTime = getAbsoluteSystemTime();
+
+        LOGV("Start execution of Auth action at %lf", self->startTime);
 
         self->datacenterId = datacenterId;
         self->context = context;
-
-        LOGV("Start execution of Auth action at %lf", self->startTime);
 
         if (datacenterId != 0 && context != nullptr)
         {
@@ -36,7 +37,7 @@ void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t dat
         } else {
             self->fail();
         }
-    });
+    //});
 }
 
 void DatacenterAuthAction::authMessageServiceCompletedWithAuthKey(const DatacenterAuthMessageService &service,
@@ -58,6 +59,7 @@ void DatacenterAuthAction::complete() {
 }
 
 void DatacenterAuthAction::fail() {
+    LOGV("DatacenterAuthAction fail");
     if (auto strongDelegate = delegate.lock())
         strongDelegate->datacenterAuthActionCompleted(*this);
 }

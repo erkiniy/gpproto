@@ -166,6 +166,7 @@ void Proto::resetTransport() {
         }
 
         self->transportScheme = self->context->transportSchemeForDatacenterId(self->datacenterId);
+        //LOGV("[Proto resetTransport] -> scheme returned %d, unauthorized=%d", self->transportScheme != nullptr, self->useUnauthorizedMode);
 
         if (self->transportScheme == nullptr)
         {
@@ -181,7 +182,7 @@ void Proto::resetTransport() {
         {
             if ((self->protoState & ProtoStateAwaitingAuthorization) == 0)
             {
-                LOGV("[Proto resetTransport] -> missing authorized key for datacenterId = %d", self->datacenterId);
+                //LOGV("[Proto resetTransport] -> missing authorized key for datacenterId = %d", self->datacenterId);
 
                 self->setState(self->protoState | ProtoStateAwaitingAuthorization);
                 self->context->authInfoForDatacenterWithIdRequired(self->datacenterId);
