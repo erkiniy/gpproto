@@ -35,11 +35,11 @@ namespace gpproto {
             _thread.join();
         }
 
-        void sync(DispatchWork work);
+        void sync(DispatchWork && work);
 
-        void async(DispatchWork work);
+        void async(DispatchWork && work);
 
-        void asyncForce(DispatchWork work);
+        void asyncForce(DispatchWork && work);
 
         bool isCurrentQueue() const {
             bool current = false;

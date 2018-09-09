@@ -41,7 +41,7 @@ void Timer::start() {
         }
         else {
             if (auto queue = strongSelf->queue)
-                queue->async(strongSelf->action);
+                queue->async(std::move(strongSelf->action));
             else
                 strongSelf->action();
 

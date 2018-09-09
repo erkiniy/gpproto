@@ -72,6 +72,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+if (THREADS_FOUND)
+    message(STATUS "Found Threads")
+endif()
+
+if (THREADS_HAVE_PTHREAD_ARG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif()
+
 # Configure CCache if available
 find_program(CCACHE_FOUND ccache)
 #set(CCACHE_FOUND 0)
