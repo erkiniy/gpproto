@@ -13,31 +13,29 @@ using namespace gpproto;
 void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t datacenterId) {
     LOGV("[DatacenterAuthAction execute]");
     auto self = shared_from_this();
-    //Proto::queue()->async([self, context, datacenterId] {
 
-        self->startTime = getAbsoluteSystemTime();
+    self->startTime = getAbsoluteSystemTime();
 
-        LOGV("Start execution of Auth action at %lf", self->startTime);
+    LOGV("Start execution of Auth action at %lf", self->startTime);
 
-        self->datacenterId = datacenterId;
-        self->context = context;
+    self->datacenterId = datacenterId;
+    self->context = context;
 
-        if (datacenterId != 0 && context != nullptr)
-        {
-            if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
-                self->complete();
-            else {
-                self->proto = std::make_shared<Proto>(context, datacenterId, true);
+    if (datacenterId != 0 && context != nullptr)
+    {
+        if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
+            self->complete();
+        else {
+            self->proto = std::make_shared<Proto>(context, datacenterId, true);
 
-                auto authService = std::make_shared<DatacenterAuthMessageService>(context);
-                authService->setDelegate(self);
-                LOGV("[DatacenterAuthAction execute] after setting delegate");
-                self->proto->addMessageService(authService);
-            }
-        } else {
-            self->fail();
+            auto authService = std::make_shared<DatacenterAuthMessageService>(context);
+            authService->setDelegate(self);
+            LOGV("[DatacenterAuthAction execute] after setting delegate");
+            self->proto->addMessageService(authService);
         }
-    //});
+    } else {
+        self->fail();
+    }
 }
 
 void DatacenterAuthAction::authMessageServiceCompletedWithAuthKey(const DatacenterAuthMessageService &service,

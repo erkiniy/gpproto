@@ -56,6 +56,7 @@ namespace gpproto {
     private:
         const std::string _name;
         std::list<DispatchWork> _jobs;
+        std::list<DispatchWork> _tempJobs;
         std::thread _thread;
         std::thread::id _threadId;
         std::mutex _mutex;
@@ -81,25 +82,20 @@ namespace gpproto {
 
         void maybeDispatchWorker()
         {
-            auto l = std::list<DispatchWork>();
-
             _mutex.lock();
 
-            while (!_jobs.empty())
-            {
-                auto f = _jobs.front();
-                _jobs.pop_front();
-                l.push_back(f);
-            }
+            _tempJobs = _jobs;
+
+            _jobs.clear();
 
             _mutex.unlock();
 
             //printf("Before invoke list number %lu of %s\n", l.size(), name().c_str());
 
-            while (!l.empty())
+            while (!_tempJobs.empty())
             {
-                (*l.begin())();
-                l.pop_front();
+                (*_tempJobs.begin())();
+                _tempJobs.pop_front();
             }
 
             bool sync = false;

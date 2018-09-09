@@ -141,8 +141,10 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacente
 void Context::setDatacenterSeedAddress(DatacenterAddress &&address, int32_t id) {
 
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
+    LOGV("+++++++ Async [setDatacenterSeedAddress] to %s", Context::queue()->name().c_str());
 
     Context::queue()->async([self = shared_from_this(), addr, id] {
+        LOGV("setDatacenterSeedAddress");
         self->mutex.lock();
         self->datacenterSeedAddressByDatacenterId[id] = addr;
         self->mutex.unlock();
@@ -183,6 +185,7 @@ void Context::addressSetForDatacenterIdRequired(int32_t id) {
 }
 
 void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
+    LOGV("+++++++ Async [authInfoForDatacenterWithIdRequired] to %s", Context::queue()->name().c_str());
     Context::queue()->async([self = shared_from_this(), id] {
         LOGV("[Context authInfoForDatacenterWithIdRequired]");
 

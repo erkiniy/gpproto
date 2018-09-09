@@ -34,6 +34,7 @@ void Proto::setDelegate(std::shared_ptr<ProtoDelegate> delegate) {
 }
 
 void Proto::pause() {
+    LOGV("+++++++ Async [pause] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this()] {
         LOGV("Pausing proto with old state %d", self->protoState);
         if ((self->protoState & ProtoStatePaused) == 0)
@@ -47,6 +48,7 @@ void Proto::pause() {
 }
 
 void Proto::resume() {
+    LOGV("+++++++ Async [resume] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this()] {
 
         if (self->protoState & ProtoStatePaused)
@@ -135,6 +137,7 @@ bool Proto::isPaused() {
 }
 
 void Proto::setTransport(std::shared_ptr<Transport> transport) {
+    LOGV("+++++++ Async to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([strongSelf = shared_from_this(), transport] {
         LOGV("[Proto setTransport] -> changing transport to %s", transport == nullptr ? "nullptr" : "tcp_transport");
 
@@ -152,10 +155,12 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
+    LOGV("+++++++ Async [resetTransport] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this()] {
-        LOGV("[Proto resetTransport]");
         if (self->protoState & ProtoStateStopped)
             return;
+
+        LOGV("[Proto resetTransport]");
 
         if (auto _transport = self->transport)
         {
@@ -612,15 +617,13 @@ void Proto::resetSessionInfo() {
 
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
     auto strongSelf = shared_from_this();
-    LOGV("[Proto addMessageService]");
+    LOGV("+++++++ Async [addMessageService] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([strongSelf, service] {
         LOGV("Adding service");
         auto it = strongSelf->messageServices.find(service->internalId);
         if (it == strongSelf->messageServices.end()) {
-            LOGV("Will Add");
             service->protoWillAddService(strongSelf);
             strongSelf->messageServices[service->internalId] = service;
-            LOGV("Did add");
             service->protoDidAddService(strongSelf);
         }
     });

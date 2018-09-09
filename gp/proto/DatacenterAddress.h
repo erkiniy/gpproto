@@ -17,6 +17,8 @@ namespace gpproto {
         uint16_t port;
 
         DatacenterAddress(const DatacenterAddress&) = default;
+
+        DatacenterAddress(DatacenterAddress &&) = default;
     };
 
     inline bool operator == (const DatacenterAddress& lhs, const DatacenterAddress& rhs) {
