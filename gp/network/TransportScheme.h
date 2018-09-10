@@ -20,7 +20,6 @@ namespace gpproto {
         TransportScheme(TransportType type, std::shared_ptr<DatacenterAddress> address) : type(type), address(std::move(address)) {};
 
         std::shared_ptr<Transport> createTransportWithContext(std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<TransportDelegate> delegate) const;
-
         const TransportType type;
         const std::shared_ptr<DatacenterAddress> address;
     };

@@ -10,13 +10,13 @@ void TcpTransportContext::requestConnection() {
 }
 
 void TcpTransportContext::startIfNeeded() {
-    auto strongSelf = shared_from_this();
+    auto self = shared_from_this();
     LOGV("[TcpTransportContext -> startIfNeeded]");
-    queue->async([strongSelf] {
-        if (strongSelf->connection == nullptr)
+    queue->async([self] {
+        if (self->connection == nullptr)
         {
-            if (auto delegate = strongSelf->delegate.lock())
-                delegate->tcpConnectionRequestReconnection(*strongSelf);
+            if (auto delegate = self->delegate.lock())
+                delegate->tcpConnectionRequestReconnection(*self);
         }
     });
 }

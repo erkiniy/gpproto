@@ -8,11 +8,11 @@
 using namespace gpproto;
 
 void DispatchQueue::async(DispatchQueue::DispatchWork && work) {
-    _async(work, false);
+    _async(std::move(work), false);
 }
 
 void DispatchQueue::asyncForce(DispatchQueue::DispatchWork && work) {
-    _async(work, true);
+    _async(std::move(work), true);
 }
 
 void DispatchQueue::sync(DispatchQueue::DispatchWork && work) {
@@ -36,7 +36,7 @@ void DispatchQueue::sync(DispatchQueue::DispatchWork && work) {
     }
 }
 
-void DispatchQueue::_async(DispatchQueue::DispatchWork work, bool force) {
+void DispatchQueue::_async(DispatchQueue::DispatchWork && work, bool force) {
     if (this->isCurrentQueue() && !force) {
         LOGV("<--------------> Dispatched %s ASYNC-CURRENT", this->name().c_str());
         work();

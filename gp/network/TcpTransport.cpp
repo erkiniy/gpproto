@@ -20,23 +20,25 @@ void TcpTransport::reset() {
 }
 
 void TcpTransport::stop() {
-    auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([strongSelf] {
+    auto self = shared_from_this();
+    TcpTransport::queue()->async([self] {
 
-        if (!strongSelf->transportContext->connection)
+        if (!self->transportContext->connection)
             return;
+
+        LOGV("[TcpTransport stop]");
 
         //TODO: report to delegate about the failure of transaction
 
-        strongSelf->transportContext->stopped = false;
-        strongSelf->transportContext->connected = false;
+        self->transportContext->stopped = false;
+        self->transportContext->connected = false;
 
-        if (auto delegate = strongSelf->delegate.lock())
-            delegate->transportNetworkConnectionStateChanged(*strongSelf, false);
+        if (auto delegate = self->delegate.lock())
+            delegate->transportNetworkConnectionStateChanged(*self, false);
 
-        strongSelf->transportContext->connection->setDelegate(nullptr);
-        strongSelf->transportContext->connection->stop();
-        strongSelf->transportContext->connection = nullptr;
+        self->transportContext->connection->setDelegate(nullptr);
+        self->transportContext->connection->stop();
+        self->transportContext->connection = nullptr;
 
         //TODO: stop timers;
     });
@@ -63,13 +65,13 @@ void TcpTransport::setDelegate(std::shared_ptr<TransportDelegate> delegate) {
 }
 
 void TcpTransport::setDelegateNeedsTransaction() {
-    auto strongSelf = shared_from_this();
+    auto self = shared_from_this();
     LOGV("[TcpTransport -> setDelegateNeedsTransaction]");
-    TcpTransport::queue()->async([strongSelf] {
-        if (strongSelf->transportContext->connection == nullptr)
-            strongSelf->transportContext->requestConnection();
+    TcpTransport::queue()->async([self] {
+        if (self->transportContext->connection == nullptr)
+            self->transportContext->requestConnection();
         else
-            strongSelf->requestTransactionFromDelegate();
+            self->requestTransactionFromDelegate();
     });
 }
 
@@ -107,7 +109,7 @@ void TcpTransport::requestTransactionFromDelegate() {
 //MARK: Delegate methods
 void TcpTransport::connectionOpened(const Connection &connection) {
     auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([&, strongSelf] {
+    TcpTransport::queue()->async([&connection, strongSelf] {
 
         if (!strongSelf->transportContext->connection)
             return;
@@ -127,7 +129,7 @@ void TcpTransport::connectionOpened(const Connection &connection) {
 void TcpTransport::connectionClosed(const Connection &connection) {
     auto strongSelf = shared_from_this();
 
-    TcpTransport::queue()->async([&, strongSelf] {
+    TcpTransport::queue()->async([&connection, strongSelf] {
         if (!strongSelf->transportContext->connection)
             return;
 
@@ -148,7 +150,7 @@ void TcpTransport::connectionClosed(const Connection &connection) {
 
 void TcpTransport::connectionDidReceiveData(const Connection& connection, std::shared_ptr<StreamSlice> slice) {
     auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([&, strongSelf] {
+    TcpTransport::queue()->async([&connection, slice, strongSelf] {
 
         if (!strongSelf->transportContext->connection)
             return;
@@ -158,7 +160,7 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
 
         if (auto strongDelegate = strongSelf->delegate.lock())
         {
-            strongDelegate->transportHasIncomingData(*strongSelf, slice, true, [weakSelf = weak_from_this()](bool success) {
+            strongDelegate->transportHasIncomingData(*strongSelf, slice, true, [weakSelf = strongSelf->weak_from_this()](bool success) {
                  if (auto _strongSelf = weakSelf.lock()) {
                      if (success)
                          _strongSelf->connectionIsValid();
@@ -171,35 +173,35 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
 }
 
 void TcpTransport::tcpConnectionRequestReconnection(const TcpTransportContext &context) {
-    auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([&, strongSelf] {
+    auto self = shared_from_this();
+    TcpTransport::queue()->async([&context, self] {
 
-        if (strongSelf->transportContext->stopped)
+        if (self->transportContext->stopped)
             return;
 
-        strongSelf->startIfNeeded();
+        self->startIfNeeded();
     });
 }
 
 void TcpTransport::startIfNeeded() {
-    auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([strongSelf] {
-
-        if (!strongSelf->transportContext->connection)
+    LOGV("[TcpTransport startIfNeeded]");
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        LOGV("[TcpTransport startIfNeeded] connection is %s", self->transportContext->connection == nullptr ? "nil" : "not nil");
+        if (self->transportContext->connection)
             return;
 
         //TODO: start connection watchdog timer
 
-        auto context = strongSelf->context;
-        auto address = IPv4Address(strongSelf->address->ip);
+        auto context = self->context;
+        auto address = IPv4Address(self->address->ip);
 
-        strongSelf->transportContext->connection = std::make_shared<TcpConnection>(address, strongSelf->address->port);
+        self->transportContext->connection = std::make_shared<TcpConnection>(address, self->address->port);
 
-        auto strongDelegate = std::static_pointer_cast<ConnectionDelegate>(strongSelf);
+        //auto strongDelegate = std::static_pointer_cast<ConnectionDelegate>(strongSelf);
 
-        strongSelf->transportContext->connection->setDelegate(strongDelegate);
+        self->transportContext->connection->setDelegate(self);
 
-        strongSelf->transportContext->connection->start();
+        self->transportContext->connection->start();
     });
 }
 

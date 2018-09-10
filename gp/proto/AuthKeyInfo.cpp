@@ -52,6 +52,8 @@ int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
     int64_t bestSalt = 0;
     std::vector<int> saltsToDelete;
 
+    LOGV("[AuthKeyInfo authSaltForClientMessageId]");
+
     for (const auto &salt : saltSet)
     {
         if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId) {

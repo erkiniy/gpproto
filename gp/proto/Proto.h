@@ -48,9 +48,10 @@ namespace gpproto
         explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
                 : useUnauthorizedMode(useUnauthorizedMode),
                   datacenterId(datacenterId),
-                  authInfo(context->getAuthKeyInfoForDatacenterId(datacenterId)),
                   context(context),
                   sessionInfo(std::make_shared<Session>(context)) {
+            LOGV("Allocated Proto with unauthoried %d", useUnauthorizedMode);
+//            this->authInfo = context->getAuthKeyInfoForDatacenterId(datacenterId);
 //            auto self = shared_from_this();
 //
 //            Context::queue()->async([self] {

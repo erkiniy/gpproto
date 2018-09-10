@@ -20,15 +20,13 @@ namespace gpproto {
         typedef std::function<void()> DispatchWork;
     public:
 
-        DispatchQueue(std::string name) : _name(name), _finished(false), _asyncSemaphore(), _syncSemaphore(),
+        DispatchQueue(std::string name) : _name(std::move(name)), _finished(false), _asyncSemaphore(), _syncSemaphore(),
                                           _runningSynchronous(false) {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
             this->_jobs = std::list<DispatchWork>();
-            //printf("DispatchQueue %s allocated\n", this->_name.c_str());
         }
 
         ~DispatchQueue() {
-            //printf("DispatchQueue %s deallocated\n", this->_name.c_str());
             _finished = true;
             _jobs.clear();
             _asyncSemaphore.notify();
@@ -42,11 +40,7 @@ namespace gpproto {
         void asyncForce(DispatchWork && work);
 
         bool isCurrentQueue() const {
-            bool current = false;
-            _threadIdMutex.lock();
-            current = std::this_thread::get_id() == this->_threadId;
-            _threadIdMutex.unlock();
-            return current;
+            return std::this_thread::get_id() == this->_threadId;
         }
 
         const std::string& name() const {
@@ -59,21 +53,18 @@ namespace gpproto {
         std::list<DispatchWork> _tempJobs;
         std::thread _thread;
         std::thread::id _threadId;
-        std::mutex _mutex;
-        mutable std::mutex _threadIdMutex;
+        std::recursive_mutex _mutex;
 
         bool _finished;
         bool _runningSynchronous;
         Semaphore _asyncSemaphore;
         Semaphore _syncSemaphore;
 
-        void _async(DispatchWork work, bool force);
+        void _async(DispatchWork && work, bool force);
 
         void threadWorker()
         {
-            _threadIdMutex.lock();
             _threadId = _thread.get_id();
-            _threadIdMutex.unlock();
 
             while (!_finished) {
                 maybeDispatchWorker();
@@ -103,7 +94,7 @@ namespace gpproto {
             _mutex.lock();
             sync = _runningSynchronous;
 
-            if (sync)
+            if (sync && _jobs.empty())
             {
                 _runningSynchronous = false;
                 _syncSemaphore.notify();

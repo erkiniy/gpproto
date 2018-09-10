@@ -17,6 +17,8 @@ void gp_log_file_set_path(const char* path);
 void gp_log_file_printf(char level, const char* msg, ...);
 void gp_log_file_write_header(FILE* file);
 
+static std::mutex logMutex;
+
 #ifdef __ANDROID__
 #include <android/log.h>
 #define _LOG_WRAP(...) __VA_ARGS__
@@ -55,7 +57,7 @@ void gp_log_file_write_header(FILE* file);
 
 #include <stdio.h>
 
-#define GP_LOG_PRINT(verb, msg, ...) { printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); }
+#define GP_LOG_PRINT(verb, msg, ...) { logMutex.lock(); printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); logMutex.unlock(); }
 
 #define LOGV(msg, ...) GP_LOG_PRINT('V', msg, ##__VA_ARGS__)
 #define LOGD(msg, ...) GP_LOG_PRINT('D', msg, ##__VA_ARGS__)

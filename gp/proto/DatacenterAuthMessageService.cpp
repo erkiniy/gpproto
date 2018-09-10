@@ -55,6 +55,7 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
 
             auto message = std::make_shared<OutgoingMessage>(0, 0, true, reqPQBuffer.currentBytes());
 
+            LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> message with size %zu", message->data->size);
             return std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{message},
                     [self = shared_from_this(), message](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
                 if (self->stage == DatacenterAuthStage::pq)

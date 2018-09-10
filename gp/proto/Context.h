@@ -89,8 +89,6 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::weak_ptr<ContextChangeListener>> changeListeners;
-
-        std::mutex mutex;
     };
 }
 
