@@ -27,6 +27,11 @@
 
 using namespace gpproto;
 
+void Proto::initialize() {
+    auto self = shared_from_this();
+    context->addChangeListener(self);
+}
+
 void Proto::setDelegate(std::shared_ptr<ProtoDelegate> delegate) {
     Proto::queue()->async([self = shared_from_this(), delegate] {
         self->delegate = delegate;
@@ -156,7 +161,9 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
-    LOGV("+++++++ Async [resetTransport] to %s", Proto::queue()->name().c_str());
+    LOGV("+++++++ Async [resetTransport] to %s, unauthorized=%d", Proto::queue()->name().c_str(), useUnauthorizedMode);
+    LOGV("[Reset Transport is in ProtoQueue = %d]", Proto::queue()->isCurrentQueue());
+
     Proto::queue()->async([self = shared_from_this()] {
         if (self->protoState & ProtoStateStopped)
             return;
@@ -194,12 +201,12 @@ void Proto::resetTransport() {
                 self->context->authInfoForDatacenterWithIdRequired(self->datacenterId);
             }
         }
-        else
-        {
-            LOGV("[Proto resetTransport] -> setting created transport");
+        else {
+            LOGV("[Proto resetTransport] -> setting created transport with address %s", self->transportScheme->address->ip.c_str());
             auto transport = self->transportScheme->createTransportWithContext(self->context, self->datacenterId, self);
             self->setTransport(transport);
         }
+
     });
 }
 
@@ -267,7 +274,7 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
                 return;
             }
 
-            for (auto incomingMessage : parsedMessages)
+            for (const auto & incomingMessage : parsedMessages)
                 strongSelf->processIncomingMessage(incomingMessage);
         }
     });
@@ -423,7 +430,8 @@ std::shared_ptr<ProtoInternalMessage> Proto::parseMessage(const std::shared_ptr<
 }
 
 void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &message) {
-    LOGV("[Proto processIncomingMessage] -> processing incoming message with id: %lld", message->messsageId);
+    LOGV("[Proto processIncomingMessage] -> processing incoming message with id: %lld, length: %zu, class = %s", message->messsageId, message->length,
+         typeid(*message->body).name());
 
     if (sessionInfo->messageIdProcessed(message->messsageId))
     {
@@ -454,7 +462,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
             if (timeFixContext && badSaltNotificationMessage->badMessageId == timeFixContext->messageId)
             {
                 auto validSalt = badSaltNotificationMessage->validServerSalt;
-                auto timeDifference = (double)(message->messsageId / 4294967296) - getAbsoluteSystemTime();
+                auto timeDifference = (double)(message->messsageId / 4294967296.0) - getAbsoluteSystemTime();
 
                 setState(protoState & ~ProtoStateAwaitingTimeFixAndSalts);
 
@@ -520,17 +528,16 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
             if (sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount))
                 requestTransportTransactions();
 
-            for (auto it : messageServices)
-            {
-                auto service = it.second;
-                service->protoDidReceiveMessage(strongSelf, message);
-            }
         }
+
+        for (auto it : messageServices)
+            it.second->protoDidReceiveMessage(strongSelf, message);
+
     }
 }
 
 void Proto::requestTransportTransactions() {
-    LOGV("+++++++ Async [requestTransportTransactions] to %s", Proto::queue()->name().c_str());
+    LOGV("+++++++ Async [requestTransportTransactions] to %s, unauthorized=%d", Proto::queue()->name().c_str(), useUnauthorizedMode);
 
     Proto::queue()->async([self = shared_from_this()] {
 
@@ -546,11 +553,13 @@ void Proto::requestTransportTransactions() {
 
             if (!self->isStopped() && !self->isPaused())
             {
-                if (self->transport == nullptr) {
-                    LOGV("[Proto requestTransportTransactions] transport is null and unuathorized = %d", self->useUnauthorizedMode);
+                if (self->transport == nullptr) {//NOTE: not waiting on unauthorized
+                    LOGV("[Proto requestTransportTransactions] transport is null and unauthorized = %d", self->useUnauthorizedMode);
                     self->resetTransport();
+                    //LOGV("[Proto requestTransportTransactions] transport should be %s if unauthorized=%d", self->transport == nullptr ? "null" : "tcp_transport", self->useUnauthorizedMode);
                 }
-
+                LOGV("[Proto requestTransportTransactions] is ProtoQueue = %d", Proto::queue()->isCurrentQueue());
+                LOGV("[Proto requestTransportTransactions] after resetting transport = %s, unauthorized=%d", self->transport == nullptr ? "nullptr" : "tcp_transport", self->useUnauthorizedMode);
                 if (self->transport)
                     self->transport->setDelegateNeedsTransaction();
             }
@@ -626,7 +635,6 @@ void Proto::resetSessionInfo() {
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
     LOGV("+++++++ Async [addMessageService] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this(), service] {
-        LOGV("Adding service");
         auto it = self->messageServices.find(service->internalId);
         if (it == self->messageServices.end()) {
             service->protoWillAddService(self);
@@ -700,10 +708,15 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                                                  std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) {
 
     Proto::queue()->async([self = shared_from_this(), &transport, transportSpecificTransaction, transactionsReady] {
+        LOGV("[Proto transportReadyForTransaction] -> when transport is %s", self->transport == nullptr ? "nullptr" : "transport");
         if (self->transport == nullptr || !self->transport->isEqual(transport)) {
+            LOGE("[Proto transportReadyForTransaction] -> when transport id is %d", self->transport == nullptr ? -1 : self->transport->internalId);
+            LOGE("[Proto transportReadyForTransaction] -> when received transport id is %d", self->transport == nullptr ? -1 : transport.internalId);
             transactionsReady({});
             return;
         }
+
+        LOGV("[Proto transportReadyForTransaction] -> canAskTransactions = %d", self->canAskTransactions());
 
         if (self->canAskTransactions())
         {
@@ -721,6 +734,8 @@ void Proto::transportReadyForTransaction(const Transport &transport,
 
             bool hasHighPriorityMessages = false;
             bool transactionExpectsDataInResponse = false;
+
+            LOGV("[Proto transportReadyForTransaction] -> messageServices count = %d", (int)self->messageServices.size());
 
             for (auto& service : self->messageServices)
             {
@@ -748,14 +763,17 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                         std::initializer_list<std::shared_ptr<OutgoingMessage>>{outgoingMessage},
                         [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {},
                         [] {},
-                        [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                        [](std::unordered_map<int, int> messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
 
                         });
 
                 messageTransactions.push_back(std::move(messageTransaction));
             }
 
+            LOGV("[Proto transportReadyForTransaction] -> message transactions count = %d", (int)messageTransactions.size());
+
             std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage;
+            std::unordered_map<int, int> preparedMessageInternalIdToMessageInternalId;
 
             bool saltSetEmpty = false;
             bool monotonicityViolated = false;
@@ -785,11 +803,12 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                         messageId = outgoingMessage->messsageId;
                     }
 
-                    auto salt = self->authInfo->authSaltForClientMessageId(messageId);
-
                     if (!monotonicityViolated || self->useUnauthorizedMode)
                     {
-                        auto preparedMessage = std::make_shared<PreparedMessage>(outgoingMessage->internalId, messageId, seqNo, salt, outgoingMessage->data, outgoingMessage->requiresConfirmation, false);
+                        auto preparedMessage = std::make_shared<PreparedMessage>(outgoingMessage->internalId, messageId, seqNo, messageSalt, outgoingMessage->data, outgoingMessage->requiresConfirmation, false);
+                        messageInternalIdToPreparedMessage[outgoingMessage->internalId] = preparedMessage;
+                        preparedMessageInternalIdToMessageInternalId[preparedMessage->internalId] = outgoingMessage->internalId;
+
                         preparedMessages.push_back(preparedMessage);
                     }
                 }
@@ -803,7 +822,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                 for (const auto & transaction : messageTransactions)
                 {
                     messageInternalIdToPreparedMessage.clear();
-                    transaction->completed(messageInternalIdToPreparedMessage);
+                    transaction->completed({}, {});
                 }
                 transactionsReady({});
 
@@ -852,11 +871,19 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                     for (const auto & payload : transactionPayloadList)
                     {
                         auto transportTransaction = std::make_shared<TransportTransaction>(payload, [messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage)](bool success, int transactionId) mutable {
-                            Proto::queue()->async([messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage), success] {
+                            Proto::queue()->async([messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage), success, transactionId] {
                                 if (success)
                                 {
+
                                     for (const auto & transaction : messageTransactions)
-                                        transaction->completed(std::move(messageInternalIdToPreparedMessage));
+                                    {
+                                        std::unordered_map<int, int> messageInternalIdToTransactionId;
+
+                                        for (const auto & outgoingMessage : transaction->payload)
+                                            messageInternalIdToTransactionId[outgoingMessage->internalId] = transactionId;
+
+                                        transaction->completed(messageInternalIdToTransactionId, messageInternalIdToPreparedMessage);
+                                    }
                                 }
                                 else
                                 {

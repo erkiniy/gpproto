@@ -57,7 +57,7 @@ static std::mutex logMutex;
 
 #include <stdio.h>
 
-#define GP_LOG_PRINT(verb, msg, ...) { logMutex.lock(); printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); logMutex.unlock(); }
+#define GP_LOG_PRINT(verb, msg, ...) { printf("%c/gpproto: " msg "\n", verb, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); }
 
 #define LOGV(msg, ...) GP_LOG_PRINT('V', msg, ##__VA_ARGS__)
 #define LOGD(msg, ...) GP_LOG_PRINT('D', msg, ##__VA_ARGS__)

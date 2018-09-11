@@ -118,7 +118,7 @@ std::shared_ptr<StreamSlice> OutputStream::currentBytes() const {
 //    if (currentSize == 0)
 //        return nullptr;
 
-    LOGV("Total allocated slice is = %lu, when useful one is = %lu", kChunkSize * numberOfChunks, currentSize);
+//    LOGV("Total allocated slice is = %lu, when useful one is = %lu", kChunkSize * numberOfChunks, currentSize);
 
     return std::make_shared<StreamSlice>(bytes, currentSize);
 }

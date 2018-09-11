@@ -12,29 +12,29 @@ using namespace gpproto;
 
 void DatacenterAuthAction::execute(std::shared_ptr<Context> context, int32_t datacenterId) {
     LOGV("[DatacenterAuthAction execute]");
-    auto self = shared_from_this();
 
-    self->startTime = getAbsoluteSystemTime();
+    this->startTime = getAbsoluteSystemTime();
 
-    LOGV("Start execution of Auth action at %lf", self->startTime);
+    LOGV("Start execution of Auth action at %lf", startTime);
 
-    self->datacenterId = datacenterId;
-    self->context = context;
+    this->datacenterId = datacenterId;
+    this->context = context;
 
     if (datacenterId != 0 && context != nullptr)
     {
         if (context->getAuthKeyInfoForDatacenterId(datacenterId) != nullptr)
-            self->complete();
+            complete();
         else {
-            self->proto = std::make_shared<Proto>(context, datacenterId, true);
+            proto = std::make_shared<Proto>(context, datacenterId, true);
+            proto->initialize();
 
             auto authService = std::make_shared<DatacenterAuthMessageService>(context);
-            authService->setDelegate(self);
+            authService->setDelegate(shared_from_this());
             LOGV("[DatacenterAuthAction execute] after setting delegate");
-            self->proto->addMessageService(authService);
+            proto->addMessageService(authService);
         }
     } else {
-        self->fail();
+        fail();
     }
 }
 

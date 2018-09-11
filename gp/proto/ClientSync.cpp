@@ -12,6 +12,7 @@ ClientSync::ClientSync() {
     auto context = std::make_shared<Context>();
     context->setDatacenterSeedAddress(DatacenterAddress("", "195.158.12.163", 1112), 1);
     proto = std::make_shared<Proto>(context, 1, false);
+    proto->initialize();
 }
 
 void ClientSync::pause() {

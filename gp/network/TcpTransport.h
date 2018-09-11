@@ -16,18 +16,11 @@ namespace gpproto
     class TcpTransport final : public Transport, public std::enable_shared_from_this<TcpTransport>, public ConnectionDelegate, public TcpTransportContextDelegate {
     public:
         TcpTransport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)
-        : Transport(std::move(delegate), std::move(context), datacenterId, std::move(address)),
+        : Transport(delegate, context, datacenterId, address),
           transportContext(std::make_shared<TcpTransportContext>(TcpTransport::queue()))
         {
-            TcpTransport::queue()->asyncForce([this] {
-                transportContext->address = this->address;
-                auto strongSelf = shared_from_this();
-                auto contextDelegate = std::static_pointer_cast<TcpTransportContextDelegate>(strongSelf);
-
-                transportContext->setDelegate(contextDelegate);
-
-                transportContext->networkIsAvailable = true;
-            });
+            transportContext->address = this->address;
+            transportContext->networkIsAvailable = true;
         };
 
         static std::shared_ptr<DispatchQueue> queue() {
@@ -36,6 +29,8 @@ namespace gpproto
         }
 
         ~TcpTransport() override;
+
+        void initialize();
 
         void stop() override;
 

@@ -6,5 +6,7 @@
 using namespace gpproto;
 
 std::shared_ptr<Transport> TransportScheme::createTransportWithContext(std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<TransportDelegate> delegate) const {
-    return std::make_shared<TcpTransport>(delegate, context, datacenterId, address);
+    auto transport = std::make_shared<TcpTransport>(delegate, context, datacenterId, address);
+    transport->initialize();
+    return transport;
 }

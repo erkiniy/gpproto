@@ -17,9 +17,9 @@ namespace gpproto
     public:
         Transport(std::shared_ptr<TransportDelegate> delegate, std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<DatacenterAddress> address)
                 : internalId(Transport::getNextInternalId()),
-                  context(std::move(context)),
+                  context(context),
                   datacenterId(datacenterId),
-                  address(std::move(address)),
+                  address(address),
                   delegate(delegate)
         {};
 

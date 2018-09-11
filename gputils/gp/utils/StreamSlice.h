@@ -35,7 +35,7 @@ namespace gpproto {
         StreamSlice(const size_t& size) : bytes((unsigned char *)malloc(size)), size(size), number(false) {}
 
         ~StreamSlice() {
-            LOGV("Destructed StreamSlice with size %lu\n", this->size);
+            //LOGV("Destructed StreamSlice with size %lu\n", this->size);
             if (bytes)
                 delete bytes;
         }

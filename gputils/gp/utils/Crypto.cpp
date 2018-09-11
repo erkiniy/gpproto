@@ -289,6 +289,7 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &public
     initCrypto();
 
     auto cKey = publicKey.c_str();
+    LOGV("Public key %s", cKey);
 
     auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), static_cast<size_t>(strlen(cKey)));
 

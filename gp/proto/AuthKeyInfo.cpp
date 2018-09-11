@@ -48,25 +48,23 @@ std::shared_ptr<AuthKeyInfo> AuthKeyInfo::replaceSaltset(const std::vector<std::
 }
 
 int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
-    int index = 0;
     int64_t bestSalt = 0;
-    std::vector<int> saltsToDelete;
+    std::vector<std::shared_ptr<DatacenterSaltsetInfo>> validSalts;
 
     LOGV("[AuthKeyInfo authSaltForClientMessageId]");
 
     for (const auto &salt : saltSet)
     {
-        if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId) {
-            bestSalt = salt->salt;
-            break;
+        if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId)
+        {
+            if (bestSalt == 0)
+                bestSalt = salt->salt;
+
+            validSalts.push_back(salt);
         }
-        saltsToDelete.push_back(index);
-        index++;
     }
 
-    for (int i = (int)saltsToDelete.size() - 1; i >= 0; i--) {
-        saltSet.erase(saltSet.begin() + i);
-    }
+    saltSet = validSalts;
 
     LOGV("[AuthKeyInfo authSaltForClientMessageId] -> saltSet count %lu", saltSet.size());
 

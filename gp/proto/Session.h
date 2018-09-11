@@ -46,9 +46,9 @@ namespace gpproto {
 
     private:
         std::shared_ptr<Context> context;
-        int32_t seqNo;
-        int64_t lastClientMessageId;
-        int64_t lastServerMessageId;
+        int32_t seqNo = 0;
+        int64_t lastClientMessageId = 0;
+        int64_t lastServerMessageId = 0;
         std::unordered_set<int64_t> processedMessageIds;
         std::unordered_set<int64_t> scheduledConfirmationMessageIds;
         std::unordered_map<int64_t, std::vector<int64_t>> containerMessageIdsMapping;

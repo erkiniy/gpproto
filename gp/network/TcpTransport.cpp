@@ -19,6 +19,13 @@ void TcpTransport::reset() {
     });
 }
 
+void TcpTransport::initialize() {
+    auto self = shared_from_this();
+    TcpTransport::queue()->async([self] {
+        self->transportContext->setDelegate(self);
+    });
+}
+
 void TcpTransport::stop() {
     auto self = shared_from_this();
     TcpTransport::queue()->async([self] {
@@ -76,7 +83,6 @@ void TcpTransport::setDelegateNeedsTransaction() {
 }
 
 void TcpTransport::requestTransactionFromDelegate() {
-    LOGV("[TcpTransport -> requestTransactionFromDelegate]");
 
     if (transportContext == nullptr)
         return;
@@ -85,6 +91,8 @@ void TcpTransport::requestTransactionFromDelegate() {
 
     if (auto strongDelegate = delegate.lock())
     {
+        LOGV("[TcpTransport -> requestTransactionFromDelegate]");
+
         strongDelegate->transportReadyForTransaction(*self, nullptr, [weakSelf = weak_from_this()](std::vector<std::shared_ptr<TransportTransaction>> readyTransactions){
             if (auto strongSelf = weakSelf.lock())
             {

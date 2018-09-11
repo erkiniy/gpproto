@@ -2,11 +2,14 @@
 // Created by Jaloliddin Erkiniy on 8/25/18.
 //
 
-#include "Session.h"
+#include "gp/proto/Session.h"
+#include "gp/utils/Logging.h"
+
 using namespace gpproto;
 
 int64_t Session::generateClientMessageId(bool &monotonityViolated) {
-    auto messageId = (int64_t)(context->getGlobalTime() * 4294967296);
+    auto messageId = (int64_t)(context->getGlobalTime() * 4294967296.0);
+    LOGV("[Session generateClientMessageId] -> messageId = %lld, lastClientMessageId = %lld", messageId, lastClientMessageId);
 
     if (messageId < lastClientMessageId)
         monotonityViolated = true;

@@ -34,8 +34,9 @@ std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex) {
 }
 
 double getAbsoluteSystemTime() {
-    auto timestamp = std::chrono::seconds(std::time(nullptr)).count();
-    return static_cast<double>(timestamp);
+    //return (double)(std::chrono::microseconds(std::time(nullptr)).count()) / 1000000.0;
+    //return (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::microseconds(1));
+    return (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000.0;
 }
 
 void byteSwapUInt64(uint64_t& number) {

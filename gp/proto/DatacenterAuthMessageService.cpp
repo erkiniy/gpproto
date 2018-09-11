@@ -35,10 +35,11 @@ DatacenterAuthMessageService::DatacenterAuthMessageService(const std::shared_ptr
 
 
 std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageService::protoMessageTransaction(const std::shared_ptr<gpproto::Proto> &proto) {
+
+    LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> sending transaction with stage = %d, currentTransactionId = %d", (int)stage, currentStateTransactionId);
+
     if (currentStateTransactionId != 0)
         return nullptr;
-
-    LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> sending transaction with state %d", (int)stage);
 
     switch (stage)
     {
@@ -58,11 +59,13 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
             LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> message with size %zu", message->data->size);
             return std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{message},
                     [self = shared_from_this(), message](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
-                if (self->stage == DatacenterAuthStage::pq)
+                        LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> message prepared with count=%zu", messageInternalIdToPreparedMessage.size());
+                        if (self->stage == DatacenterAuthStage::pq)
                 {
                     auto it = messageInternalIdToPreparedMessage.find(message->internalId);
                     if (it != messageInternalIdToPreparedMessage.end())
                     {
+                        LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> message prepared");
                         auto preparedMessage = messageInternalIdToPreparedMessage[message->internalId];
                         self->currentStateMessageId = preparedMessage->messageId;
                         self->currentStateMessageSeqNo = preparedMessage->seqNo;
@@ -70,7 +73,7 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
                     }
                 }
             }, [] {},
-            [](auto messageInternalIdToPreparedMessage) {});
+            [](auto messageInternalIdToTransactionId, auto messageInternalIdToPreparedMessage) {});
 
         }
         case DatacenterAuthStage::reqDh: {
@@ -88,7 +91,7 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
 
             return std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{message},
                     [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {}, [] {},
-                    [self = shared_from_this(), message](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                    [self = shared_from_this(), message](std::unordered_map<int, int> messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
                 if (self->stage == DatacenterAuthStage::reqDh)
                 {
                     auto it = messageInternalIdToPreparedMessage.find(message->internalId);
@@ -114,7 +117,7 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
 
             return std::make_shared<MessageTransaction>(std::initializer_list<std::shared_ptr<OutgoingMessage>>{message},
                     [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {}, [] {},
-                    [self = shared_from_this(), message](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                    [self = shared_from_this(), message](std::unordered_map<int, int> messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
                 if (self->stage == DatacenterAuthStage::reqDh)
                 {
                     auto it = messageInternalIdToPreparedMessage.find(message->internalId);
@@ -153,6 +156,8 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
             }
 
             publicKeyFingerprint = resPqMessage->serverPublicKeyFingerprints;
+            LOGV("Fingerprint is %lld", publicKeyFingerprint);
+            LOGV("pqBytes %s", resPqMessage->pq->description().c_str());
 
             auto pqBytes = resPqMessage->pq;
             uint64_t pq = 0;
@@ -165,6 +170,8 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
             uint64_t factP = 0;
             uint64_t factQ = 0;
 
+            double factorizeStartTime = getAbsoluteSystemTime();
+
             factP = Crypto::pq_factorize(pq);
             if (factP == 0)
             {
@@ -175,12 +182,29 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
             factQ = pq / factP;
 
+            LOGV("Factorized P %llud", factP);
+            LOGV("Factorized Q %llud", factQ);
+
+
             byteSwapUInt64(factP);
             byteSwapUInt64(factQ);
+
+            {
+                OutputStream ps;
+                ps.writeUInt64(factP);
+                dhP = ps.currentBytes();
+            }
+
+            {
+                OutputStream qs;
+                qs.writeUInt64(factP);
+                dhQ = qs.currentBytes();
+            }
 
             auto nonceBytes = std::make_shared<StreamSlice>(32);
             Random::secureBytes(nonceBytes->begin(), 32);
 
+            serverNonce = resPqMessage->serverNonce;
             newNonce = nonceBytes;
 
             OutputStream innerDataBuffer;

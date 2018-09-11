@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-
+#cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -81,6 +81,7 @@ if (THREADS_FOUND)
 endif()
 
 if (THREADS_HAVE_PTHREAD_ARG)
+    message(STATUS "setting CXX flags with pthread")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
 
@@ -267,6 +268,9 @@ target_link_libraries(gpclient PRIVATE gpcore)
 
 add_library(GPStatic INTERFACE)
 target_link_libraries(GPStatic INTERFACE gpclient)
+
+add_executable(clientInternal gp/proto/clientExecutable.cpp)
+target_link_libraries(clientInternal gpclient)
 
 install(TARGETS gpclient gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib

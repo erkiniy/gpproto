@@ -6,12 +6,13 @@
 #include <tuple>
 #include "gp/proto/Context.h"
 #include "gp/network/TransportScheme.h"
+#include "gp/utils/Common.h"
 
 using namespace gpproto;
 
 double Context::getGlobalTime() {
-    auto timestamp = std::chrono::seconds(std::time(nullptr)).count();
-    return static_cast<double>(timestamp) + getGlobalTimeDifference();
+    auto timestamp = getAbsoluteSystemTime();
+    return timestamp + getGlobalTimeDifference();
 }
 
 double Context::getGlobalTimeDifference() {
@@ -67,7 +68,7 @@ void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyI
 
             for (const auto & listener : self->changeListeners)
             {
-                if (auto strongListener = listener.second.lock())
+                if (auto strongListener = listener.second)
                     strongListener->contextDatacenterAuthInfoUpdated(*self, id, keyInfo);
             }
         }
@@ -196,7 +197,7 @@ void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
             LOGV("[Context authInfoForDatacenterWithIdRequired] -> createdAuthAction");
             authAction->setDelegate(self);
             LOGV("[Context authInfoForDatacenterWithIdRequired] -> setDelegate");
-            self->datacenterAuthActionsByDatacenterId[id] = authAction;
+            self->datacenterAuthActionsByDatacenterId.insert({id, authAction});
             LOGV("[Context authInfoForDatacenterWithIdRequired] -> insert");
 
             authAction->execute(self, id);
@@ -226,7 +227,7 @@ void Context::updateTransportSchemeForDatacenterId(std::shared_ptr<TransportSche
         {
             for (const auto& listener : self->changeListeners)
             {
-                if (auto strongListener = listener.second.lock())
+                if (auto strongListener = listener.second)
                     strongListener->contextDatacenterTransportSchemeUpdated(*self, datacenterId, scheme);
             }
         }
@@ -237,9 +238,9 @@ void Context::addChangeListener(std::shared_ptr<ContextChangeListener> listener)
     Context::queue()->async([self = shared_from_this(), listener] {
         auto it = self->changeListeners.find(listener->internalId);
 
-        LOGV("Inside");
         if (it == self->changeListeners.end())
-            self->changeListeners[listener->internalId] = listener;
+            self->changeListeners.insert({listener->internalId, listener});
+            //self->changeListeners[listener->internalId] = listener;
 
     });
 }

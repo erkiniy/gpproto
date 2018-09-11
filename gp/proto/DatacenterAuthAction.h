@@ -36,7 +36,7 @@ class DatacenterAuthAction : public std::enable_shared_from_this<DatacenterAuthA
 
         void execute(std::shared_ptr<Context> context, int32_t datacenterId);
         void cancel();
-        void setDelegate(const std::shared_ptr<DatacenterAuthActionDelegate>& delegate) {
+        void setDelegate(std::shared_ptr<DatacenterAuthActionDelegate> delegate) {
             this->delegate = delegate;
         }
 

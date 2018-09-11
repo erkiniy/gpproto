@@ -21,7 +21,7 @@ namespace gpproto
         MessageTransaction(std::vector<std::shared_ptr<OutgoingMessage>> payload,
                            std::function<void(std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> prepared,
                            std::function<void()> failed,
-                           std::function<void(std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> completed)
+                           std::function<void(std::unordered_map<int, int>, std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> completed)
                 : internalId(MessageTransaction::getNextInternalId()),
                   payload(std::move(payload)),
                   prepared(std::move(prepared)),
@@ -35,7 +35,7 @@ namespace gpproto
         const std::vector<std::shared_ptr<OutgoingMessage>> payload;
         const std::function<void(std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> prepared;
         const std::function<void()> failed;
-        const std::function<void(std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> completed;
+        const std::function<void(std::unordered_map<int, int>, std::unordered_map<int, std::shared_ptr<PreparedMessage>>)> completed;
 
     private:
         static int getNextInternalId() {

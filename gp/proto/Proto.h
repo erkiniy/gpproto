@@ -35,7 +35,7 @@ namespace gpproto
         ProtoStatePaused = 16
     } ProtoState;
 
-    class Proto final : public TransportDelegate, public std::enable_shared_from_this<Proto>, public TimeSyncMessageServiceDelegate, public ContextChangeListener {
+    class Proto final : public std::enable_shared_from_this<Proto>, public TransportDelegate, public TimeSyncMessageServiceDelegate, public ContextChangeListener {
     public:
 
         static std::shared_ptr<DispatchQueue> queue() {
@@ -51,14 +51,6 @@ namespace gpproto
                   context(context),
                   sessionInfo(std::make_shared<Session>(context)) {
             LOGV("Allocated Proto with unauthoried %d", useUnauthorizedMode);
-//            this->authInfo = context->getAuthKeyInfoForDatacenterId(datacenterId);
-//            auto self = shared_from_this();
-//
-//            Context::queue()->async([self] {
-//                auto listener = std::static_pointer_cast<ContextChangeListener>(self);
-//                LOGV("Before Adding listener");
-//                self->context->addChangeListener(listener);
-//            });
         };
 
         ~Proto() {
@@ -66,6 +58,8 @@ namespace gpproto
             auto strongSelf = shared_from_this();
             this->context->removeChangeListener(strongSelf);
         };
+
+        void initialize();
 
         void pause();
         void resume();

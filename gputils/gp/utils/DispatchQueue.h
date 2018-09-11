@@ -54,17 +54,22 @@ namespace gpproto {
         std::thread _thread;
         std::thread::id _threadId;
         std::recursive_mutex _mutex;
+        std::atomic_bool started;
 
         bool _finished;
         bool _runningSynchronous;
         Semaphore _asyncSemaphore;
         Semaphore _syncSemaphore;
 
+        void _initialize() {
+
+        }
+
         void _async(DispatchWork && work, bool force);
 
         void threadWorker()
         {
-            _threadId = _thread.get_id();
+            _threadId = std::this_thread::get_id();
 
             while (!_finished) {
                 maybeDispatchWorker();
