@@ -32,6 +32,8 @@ namespace gpproto::Crypto {
 
     std::shared_ptr<StreamSlice> rsa_encrypt_pkcs1(const std::string& publicKey, const StreamSlice& plain);
 
+    std::shared_ptr<StreamSlice> rsa_encrypt_x509(const std::string &publicKey, const StreamSlice &plain);
+
     std::shared_ptr<StreamSlice> rsa_encrypt(const std::string &publicKey, const StreamSlice &plain);
 
     std::shared_ptr<StreamSlice> gzip_zip(const std::shared_ptr<StreamSlice>& data);
@@ -41,6 +43,8 @@ namespace gpproto::Crypto {
     std::shared_ptr<StreamSlice> mod_exp(const std::shared_ptr<StreamSlice>& base, const std::shared_ptr<StreamSlice>& exp, const std::shared_ptr<StreamSlice>& modulus);
 
     bool isSafeG(int32_t g);
+
+    std::shared_ptr<StreamSlice> stripPublicKeyHeader(const StreamSlice& d_key);
 
 }
 

@@ -181,7 +181,7 @@ void gpproto::Crypto::initCrypto() {
 }
 
 std::shared_ptr<StreamSlice> Crypto::sha1(const StreamSlice& data) {
-    auto output = std::make_shared<StreamSlice>(SHA256_DIGEST_LENGTH);
+    auto output = std::make_shared<StreamSlice>(SHA_DIGEST_LENGTH);
     SHA1(data.bytes, data.size, output->begin());
     return output;
 }
@@ -329,14 +329,39 @@ static std::shared_ptr<StreamSlice> rsa_encrypt_(const StreamSlice &plain, BigNu
 std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &publicKey, const StreamSlice &plain) {
     initCrypto();
 
-    auto cKey = publicKey.c_str();
-    auto cKeyLength = (int32_t)publicKey.length();
+//    auto spos = publicKey.find("-----BEGIN PUBLIC KEY-----");
+//    auto epos = publicKey.find("-----END PUBLIC KEY-----");
+//
+//    std::string key = publicKey;
+//
+//    if (spos != std::string::npos && epos != std::string::npos) {
+//        auto s = spos + strlen("-----BEGIN PUBLIC KEY-----");
+//        auto e = epos;
+//
+//        key = publicKey.substr(s, e - s);
+//    }
+//
+//    LOGV("Key is %s", key.c_str());
+//
+//    auto data = base64_decode(key);
+//    data = stripPublicKeyHeader(*data);
+//
+//    if (data == nullptr) {
+//        LOGE("Data is null after stripping");
+//        return nullptr;
+//    }
+//
+//    auto cKey = data->rbegin();
+//    auto cKeyLength = data->size;
 
-   // BIO *bio = BIO_new_mem_buf((void *)cKey, (int)strlen(cKey));
+    auto cKey = publicKey.c_str();
+    auto cKeyLength = publicKey.length();
+
+    BIO *bio = BIO_new_mem_buf((void *)cKey, (int)cKeyLength);
 
    LOGV("Public key %s", cKey);
 
-    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int>(strlen(cKey)));
+    //auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int>(cKeyLength));
 
     if (bio == nullptr) {
         LOGE("[Crypto rsa_encrypt] -> cannot create BIO");
@@ -403,18 +428,17 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, c
 
     initCrypto();
 
-    auto cKey = publicKey.c_str();
-    auto cKeyLength = (int32_t)publicKey.length();
+    auto cKey = publicKey.data();
+    auto cKeyLength = strlen(cKey);
 
-    //BIO *bio = BIO_new_mem_buf((void *)cKey, (int)strlen(cKey));
+    //BIO *bio = BIO_new_mem_buf((void *)cKey, (int)cKeyLength);
 
-    LOGV("Public key length %d", (int32_t)publicKey.length());
+    LOGV("Public key length %d", (int32_t)cKeyLength);
 
-    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int32_t>(publicKey.length()));
+    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int32_t>(cKeyLength));
 
     //BIO *bio = BIO_new(BIO_s_mem());
     //BIO_puts(bio, cKey);
-
 
     if (bio == nullptr) {
         LOGE("[Crypto rsa_encrypt] -> cannot create BIO");
@@ -426,7 +450,8 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, c
         LOGE("[Crypto rsa_encrypt] -> cannot create RSA");
         return nullptr;
     }
-    if (PEM_read_bio_RSA_PUBKEY(bio, &rsa, nullptr, nullptr) == nullptr) {
+
+    if (!PEM_read_bio_RSA_PUBKEY(bio, &rsa, nullptr, nullptr)) {
         LOGE("[Crypto rsa_encrypt] -> cannot initialize RSA");
         return nullptr;
     }
@@ -458,14 +483,61 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, c
     BigNum bn_n = BigNum::from_raw(n);
     BigNum bn_e = BigNum::from_raw(e);
 
+    std::shared_ptr<StreamSlice> cypher = std::make_shared<StreamSlice>(256);
+
+    auto buffSize = RSA_public_encrypt(static_cast<int>(plain.size), plain.rbegin(), cypher->begin(), rsa, RSA_PKCS1_PADDING);
+
     BIO_free(bio);
     RSA_free(rsa);
 
-    return rsa_encrypt_(plain, bn_n, bn_e);
+    return cypher;
 }
 
 bool Crypto::isSafeG(int32_t g) {
     return g >= 2 && g <= 7;
+}
+
+std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_x509(const std::string &publicKey, const StreamSlice &plain) {
+
+    initCrypto();
+
+    auto spos = publicKey.find("-----BEGIN PUBLIC KEY-----");
+    auto epos = publicKey.find("-----END PUBLIC KEY-----");
+
+    std::string key = publicKey;
+
+    if (spos != std::string::npos && epos != std::string::npos) {
+        auto s = spos + strlen("-----BEGIN PUBLIC KEY-----");
+        auto e = epos;
+
+        key = publicKey.substr(s, e - s);
+    }
+
+    LOGV("Key is %s", key.c_str());
+
+    auto data = base64_decode(key);
+    data = stripPublicKeyHeader(*data);
+
+    if (data == nullptr) {
+        LOGE("Data is null after stripping");
+        return nullptr;
+    }
+
+    auto cKey = data->rbegin();
+    auto cKeyLength = data->size;
+
+    //LOGV("Stripped key size is %zu", cKeyLength);
+
+//    auto cKey = publicKey.c_str();
+//    auto cKeyLength = (int32_t)publicKey.length();
+
+    BIO *bio = BIO_new_mem_buf((void *)cKey, (int)cKeyLength);
+
+    if (PEM_read_bio_X509(bio, nullptr, nullptr, nullptr) == nullptr) {
+        LOGV("PEM READ BIO error");
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<StreamSlice> Crypto::mod_exp(const std::shared_ptr<StreamSlice> &base,
@@ -481,4 +553,52 @@ std::shared_ptr<StreamSlice> Crypto::mod_exp(const std::shared_ptr<StreamSlice> 
 
     auto result = bnRest.to_binary_slice();
     return result;
+}
+
+static const char *const symbols64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static unsigned char char_to_value[256];
+
+static void init_base64_table() {
+    static bool inited = false;
+    if (inited)
+        return;
+
+
+    std::fill(std::begin(char_to_value), std::end(char_to_value), static_cast<unsigned char>(64));
+    for (unsigned char i = 0; i < 64; i++) {
+        char_to_value[static_cast<size_t>(symbols64[i])] = i;
+    }
+
+    inited = true;
+}
+
+std::shared_ptr<StreamSlice> Crypto::stripPublicKeyHeader(const StreamSlice &d_key) {
+    // Skip ASN.1 public key header
+    unsigned long len = d_key.size;
+    if (!len) { return nullptr; }
+
+    unsigned char *c_key = d_key.rbegin();
+    unsigned int idx     = 0;
+
+    if (c_key[idx++] != 0x30) { return nullptr; }
+
+    if (c_key[idx] > 0x80) idx += c_key[idx] - 0x80 + 1;
+    else idx++;
+
+    // PKCS #1 rsaEncryption szOID_RSA_RSA
+    static unsigned char seqiod[] =
+    { 0x30,   0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01,
+              0x01, 0x05, 0x00 };
+    if (memcmp(&c_key[idx], seqiod, 15)) return nullptr;
+
+    idx += 15;
+
+    if (c_key[idx++] != 0x03) return nullptr;
+
+    if (c_key[idx] > 0x80) idx += c_key[idx] - 0x80 + 1;
+    else idx++;
+
+    if (c_key[idx++] != '\0') return nullptr;
+
+    return std::make_shared<StreamSlice>(&c_key[idx], len - idx);
 }

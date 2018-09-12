@@ -34,6 +34,7 @@ void TcpConnection::stop() {
 void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const {
     if (datas.empty())
         return;
+
     auto strongSelf = shared_from_this();
 
     TcpConnection::queue()->async([strongSelf, datas = std::move(datas)] {

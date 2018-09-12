@@ -72,4 +72,8 @@ void byteSwapUInt64(uint64_t& number);
 void byteSwapUInt32(uint32_t& number);
 void byteSwapInt32(int32_t& number);
 
+std::string base64_encode(const gpproto::StreamSlice& input);
+
+std::shared_ptr<gpproto::StreamSlice> base64_decode(const std::string& base64);
+
 #endif //GPPROTO_COMMON_H

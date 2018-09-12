@@ -69,12 +69,7 @@ void NetworkSocket::Send(std::shared_ptr<StreamSlice> slice) {
 }
 
 void NetworkSocket::readDataWithTimeout(float timeout, size_t length, uint8_t tag) {
-    std::weak_ptr<NetworkSocket> weakSelf = shared_from_this();
-    NetworkSocket::queue()->async([weakSelf, tag, length] {
-        auto strongSelf = weakSelf.lock();
-
-        if (!strongSelf)
-            return;
+    NetworkSocket::queue()->async([strongSelf = shared_from_this(), tag, length] {
 
         auto slice = std::make_shared<StreamSlice>(length);
 
@@ -88,12 +83,8 @@ void NetworkSocket::readDataWithTimeout(float timeout, size_t length, uint8_t ta
 }
 
 void NetworkSocket::sendDataWithTimeout(float timeout, std::shared_ptr<StreamSlice> slice, uint8_t tag) {
-    std::weak_ptr<NetworkSocket> weakSelf = shared_from_this();
-    NetworkSocket::queue()->async([weakSelf, slice, tag] {
-        auto strongSelf = weakSelf.lock();
 
-        if (!strongSelf)
-            return;
+    NetworkSocket::queue()->async([strongSelf = shared_from_this(), slice, tag] {
 
         auto writeBuffer = std::make_shared<NetworkPacket>();
         writeBuffer->tag = tag;

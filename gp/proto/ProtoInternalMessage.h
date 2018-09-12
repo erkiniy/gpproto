@@ -19,7 +19,7 @@ namespace gpproto
 
     class ResPqMessage : public ProtoInternalMessage {
     public:
-        ResPqMessage(std::shared_ptr<StreamSlice>& nonce, std::shared_ptr<StreamSlice>& serverNonce, std::shared_ptr<StreamSlice>& pq, uint64_t serverPublicKeyFingerprints)
+        ResPqMessage(std::shared_ptr<StreamSlice> nonce, std::shared_ptr<StreamSlice> serverNonce, std::shared_ptr<StreamSlice> pq, uint64_t serverPublicKeyFingerprints)
                 : nonce(std::move(nonce)),
                   serverNonce(std::move(serverNonce)),
                   pq(std::move(pq)),
@@ -33,7 +33,7 @@ namespace gpproto
 
     class ServerDhParamsMessage : public ProtoInternalMessage {
     public:
-        ServerDhParamsMessage(std::shared_ptr<StreamSlice>& nonce, std::shared_ptr<StreamSlice>& serverNonce)
+        ServerDhParamsMessage(std::shared_ptr<StreamSlice> nonce, std::shared_ptr<StreamSlice> serverNonce)
                 : nonce(std::move(nonce)),
                   serverNonce(std::move(serverNonce)) {};
 
@@ -43,7 +43,7 @@ namespace gpproto
 
     class ServerDhParamsFailMessage : public ServerDhParamsMessage {
     public:
-        ServerDhParamsFailMessage(std::shared_ptr<StreamSlice>& nonce, std::shared_ptr<StreamSlice>& serverNonce, std::shared_ptr<StreamSlice>& nextNonceHash)
+        ServerDhParamsFailMessage(std::shared_ptr<StreamSlice> nonce, std::shared_ptr<StreamSlice> serverNonce, std::shared_ptr<StreamSlice> nextNonceHash)
                 : ServerDhParamsMessage(nonce, serverNonce),
                   nextNonceHash(std::move(nextNonceHash)) {};
 

@@ -21,10 +21,45 @@ using namespace gpproto;
 
 static std::unordered_map<uint64_t, std::string> defaultServerPublicKeys() {
     static std::unordered_map<uint64_t, std::string> keys;
-    keys[0x3996e1558cf963eb] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lk6awlsxW8cq2JqYxX+vakmdX+uOdTyf3YDhUPfTVs0u5uDCdO01hqbXbUNGZ+p32rSnEn/x/qXehVjSSG2vkzz15Vsu855qEYtRqkLNmhhjBakUNXGWs+rvz67HErthSU+8TgEwflisPUUYx3j8X58PkRW74i50+yI3laoqcIKwsSkmcTvEzQE+CO6csB4n7cni7ivg11famZ1W+ohvIzsShtINiUbxGQbU01adNIZrXU4pXHRgvF/KPYgOgjQQOPzvlggH+kjDf9oxBErUYbImIlxnLEe/JCgZI7wUs6VCzGxuWDO7Bc6ivd2R1m2iqlzQeYB2yS0BAlYNbM6AwIDAQAB-----END PUBLIC KEY-----)ABCD";
-    keys[0xbf47247de570f86f] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz/WKS9yffzkfulcE4zFJkoSi6DNvr4lYtL6KFzTeVErWbySCQ15alapMVRWUQLIYL12LxXv0pEZYEVq3cGkVOZXO8d9L/NnGwimvYopw92WN+ZYEVguuCJiiQAOTTUM2QcIdP7/K0Gg49A3sg5cymNCeHFEWYZhDxghSYGuSYbk/a88De31oibwBjulOm/+wBXk5O3+Ii3KjMw8CpwVSR0AHe+nkZyjH/4FLHSA5ZWnEgPHZiYoqO9kwTrFYilGZxfldtlTkZwbkrDSHRWV3su8jXXawN/Zxp/lpr7gvox/VQJik0iV6XbmEQb8TheHltPbA3faQlNn1jfyu9WNquwIDAQAB-----END PUBLIC KEY-----)ABCD";
-    keys[0xc7ef29b0ddd8ca23] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslann35muUWMa8UsjgByxdHYbuXRDyuH+qtWuVe6VjR31fmF/bW8jGo6N8q1c8hmESRP4Di+O5U5t/UQ8sdgzjAqCCtX8LrgZaT8LBzY2iFhKBibyCxk2V4Wyq8ALZnk3MMfQRrBaQmLbDcSRz72KARW/h/jh54/AT8f/FZMxQipgePHJuWws3y/levrP3pm2Rv9nX63WtkmA+fK/lVvdgj7Bj5eaf+4tS9IIRT2OtUtDi/PkEO1mTPofb1D+wmketsUknGLlLg+UCYr+Zc4FAUBCOUds8QrKhyViUZ/1zTf22RWKXBCYRSXO996/aE+3/XE8wzEAsaR8F4arrMT2wIDAQAB-----END PUBLIC KEY-----)ABCD";
-    keys[0xea182ae529ffce57] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6LQIemJwh9wnTZSoONiShXa1CK7yIukZW5z4gcp6dDJuIeA+TUj7lmF1mDKZZ8cDScofYAblLOXWLzbIPPao4h97hykX7c90wY22LMxWtiH0ma0nxv5vPAXheqK/Vg+qbA4QC40YQSJ7BZdA62xXB/UttIey4QHnoWsoAmjO6mPiu4jFI2sDqWm+dW0vjWiuZkvQ0U8Y7zDgmGvblKerCOVC5NZ79M+s8NtOi5kGtJsKXV2FxGiWR2Ik965DSQ4D/f/Met78BPCfBrTfO5EWtoLXuA0xNKe/H24D6BBoo3c0FgXy5hHSK0B9NN43kNpcUn1pdygAomQK63JTIT3aXQIDAQAB-----END PUBLIC KEY-----)ABCD";
+    keys[0x3996e1558cf963eb] = "-----BEGIN PUBLIC KEY-----\n"
+                               "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lk6awlsxW8cq2JqYxX+\n"
+                               "vakmdX+uOdTyf3YDhUPfTVs0u5uDCdO01hqbXbUNGZ+p32rSnEn/x/qXehVjSSG2\n"
+                               "vkzz15Vsu855qEYtRqkLNmhhjBakUNXGWs+rvz67HErthSU+8TgEwflisPUUYx3j\n"
+                               "8X58PkRW74i50+yI3laoqcIKwsSkmcTvEzQE+CO6csB4n7cni7ivg11famZ1W+oh\n"
+                               "vIzsShtINiUbxGQbU01adNIZrXU4pXHRgvF/KPYgOgjQQOPzvlggH+kjDf9oxBEr\n"
+                               "UYbImIlxnLEe/JCgZI7wUs6VCzGxuWDO7Bc6ivd2R1m2iqlzQeYB2yS0BAlYNbM6\n"
+                               "AwIDAQAB\n"
+                               "-----END PUBLIC KEY-----";
+
+    keys[0xbf47247de570f86f] = "-----BEGIN PUBLIC KEY-----\n"
+                               "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz/WKS9yffzkfulcE4zFJ\n"
+                               "koSi6DNvr4lYtL6KFzTeVErWbySCQ15alapMVRWUQLIYL12LxXv0pEZYEVq3cGkV\n"
+                               "OZXO8d9L/NnGwimvYopw92WN+ZYEVguuCJiiQAOTTUM2QcIdP7/K0Gg49A3sg5cy\n"
+                               "mNCeHFEWYZhDxghSYGuSYbk/a88De31oibwBjulOm/+wBXk5O3+Ii3KjMw8CpwVS\n"
+                               "R0AHe+nkZyjH/4FLHSA5ZWnEgPHZiYoqO9kwTrFYilGZxfldtlTkZwbkrDSHRWV3\n"
+                               "su8jXXawN/Zxp/lpr7gvox/VQJik0iV6XbmEQb8TheHltPbA3faQlNn1jfyu9WNq\n"
+                               "uwIDAQAB\n"
+                               "-----END PUBLIC KEY-----";
+
+    keys[0xc7ef29b0ddd8ca23] = "-----BEGIN PUBLIC KEY-----\n"
+                               "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslann35muUWMa8UsjgBy\n"
+                               "xdHYbuXRDyuH+qtWuVe6VjR31fmF/bW8jGo6N8q1c8hmESRP4Di+O5U5t/UQ8sdg\n"
+                               "zjAqCCtX8LrgZaT8LBzY2iFhKBibyCxk2V4Wyq8ALZnk3MMfQRrBaQmLbDcSRz72\n"
+                               "KARW/h/jh54/AT8f/FZMxQipgePHJuWws3y/levrP3pm2Rv9nX63WtkmA+fK/lVv\n"
+                               "dgj7Bj5eaf+4tS9IIRT2OtUtDi/PkEO1mTPofb1D+wmketsUknGLlLg+UCYr+Zc4\n"
+                               "FAUBCOUds8QrKhyViUZ/1zTf22RWKXBCYRSXO996/aE+3/XE8wzEAsaR8F4arrMT\n"
+                               "2wIDAQAB\n"
+                               "-----END PUBLIC KEY-----";
+
+    keys[0xea182ae529ffce57] = "-----BEGIN PUBLIC KEY-----\n"
+                               "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6LQIemJwh9wnTZSoONiS\n"
+                               "hXa1CK7yIukZW5z4gcp6dDJuIeA+TUj7lmF1mDKZZ8cDScofYAblLOXWLzbIPPao\n"
+                               "4h97hykX7c90wY22LMxWtiH0ma0nxv5vPAXheqK/Vg+qbA4QC40YQSJ7BZdA62xX\n"
+                               "B/UttIey4QHnoWsoAmjO6mPiu4jFI2sDqWm+dW0vjWiuZkvQ0U8Y7zDgmGvblKer\n"
+                               "COVC5NZ79M+s8NtOi5kGtJsKXV2FxGiWR2Ik965DSQ4D/f/Met78BPCfBrTfO5EW\n"
+                               "toLXuA0xNKe/H24D6BBoo3c0FgXy5hHSK0B9NN43kNpcUn1pdygAomQK63JTIT3a\n"
+                               "XQIDAQAB\n"
+                               "-----END PUBLIC KEY-----";
     return keys;
 };
 
@@ -54,6 +89,8 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
             reqPQBuffer.writeUInt32(0xfbf22646);
             reqPQBuffer.writeData(*nonce);
 
+            publicKeys = defaultServerPublicKeys();
+
             auto message = std::make_shared<OutgoingMessage>(0, 0, true, reqPQBuffer.currentBytes());
 
             LOGV("[DatacenterAuthMessageService protoMessageTransaction] -> message with size %zu", message->data->size);
@@ -82,8 +119,8 @@ std::shared_ptr<gpproto::MessageTransaction> gpproto::DatacenterAuthMessageServi
             reqDhBuffer.writeUInt32(0x92471d27);
             reqDhBuffer.writeData(*nonce);
             reqDhBuffer.writeData(*serverNonce);
-            reqDhBuffer.writeData(*dhP);
-            reqDhBuffer.writeData(*dhQ);
+            reqDhBuffer.writeBytes(*dhP);
+            reqDhBuffer.writeBytes(*dhQ);
             reqDhBuffer.writeUInt64(publicKeyFingerprint);
             reqDhBuffer.writeBytes(*dhEncryptedData);
 
@@ -150,9 +187,12 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
             auto publicKeyIt = publicKeys.find(resPqMessage->serverPublicKeyFingerprints);
             if (publicKeyIt == publicKeys.end())
             {
-                LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> publickey not found");
+                LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> publickey not found for %#8llx", resPqMessage->serverPublicKeyFingerprints);
                 reset(proto);
                 return;
+            }
+            else {
+                LOGV("Public key found for %#8llx", resPqMessage->serverPublicKeyFingerprints);
             }
 
             publicKeyFingerprint = resPqMessage->serverPublicKeyFingerprints;
@@ -182,12 +222,14 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
             factQ = pq / factP;
 
-            LOGV("Factorized P %llud", factP);
-            LOGV("Factorized Q %llud", factQ);
-
+            LOGV("Factorized P %llu", factP);
+            LOGV("Factorized Q %llu", factQ);
 
             byteSwapUInt64(factP);
             byteSwapUInt64(factQ);
+
+            LOGV("Factorized P-big %llu", factP)
+            LOGV("Factorized Q-big %llu", factQ)
 
             {
                 OutputStream ps;
@@ -197,9 +239,12 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
             {
                 OutputStream qs;
-                qs.writeUInt64(factP);
+                qs.writeUInt64(factQ);
                 dhQ = qs.currentBytes();
             }
+
+            LOGV("P-bytes %s", dhP->description().c_str());
+            LOGV("Q-bytes %s", dhQ->description().c_str());
 
             auto nonceBytes = std::make_shared<StreamSlice>(32);
             Random::secureBytes(nonceBytes->begin(), 32);
@@ -225,8 +270,11 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
             auto dataWithHash = dataWithHashStream.currentBytes();
 
+            //auto encryptedData = Crypto::rsa_encrypt_x509(publicKeyIt->second, *dataWithHash);
             //auto encryptedData = Crypto::rsa_encrypt_pkcs1(publicKeyIt->second, *dataWithHash);
             auto encryptedData = Crypto::rsa_encrypt(publicKeyIt->second, *dataWithHash);
+
+            LOGV("Inner dataBytes hash %s", hash->description().c_str());
 
             if (encryptedData == nullptr)
             {
@@ -235,6 +283,8 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
             }
 
             dhEncryptedData = encryptedData;
+
+            //LOGV("dataWithHash %s", dataWithHash->description().c_str());
 
             stage = DatacenterAuthStage::reqDh;
             currentStateMessageId = 0;
@@ -248,7 +298,8 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
     {
         if (auto serverDhParamsMessage = std::dynamic_pointer_cast<ServerDhParamsMessage>(message->body))
         {
-            if (nonce != serverDhParamsMessage->nonce || serverNonce != serverDhParamsMessage->serverNonce)
+
+            if (*nonce != *serverDhParamsMessage->nonce || *serverNonce != *serverDhParamsMessage->serverNonce)
                 return;
 
             if (auto serverDhParamsOkMessage = std::dynamic_pointer_cast<ServerDhParamsOkMessage>(serverDhParamsMessage))
@@ -274,8 +325,9 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
                 memcpy(tempAesKey->begin() + newNonceAndServerNonceHash->size, serverNonceNewNonceSubdata->begin(), 12);
 
                 auto tempAesIV = std::make_shared<StreamSlice>(16);
-                auto serverNonceAndNewNonceHashSubdata = serverNonceAndNewNonce->subData(12, 20);
-                auto newNonceAndNewNonceHashSubdata = newNonceAndNewNonceHash->subData(12, 20);
+                auto serverNonceAndNewNonceHashSubdata = serverNonceAndNewNonce->subData(12, 8);
+                auto newNonceAndNewNonceHashSubdata = newNonceAndNewNonceHash->subData(12, 8);
+
                 memcpy(tempAesIV->begin(), serverNonceAndNewNonceHashSubdata->rbegin(), 8);
                 memcpy(tempAesIV->begin() + 8, newNonceAndNewNonceHashSubdata->rbegin(), 8);
 
@@ -293,7 +345,7 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
                 }
 
                 auto answerHash = answerWithHash->subData(0, 20);
-                auto answerData = answerHash->subData(20, answerWithHash->size);
+                auto answerData = answerWithHash->subData(20, answerWithHash->size - 20);
 
                 bool hashVerified = false;
                 for (int i = 0; i < 16; ++i)
@@ -324,13 +376,13 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
                 auto dhInnerData = std::dynamic_pointer_cast<ServerDhInnerDataMessage>(dhInnerDataRaw);
 
-                if (nonce != dhInnerData->nonce) {
+                if (*nonce != *dhInnerData->nonce) {
                     LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> invalid nonce");
                     reset(proto);
                     return;
                 }
 
-                if (serverNonce != dhInnerData->serverNonce) {
+                if (*serverNonce != *dhInnerData->serverNonce) {
                     LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> invalid server nonce");
                     reset(proto);
                     return;
@@ -367,7 +419,7 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
                 LOGV("[DatacenterAuthMessageService protoDidReceiveMessage] -> mod_pow lasted %lf seconds", getAbsoluteSystemTime() - startTime);
 
                 auto authKey = Crypto::mod_exp(innerDataGa, b, innerDataDhPrime);
-                auto authKeyIdHash = Crypto::sha256(*authKey)->subData(24, 32);
+                auto authKeyIdHash = Crypto::sha256(*authKey)->subData(24, 8);
 
                 int64_t authKeyId = 0;
                 memcpy(&authKeyId, authKeyIdHash->rbegin(), 8);
@@ -437,7 +489,7 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
     {
         if (auto setClientDhParamsResponseMessage = std::dynamic_pointer_cast<ClientDhParamsResponseMessage>(message->body))
         {
-            if (nonce != setClientDhParamsResponseMessage->serverNonce || serverNonce != setClientDhParamsResponseMessage->serverNonce)
+            if (*nonce != *setClientDhParamsResponseMessage->serverNonce || *serverNonce != *setClientDhParamsResponseMessage->serverNonce)
                 return;
 
             auto authKeyAuxHashFull = Crypto::sha1(*authKey->authKey);
