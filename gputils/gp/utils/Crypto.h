@@ -32,6 +32,8 @@ namespace gpproto::Crypto {
 
     std::shared_ptr<StreamSlice> rsa_encrypt_pkcs1(const std::string& publicKey, const StreamSlice& plain);
 
+    std::shared_ptr<StreamSlice> rsa_encrypt(const std::string &publicKey, const StreamSlice &plain);
+
     std::shared_ptr<StreamSlice> gzip_zip(const std::shared_ptr<StreamSlice>& data);
 
     std::shared_ptr<StreamSlice> gzip_unzip(const std::shared_ptr<StreamSlice>& data);

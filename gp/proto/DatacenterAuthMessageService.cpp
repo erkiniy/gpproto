@@ -21,10 +21,10 @@ using namespace gpproto;
 
 static std::unordered_map<uint64_t, std::string> defaultServerPublicKeys() {
     static std::unordered_map<uint64_t, std::string> keys;
-    keys[0x3996e1558cf963eb] = "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lk6awlsxW8cq2JqYxX+vakmdX+uOdTyf3YDhUPfTVs0u5uDCdO01hqbXbUNGZ+p32rSnEn/x/qXehVjSSG2vkzz15Vsu855qEYtRqkLNmhhjBakUNXGWs+rvz67HErthSU+8TgEwflisPUUYx3j8X58PkRW74i50+yI3laoqcIKwsSkmcTvEzQE+CO6csB4n7cni7ivg11famZ1W+ohvIzsShtINiUbxGQbU01adNIZrXU4pXHRgvF/KPYgOgjQQOPzvlggH+kjDf9oxBErUYbImIlxnLEe/JCgZI7wUs6VCzGxuWDO7Bc6ivd2R1m2iqlzQeYB2yS0BAlYNbM6AwIDAQAB-----END PUBLIC KEY-----";
-    keys[0xbf47247de570f86f] = "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz/WKS9yffzkfulcE4zFJkoSi6DNvr4lYtL6KFzTeVErWbySCQ15alapMVRWUQLIYL12LxXv0pEZYEVq3cGkVOZXO8d9L/NnGwimvYopw92WN+ZYEVguuCJiiQAOTTUM2QcIdP7/K0Gg49A3sg5cymNCeHFEWYZhDxghSYGuSYbk/a88De31oibwBjulOm/+wBXk5O3+Ii3KjMw8CpwVSR0AHe+nkZyjH/4FLHSA5ZWnEgPHZiYoqO9kwTrFYilGZxfldtlTkZwbkrDSHRWV3su8jXXawN/Zxp/lpr7gvox/VQJik0iV6XbmEQb8TheHltPbA3faQlNn1jfyu9WNquwIDAQAB-----END PUBLIC KEY-----";
-    keys[0xc7ef29b0ddd8ca23] = "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslann35muUWMa8UsjgByxdHYbuXRDyuH+qtWuVe6VjR31fmF/bW8jGo6N8q1c8hmESRP4Di+O5U5t/UQ8sdgzjAqCCtX8LrgZaT8LBzY2iFhKBibyCxk2V4Wyq8ALZnk3MMfQRrBaQmLbDcSRz72KARW/h/jh54/AT8f/FZMxQipgePHJuWws3y/levrP3pm2Rv9nX63WtkmA+fK/lVvdgj7Bj5eaf+4tS9IIRT2OtUtDi/PkEO1mTPofb1D+wmketsUknGLlLg+UCYr+Zc4FAUBCOUds8QrKhyViUZ/1zTf22RWKXBCYRSXO996/aE+3/XE8wzEAsaR8F4arrMT2wIDAQAB-----END PUBLIC KEY-----";
-    keys[0xea182ae529ffce57] = "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6LQIemJwh9wnTZSoONiShXa1CK7yIukZW5z4gcp6dDJuIeA+TUj7lmF1mDKZZ8cDScofYAblLOXWLzbIPPao4h97hykX7c90wY22LMxWtiH0ma0nxv5vPAXheqK/Vg+qbA4QC40YQSJ7BZdA62xXB/UttIey4QHnoWsoAmjO6mPiu4jFI2sDqWm+dW0vjWiuZkvQ0U8Y7zDgmGvblKerCOVC5NZ79M+s8NtOi5kGtJsKXV2FxGiWR2Ik965DSQ4D/f/Met78BPCfBrTfO5EWtoLXuA0xNKe/H24D6BBoo3c0FgXy5hHSK0B9NN43kNpcUn1pdygAomQK63JTIT3aXQIDAQAB-----END PUBLIC KEY-----";
+    keys[0x3996e1558cf963eb] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lk6awlsxW8cq2JqYxX+vakmdX+uOdTyf3YDhUPfTVs0u5uDCdO01hqbXbUNGZ+p32rSnEn/x/qXehVjSSG2vkzz15Vsu855qEYtRqkLNmhhjBakUNXGWs+rvz67HErthSU+8TgEwflisPUUYx3j8X58PkRW74i50+yI3laoqcIKwsSkmcTvEzQE+CO6csB4n7cni7ivg11famZ1W+ohvIzsShtINiUbxGQbU01adNIZrXU4pXHRgvF/KPYgOgjQQOPzvlggH+kjDf9oxBErUYbImIlxnLEe/JCgZI7wUs6VCzGxuWDO7Bc6ivd2R1m2iqlzQeYB2yS0BAlYNbM6AwIDAQAB-----END PUBLIC KEY-----)ABCD";
+    keys[0xbf47247de570f86f] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz/WKS9yffzkfulcE4zFJkoSi6DNvr4lYtL6KFzTeVErWbySCQ15alapMVRWUQLIYL12LxXv0pEZYEVq3cGkVOZXO8d9L/NnGwimvYopw92WN+ZYEVguuCJiiQAOTTUM2QcIdP7/K0Gg49A3sg5cymNCeHFEWYZhDxghSYGuSYbk/a88De31oibwBjulOm/+wBXk5O3+Ii3KjMw8CpwVSR0AHe+nkZyjH/4FLHSA5ZWnEgPHZiYoqO9kwTrFYilGZxfldtlTkZwbkrDSHRWV3su8jXXawN/Zxp/lpr7gvox/VQJik0iV6XbmEQb8TheHltPbA3faQlNn1jfyu9WNquwIDAQAB-----END PUBLIC KEY-----)ABCD";
+    keys[0xc7ef29b0ddd8ca23] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslann35muUWMa8UsjgByxdHYbuXRDyuH+qtWuVe6VjR31fmF/bW8jGo6N8q1c8hmESRP4Di+O5U5t/UQ8sdgzjAqCCtX8LrgZaT8LBzY2iFhKBibyCxk2V4Wyq8ALZnk3MMfQRrBaQmLbDcSRz72KARW/h/jh54/AT8f/FZMxQipgePHJuWws3y/levrP3pm2Rv9nX63WtkmA+fK/lVvdgj7Bj5eaf+4tS9IIRT2OtUtDi/PkEO1mTPofb1D+wmketsUknGLlLg+UCYr+Zc4FAUBCOUds8QrKhyViUZ/1zTf22RWKXBCYRSXO996/aE+3/XE8wzEAsaR8F4arrMT2wIDAQAB-----END PUBLIC KEY-----)ABCD";
+    keys[0xea182ae529ffce57] = R"ABCD(-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6LQIemJwh9wnTZSoONiShXa1CK7yIukZW5z4gcp6dDJuIeA+TUj7lmF1mDKZZ8cDScofYAblLOXWLzbIPPao4h97hykX7c90wY22LMxWtiH0ma0nxv5vPAXheqK/Vg+qbA4QC40YQSJ7BZdA62xXB/UttIey4QHnoWsoAmjO6mPiu4jFI2sDqWm+dW0vjWiuZkvQ0U8Y7zDgmGvblKerCOVC5NZ79M+s8NtOi5kGtJsKXV2FxGiWR2Ik965DSQ4D/f/Met78BPCfBrTfO5EWtoLXuA0xNKe/H24D6BBoo3c0FgXy5hHSK0B9NN43kNpcUn1pdygAomQK63JTIT3aXQIDAQAB-----END PUBLIC KEY-----)ABCD";
     return keys;
 };
 
@@ -225,7 +225,8 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
             auto dataWithHash = dataWithHashStream.currentBytes();
 
-            auto encryptedData = Crypto::rsa_encrypt_pkcs1(publicKeyIt->second, *dataWithHash);
+            //auto encryptedData = Crypto::rsa_encrypt_pkcs1(publicKeyIt->second, *dataWithHash);
+            auto encryptedData = Crypto::rsa_encrypt(publicKeyIt->second, *dataWithHash);
 
             if (encryptedData == nullptr)
             {

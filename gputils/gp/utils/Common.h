@@ -10,6 +10,7 @@
 #include <cstring>
 #include <string>
 #include <memory>
+#include <type_traits>
 
 #include "gp/utils/StreamSlice.h"
 
@@ -28,6 +29,15 @@ static_assert(static_cast<char>(128) == -128 || static_cast<char>(128) == 128,
               "Unexpected cast to char implementation-defined behaviour");
 static_assert(static_cast<char>(256) == 0, "Unexpected cast to char implementation-defined behaviour");
 static_assert(static_cast<char>(-256) == 0, "Unexpected cast to char implementation-defined behaviour");
+
+// From integer type to integer type
+template <typename to, typename from>
+constexpr typename std::enable_if<std::is_integral<from>::value && std::is_integral<to>::value, to>::type
+narrow_cast(const from& value)
+{
+    return static_cast<to>(value & (static_cast<typename std::make_unsigned<from>::type>(-1)));
+}
+
 
 #if !GP_WINDOWS
 using size_t = std::size_t;

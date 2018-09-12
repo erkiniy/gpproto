@@ -285,13 +285,58 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
     return os->currentBytes();
 }
 
+static std::shared_ptr<StreamSlice> rsa_encrypt_(const StreamSlice &plain, BigNum& n, BigNum& e) {
+    size_t from_len = plain.size;
+
+    if (from_len == 0 || from_len > 2550) {
+        LOGE("[Crypto rsa_encrypt] -> incorrect plain size");
+        return nullptr;
+    }
+
+    size_t pad = (25500 - from_len - 32) % 255 + 32;
+    size_t chunks = (from_len + pad) / 255;
+    int bits = n.get_num_bits();
+
+    if (bits < 2041 || bits < 2048)
+    {
+        LOGE("[Crypto rsa_encrypt] -> incorrect n bits");
+        return nullptr;
+    }
+
+    if (chunks * 255 != from_len + pad)
+    {
+        LOGE("[Crypto rsa_encrypt] -> incorect chunk size");
+        return nullptr;
+    }
+
+    BigNumContext ctx;
+    BigNum y;
+
+    auto res = new StreamSlice(chunks * 256);
+    auto to = res->begin();
+
+    while (chunks-- > 0) {
+        BigNum x = BigNum::from_binary(StreamSlice(plain.rbegin(), 255));
+        BigNum::mod_exp(y, x, e, n, ctx);
+        auto result = y.to_binary(256);
+        std::memcpy(to, result.c_str(), 256);
+        to += 256;
+    }
+
+    return std::shared_ptr<StreamSlice>(res);
+}
+
 std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &publicKey, const StreamSlice &plain) {
     initCrypto();
 
     auto cKey = publicKey.c_str();
-    LOGV("Public key %s", cKey);
+    auto cKeyLength = (int32_t)publicKey.length();
 
-    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), static_cast<size_t>(strlen(cKey)));
+   // BIO *bio = BIO_new_mem_buf((void *)cKey, (int)strlen(cKey));
+
+   LOGV("Public key %s", cKey);
+
+    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int>(strlen(cKey)));
 
     if (bio == nullptr) {
         LOGE("[Crypto rsa_encrypt] -> cannot create BIO");
@@ -328,7 +373,7 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &public
         return nullptr;
     }
 
-    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0) {
+    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
         LOGE("[Crypto rsa_encrypt] -> cannot set RSA_PKCS1_OAEP padding in EVP_PKEY_CTX");
         return nullptr;
     }
@@ -354,6 +399,70 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &public
     return result;
 }
 
+std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, const StreamSlice &plain) {
+
+    initCrypto();
+
+    auto cKey = publicKey.c_str();
+    auto cKeyLength = (int32_t)publicKey.length();
+
+    //BIO *bio = BIO_new_mem_buf((void *)cKey, (int)strlen(cKey));
+
+    LOGV("Public key length %d", (int32_t)publicKey.length());
+
+    auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int32_t>(publicKey.length()));
+
+    //BIO *bio = BIO_new(BIO_s_mem());
+    //BIO_puts(bio, cKey);
+
+
+    if (bio == nullptr) {
+        LOGE("[Crypto rsa_encrypt] -> cannot create BIO");
+        return nullptr;
+    }
+
+    auto *rsa = RSA_new();
+    if (rsa == nullptr) {
+        LOGE("[Crypto rsa_encrypt] -> cannot create RSA");
+        return nullptr;
+    }
+    if (PEM_read_bio_RSA_PUBKEY(bio, &rsa, nullptr, nullptr) == nullptr) {
+        LOGE("[Crypto rsa_encrypt] -> cannot initialize RSA");
+        return nullptr;
+    }
+
+    if (RSA_size(rsa) != 256) {
+        LOGE("[Crypto rsa_encrypt] -> RSA public key siz is not 256 bytes");
+        return nullptr;
+    }
+
+    const BIGNUM *n_num;
+    const BIGNUM *e_num;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    n_num = rsa->n;
+    e_num = rsa->e;
+#else
+    RSA_get0_key(rsa, &n_num, &e_num, nullptr);
+#endif
+
+    auto n = static_cast<void *>(BN_dup(n_num));
+    auto e = static_cast<void *>(BN_dup(e_num));
+
+    if (n == nullptr || e == nullptr)
+    {
+        LOGE("[Crypto rsa_encrypt] -> n or e is null");
+        return nullptr;
+    }
+
+    BigNum bn_n = BigNum::from_raw(n);
+    BigNum bn_e = BigNum::from_raw(e);
+
+    BIO_free(bio);
+    RSA_free(rsa);
+
+    return rsa_encrypt_(plain, bn_n, bn_e);
+}
 
 bool Crypto::isSafeG(int32_t g) {
     return g >= 2 && g <= 7;
