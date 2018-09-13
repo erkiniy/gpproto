@@ -23,7 +23,7 @@ namespace gpproto
 
         const int internalId;
 
-        virtual void protoDidReceiveMessage(const std::shared_ptr<Proto>& proto, std::shared_ptr<IncomingMessage> message) = 0;
+        virtual void protoDidReceiveMessage(const std::shared_ptr<Proto>& proto, std::shared_ptr<IncomingMessage> message) {};
         virtual void protoTransactionsMayHaveFailed(const std::shared_ptr<Proto>& proto, std::vector<int> transactionIds) {};
         virtual void protoMessageDeliveryFailed(const std::shared_ptr<Proto>& proto, int64_t messageId) {};
         virtual void protoMessagesDeliveryConfirmed(const std::shared_ptr<Proto>& proto, std::vector<int64_t> messages) {};

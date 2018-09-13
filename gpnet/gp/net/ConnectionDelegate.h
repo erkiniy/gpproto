@@ -5,11 +5,11 @@
 #ifndef GPPROTO_CONNECTIONDELEGATE_H
 #define GPPROTO_CONNECTIONDELEGATE_H
 
-#include "Connection.h"
-#include "gp/utils/StreamSlice.h"
+#include <memory>
 
 namespace gpproto {
     class Connection;
+    class StreamSlice;
 
     class ConnectionDelegate {
     public:

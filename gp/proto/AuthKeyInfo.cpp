@@ -7,6 +7,7 @@
 #include "gp/utils/Logging.h"
 #include "gp/utils/StreamSlice.h"
 
+#include <unordered_set>
 using namespace gpproto;
 
 std::shared_ptr<AuthKeyInfo> AuthKeyInfo::mergeSaltset(const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &updatedSaltset,
@@ -49,24 +50,31 @@ std::shared_ptr<AuthKeyInfo> AuthKeyInfo::replaceSaltset(const std::vector<std::
 
 int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
     int64_t bestSalt = 0;
-    std::vector<std::shared_ptr<DatacenterSaltsetInfo>> validSalts;
 
     LOGV("[AuthKeyInfo authSaltForClientMessageId]");
+    std::unordered_set<int> saltsToRemove;
+    int index = -1;
 
     for (const auto &salt : saltSet)
     {
         LOGV("[authSaltForClientMessageId] %lld, %lld, %lld", messageId, salt->firstValidMessageId, salt->lastValidMessageId);
 
+        index++;
+
         if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId)
         {
-            if (bestSalt == 0)
-                bestSalt = salt->salt;
-
-            validSalts.push_back(salt);
+            bestSalt = salt->salt;
+            break;
         }
+
+        saltsToRemove.insert(index);
     }
 
-    saltSet = validSalts;
+    for (int i = (int)saltSet.size() - 1; i >= 0; i--)
+    {
+        if (saltsToRemove.find(i) != saltsToRemove.end())
+            saltSet.erase(saltSet.begin() + i);
+    }
 
     LOGV("[AuthKeyInfo authSaltForClientMessageId] -> saltSet count %lu", saltSet.size());
 

@@ -6,10 +6,8 @@
 #define GPPROTO_TCPTRANSPORT_H
 
 #include "gp/network/Transport.h"
-#include "gp/network/TcpTransportContext.h"
 #include "gp/network/TcpTransportContextDelegate.h"
-#include "gp/net/TcpConnection.h"
-#include "gp/utils/Timer.h"
+#include "gp/net/ConnectionDelegate.h"
 
 namespace gpproto
 {
@@ -48,6 +46,38 @@ namespace gpproto
         void connectionClosed(const Connection& connection) override;
         void connectionDidReceiveData(const Connection& connection, std::shared_ptr<StreamSlice> slice) override;
 
+        void protoDidReceiveMessage(const std::shared_ptr<Proto> &proto, std::shared_ptr<IncomingMessage> message) override;
+
+        void protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto, std::vector<int> transactionIds) override;
+
+        void protoMessageDeliveryFailed(const std::shared_ptr<Proto> &proto, int64_t messageId) override;
+
+        void protoMessagesDeliveryConfirmed(const std::shared_ptr<Proto> &proto, std::vector<int64_t> messages) override;
+
+        void protoErrorReceived(const std::shared_ptr<Proto> &proto, int32_t errorCode) override;
+
+        void protoWillAddService(const std::shared_ptr<Proto> &proto) override;
+
+        void protoDidAddService(const std::shared_ptr<Proto> &proto) override;
+
+        void protoWillRemoveService(const std::shared_ptr<Proto> &proto) override;
+
+        void protoDidRemoveService(const std::shared_ptr<Proto> &proto) override;
+
+        void protoAllTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto) override;
+
+        std::shared_ptr <MessageTransaction> protoMessageTransaction(const std::shared_ptr<Proto> &proto) override;
+
+        void protoDidChangeSession(const std::shared_ptr<Proto> &proto) override;
+
+        void protoServerDidChangeSession(const std::shared_ptr<Proto> &proto) override;
+
+        void protoNetworkAvailabilityChanged(const std::shared_ptr<Proto> &proto, bool isNetworkAvailable) override;
+
+        void protoConnectionStateChanged(const std::shared_ptr<Proto> &proto, bool isConnected) override;
+
+        void protoAuthTokenUpdated(const std::shared_ptr<Proto> &proto) override;
+
     private:
         void requestTransactionFromDelegate();
         std::shared_ptr<TcpTransportContext> transportContext;
@@ -56,6 +86,11 @@ namespace gpproto
 
         void connectionIsValid();
         void connectionIsInvalid();
+
+        void startActualizationPingResendTimer();
+        void stopActualizationPingResendTimer();
+        void resendActualizationPing();
+
     };
 }
 

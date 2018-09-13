@@ -24,10 +24,6 @@ bool Timer::isScheduled() const {
 }
 
 void Timer::invalidate() {
-
-    if (!started)
-        return;
-
     auto self = shared_from_this();
     Runloop::Default()->invalidate(self);
  }

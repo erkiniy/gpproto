@@ -216,17 +216,12 @@ namespace gpproto
         const int32_t errorCode;
     };
 
-    class BadServerSaltNotificationMessage : public ProtoInternalMessage {
+    class BadServerSaltNotificationMessage : public BadMsgNotificationMessage {
     public:
         BadServerSaltNotificationMessage(int64_t badMessageId, int32_t badSeqNo, int32_t errorCode, int64_t validServerSalt)
-                : badMessageId(badMessageId),
-                  badSeqNo(badSeqNo),
-                  errorCode(errorCode),
+                : BadMsgNotificationMessage(badMessageId, badSeqNo, errorCode),
                   validServerSalt(validServerSalt) {};
 
-        const int64_t badMessageId;
-        const int32_t badSeqNo;
-        const int32_t errorCode;
         const int64_t validServerSalt;
     };
 

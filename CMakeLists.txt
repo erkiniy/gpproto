@@ -250,7 +250,7 @@ set(GPCORE_SOURCE
         gp/proto/DatacenterAuthAction.cpp
 
         gp/proto/DatacenterAuthMessageService.cpp
-        gp/proto/DatacenterAuthMessageService.h)
+        gp/proto/DatacenterAuthMessageService.h gp/network/Transport.cpp)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)

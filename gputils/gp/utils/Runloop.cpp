@@ -20,6 +20,7 @@ Runloop::Runloop(double ratio) {
 void Runloop::schedule(std::shared_ptr<Timer> timer) {
     workerQueue->async([self = shared_from_this(), timer]
     {
+        LOGV("RUNLOOP SCHEDULE");
         std::shared_ptr<Timer> found = nullptr;
 
         for (const auto & it : self->timerQueue) {
@@ -54,6 +55,7 @@ void Runloop::invalidate(std::shared_ptr<Timer> timer) {
         {
             if ((*it)->id == timer->id) {
                 self->timerQueue.erase(it);
+                LOGV("INVALIDATE TRUE");
                 break;
             }
         }

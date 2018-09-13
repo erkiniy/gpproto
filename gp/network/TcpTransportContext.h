@@ -5,14 +5,15 @@
 #ifndef GPPROTO_TCPTRANSPORTCONTEXT_H
 #define GPPROTO_TCPTRANSPORTCONTEXT_H
 
-#include "gp/net/TcpConnection.h"
-#include "gp/proto/DatacenterAddress.h"
-#include "gp/network/TcpTransportContextDelegate.h"
-#include "gp/utils/DispatchQueue.h"
-#include "gp/utils/Timer.h"
+#include <memory>
 namespace gpproto
 {
     class TcpConnection;
+    class TcpTransportContextDelegate;
+    class DispatchQueue;
+    class DatacenterAddress;
+    class Timer;
+
     class TcpTransportContext : public std::enable_shared_from_this<TcpTransportContext> {
     public:
         explicit TcpTransportContext(std::shared_ptr<DispatchQueue> queue) : queue(std::move(queue)) {};
@@ -21,16 +22,31 @@ namespace gpproto
         std::shared_ptr<DispatchQueue> queue;
 
         bool waitingForConnectionToBecomeAvailable = false;
+
         bool requestTransactionWhenBecomesAvailable = false;
+
+        bool willRequestTransactionOnNextQueuePass = false;
+
+        bool didSendActualizationPingAfterConnection = false;
 
         bool connectionIsValid = false;
 
         bool networkIsAvailable = true;
 
         bool stopped = false;
+
         bool connected = false;
 
         bool needsReconnection = true;
+
+        double transactionLockTime = 0.0;
+
+        int64_t currentServerPingId = 0.0;
+        int64_t currentServerPingMessageId = 0.0;
+
+        int64_t currentActualizationPingMessageId = 0.0;
+
+        std::shared_ptr<Timer> actualizationPingResendTimer;
 
         void requestConnection();
         void startIfNeeded();

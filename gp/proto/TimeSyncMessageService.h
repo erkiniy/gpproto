@@ -12,12 +12,12 @@ namespace gpproto
     class TimeSyncMessageService;
     class DatacenterSaltsetInfo;
 
-    class TimeSyncMessageServiceDelegate {
+class TimeSyncMessageServiceDelegate {
     public:
         virtual void timeSyncServiceCompleted(const TimeSyncMessageService& service, double timeDifference, std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist) = 0;
     };
 
-    class TimeSyncMessageService : public MessageService {
+    class TimeSyncMessageService : public MessageService, public std::enable_shared_from_this<TimeSyncMessageService> {
     public:
         explicit TimeSyncMessageService() : MessageService() {};
 
@@ -57,6 +57,16 @@ namespace gpproto
 
     private:
         std::weak_ptr<TimeSyncMessageServiceDelegate> delegate;
+
+        int64_t currentMessageId = -1;
+
+        std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist;
+
+        double currentSampleAbsoluteStartTime = 0.0;
+
+        std::vector<double> takenSamples;
+
+        int requiredSamplesCount = 0;
     };
 }
 

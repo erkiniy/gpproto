@@ -39,7 +39,6 @@ void Proto::setDelegate(std::shared_ptr<ProtoDelegate> delegate) {
 }
 
 void Proto::pause() {
-    LOGV("+++++++ Async [pause] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this()] {
         LOGV("Pausing proto with old state %d", self->protoState);
         if ((self->protoState & ProtoStatePaused) == 0)
@@ -53,7 +52,6 @@ void Proto::pause() {
 }
 
 void Proto::resume() {
-    LOGV("+++++++ Async [resume] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this()] {
 
         if (self->protoState & ProtoStatePaused)
@@ -62,7 +60,6 @@ void Proto::resume() {
             LOGV("Proto resumed");
 
             self->resetTransport();
-            LOGV("After resetting transport");
             self->requestTransportTransactions();
         }
     });
@@ -152,6 +149,9 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 
         auto previousTransport = self->transport;
 
+        if (previousTransport)
+            self->removeMessageService(previousTransport);
+
         self->transport = transport;
 
         if (previousTransport)
@@ -159,6 +159,8 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 
         self->updateConnectionState();
 
+        if (transport)
+            self->addMessageService(transport);
     });
 }
 
@@ -447,7 +449,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
 
     sessionInfo->setMessageProcessed(message->messsageId);
 
-    auto strongSelf = shared_from_this();
+    auto self = shared_from_this();
 
     if (auto badMessageNotificationMessage = std::dynamic_pointer_cast<BadMsgNotificationMessage>(message->body))
     {
@@ -464,11 +466,11 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
             if (timeFixContext && badSaltNotificationMessage->badMessageId == timeFixContext->messageId)
             {
                 auto validSalt = badSaltNotificationMessage->validServerSalt;
-                auto timeDifference = (double)(message->messsageId / 4294967296.0) - getAbsoluteSystemTime();
+                auto timeDifference = (message->messsageId / 4294967296.0) - getAbsoluteSystemTime();
 
                 setState(protoState & ~ProtoStateAwaitingTimeFixAndSalts);
 
-                std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltSet = {};
+                std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltSet;
                 saltSet.push_back(std::make_shared<DatacenterSaltsetInfo>(validSalt, message->messsageId, message->messsageId + (int64_t)(4294967296.0 * 0.9 * 60.0)));
 
                 timeSyncInfoChanged(timeDifference, saltSet, true);
@@ -507,10 +509,10 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
         for (auto it : messageServices)
         {
             auto service = it.second;
-            service->protoMessageDeliveryFailed(strongSelf, badMessageNotificationMessage->badMessageId);
+            service->protoMessageDeliveryFailed(self, badMessageNotificationMessage->badMessageId);
 
             for (auto msgId : containerMessageIds)
-                service->protoMessageDeliveryFailed(strongSelf, msgId);
+                service->protoMessageDeliveryFailed(self, msgId);
         }
     }
     else if (auto msgsAckMessage = std::dynamic_pointer_cast<MsgsAckMessage>(message->body)) {
@@ -519,7 +521,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
         for (auto it : messageServices)
         {
             auto service = it.second;
-            service->protoMessagesDeliveryConfirmed(strongSelf, messageIds);
+            service->protoMessagesDeliveryConfirmed(self, messageIds);
         }
     }
     else {
@@ -533,7 +535,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
         }
 
         for (auto it : messageServices)
-            it.second->protoDidReceiveMessage(strongSelf, message);
+            it.second->protoDidReceiveMessage(self, message);
 
     }
 }
@@ -611,6 +613,9 @@ void Proto::requestTimeResync() {
 
             strongSelf->addMessageService(timeSyncService);
         }
+        else {
+            LOGV("[Proto requestTimeResync] already syncing");
+        }
     });
 }
 
@@ -681,6 +686,8 @@ void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::sh
                            bool replace) {
     context->setGlobalTimeDifference(timeDifference);
 
+    LOGV("[Proto timeSyncInfoChanged] difference = %f, salts count %zu", timeDifference, saltlist.size());
+
     if (!saltlist.empty())
     {
         auto updatedAuthInfo = replace ? authInfo->replaceSaltset(saltlist) : authInfo->mergeSaltset(saltlist, context->getGlobalTime());
@@ -700,8 +707,6 @@ void Proto::timeSyncServiceCompleted(const TimeSyncMessageService &service, doub
             return;
 
         self->completeTimeSync();
-
-        self->messageServices.erase(it);
 
         self->timeSyncInfoChanged(timeDifference, saltlist, false);
     });
@@ -944,7 +949,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
             decryptedOs.writeData(*messageData);
 
             auto currentBytes = decryptedOs.currentBytes();
-            auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+            auto messageKey = Crypto::sha256(*currentBytes)->subData(16, 16);
 
             self->paddedData(decryptedOs);
 
@@ -997,7 +1002,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedMessage(const std::shared_pt
     decryptedOs.writeData(*message->data);
 
     auto currentBytes = decryptedOs.currentBytes();
-    auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+    auto messageKey = Crypto::sha256(*currentBytes)->subData(16, 16);
 
     paddedData(decryptedOs);
 
@@ -1061,7 +1066,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     decryptedOs.writeData(*containerData);
 
     auto currentBytes = decryptedOs.currentBytes();
-    auto messageKey = Crypto::sha256(*currentBytes)->subData(8, 16);
+    auto messageKey = Crypto::sha256(*currentBytes)->subData(16, 16);
 
     paddedData(decryptedOs);
 

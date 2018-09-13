@@ -3,6 +3,8 @@
 //
 
 #include "TcpConnection.h"
+#include "gp/net/ConnectionDelegate.h"
+
 using namespace gpproto;
 
 void TcpConnection::start() {

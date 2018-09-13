@@ -4,7 +4,20 @@
 
 #include "gp/network/TcpTransport.h"
 #include "gp/proto/MessageTransaction.h"
+#include "gp/network/OutgoingMessage.h"
 #include "gp/proto/TransportTransaction.h"
+#include "gp/utils/Common.h"
+#include "gp/utils/OutputStream.h"
+#include "gp/utils/Random.h"
+#include "gp/proto/PreparedMessage.h"
+#include "gp/proto/Context.h"
+#include "gp/network/TransportDelegate.h"
+#include "gp/proto/DatacenterAddress.h"
+#include "gp/net/TcpConnection.h"
+#include "gp/utils/Timer.h"
+#include "gp/network/TcpTransportContext.h"
+#include "gp/proto/ProtoInternalMessage.h"
+#include "gp/network/IncomingMessage.h"
 
 using namespace gpproto;
 
@@ -74,12 +87,22 @@ void TcpTransport::setDelegate(std::shared_ptr<TransportDelegate> delegate) {
 
 void TcpTransport::setDelegateNeedsTransaction() {
     auto self = shared_from_this();
-    LOGV("[TcpTransport -> setDelegateNeedsTransaction]");
+
     TcpTransport::queue()->async([self] {
-        if (self->transportContext->connection == nullptr)
-            self->transportContext->requestConnection();
-        else
-            self->requestTransactionFromDelegate();
+        if (self->transportContext->willRequestTransactionOnNextQueuePass)
+            return;
+
+        self->transportContext->willRequestTransactionOnNextQueuePass = true;
+
+        TcpTransport::queue()->asyncForce([self] {
+
+            self->transportContext->willRequestTransactionOnNextQueuePass = false;
+
+            if (self->transportContext->connection == nullptr)
+                self->transportContext->requestConnection();
+            else
+                self->requestTransactionFromDelegate();
+        });
     });
 }
 
@@ -90,11 +113,97 @@ void TcpTransport::requestTransactionFromDelegate() {
 
     auto self = shared_from_this();
 
+    if (transportContext->waitingForConnectionToBecomeAvailable)
+    {
+        if (!transportContext->didSendActualizationPingAfterConnection)
+        {
+            LOGV("[TcpTransport unlocking transaction processing due to connection context update task]");
+
+            transportContext->waitingForConnectionToBecomeAvailable = true;
+            transportContext->transactionLockTime = 0.0;
+        }
+        else if (getAbsoluteSystemTime() > transportContext->transactionLockTime + 1.0)
+        {
+            LOGV("[TcpTransport unlocking transaction processing due to timeout]");
+
+            transportContext->waitingForConnectionToBecomeAvailable = true;
+            transportContext->transactionLockTime = 0.0;
+        }
+        else
+        {
+            LOGV("[TcpTransport locking transaction processing]");
+
+            transportContext->requestTransactionWhenBecomesAvailable = true;
+            return;
+        }
+    }
+
     if (auto strongDelegate = delegate.lock())
     {
         LOGV("[TcpTransport -> requestTransactionFromDelegate]");
 
-        strongDelegate->transportReadyForTransaction(*self, nullptr, [weakSelf = weak_from_this()](std::vector<std::shared_ptr<TransportTransaction>> readyTransactions){
+        transportContext->waitingForConnectionToBecomeAvailable = true;
+        transportContext->transactionLockTime = getAbsoluteSystemTime();
+
+        std::shared_ptr<MessageTransaction> transportSpecificTransactions;
+        std::vector<std::shared_ptr<OutgoingMessage>> transportTransactionOutgoingMessages;
+
+        std::shared_ptr<OutgoingMessage> outgoingPingMessage;
+        std::shared_ptr<OutgoingMessage> outgoingPongMessage;
+
+        if (!transportContext->didSendActualizationPingAfterConnection)
+        {
+            transportContext->didSendActualizationPingAfterConnection = true;
+            auto randomId = Random::secureInt64();
+            LOGV("[TcpTransport generating ping with randomId %lld]", randomId);
+
+            OutputStream pingBuffer;
+            pingBuffer.writeUInt32(0x7abe77ec);
+            pingBuffer.writeInt64(randomId);
+
+            outgoingPingMessage = std::make_shared<OutgoingMessage>(0, 0, false, pingBuffer.currentBytes());
+
+            transportTransactionOutgoingMessages.push_back(outgoingPingMessage);
+        }
+
+        if (transportContext->currentServerPingId != 0 && transportContext->currentServerPingMessageId != 0)
+        {
+            LOGV("[TcpTransport sending pong for pingId:%lld, messageId:%lld]", transportContext->currentServerPingId, transportContext->currentServerPingMessageId);
+
+            OutputStream pongBuffer;
+            pongBuffer.writeUInt32(0x347773c5);
+            pongBuffer.writeInt64(transportContext->currentServerPingMessageId);
+            pongBuffer.writeInt64(transportContext->currentServerPingId);
+
+            outgoingPongMessage = std::make_shared<OutgoingMessage>(0, 0, false, pongBuffer.currentBytes());
+
+            transportTransactionOutgoingMessages.push_back(outgoingPongMessage);
+        }
+
+        if (!transportTransactionOutgoingMessages.empty())
+        {
+            transportSpecificTransactions = std::make_shared<MessageTransaction>(transportTransactionOutgoingMessages,
+                    [](auto messageInternalIdToPreparedMessage) {},
+                    []{}, [context = transportContext, outgoingPingMessage, outgoingPongMessage](auto messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                if (const auto & pingMessage = outgoingPingMessage)
+                {
+                    auto it = messageInternalIdToPreparedMessage.find(pingMessage->internalId);
+                    if (it != messageInternalIdToPreparedMessage.end())
+                        context->currentActualizationPingMessageId = messageInternalIdToPreparedMessage[pingMessage->internalId]->messageId;
+                }
+
+                if (const auto & pongMessage = outgoingPongMessage)
+                {
+                    auto it = messageInternalIdToPreparedMessage.find(pongMessage->internalId);
+                    if (it != messageInternalIdToPreparedMessage.end()) {
+                        context->currentServerPingMessageId = 0;
+                        context->currentServerPingId = 0;
+                    }
+                }
+            });
+        }
+
+        strongDelegate->transportReadyForTransaction(*self, transportSpecificTransactions, [weakSelf = weak_from_this()](std::vector<std::shared_ptr<TransportTransaction>> readyTransactions){
             if (auto strongSelf = weakSelf.lock())
             {
                 for (const auto & transaction : readyTransactions)
@@ -110,6 +219,15 @@ void TcpTransport::requestTransactionFromDelegate() {
                         }
                     }
                 }
+            }
+        });
+
+        TcpTransport::queue()->async([self = shared_from_this()] {
+            self->transportContext->waitingForConnectionToBecomeAvailable = false;
+            if (self->transportContext->requestTransactionWhenBecomesAvailable)
+            {
+                self->transportContext->requestTransactionWhenBecomesAvailable = false;
+                self->requestTransactionFromDelegate();
             }
         });
     }
@@ -153,6 +271,15 @@ void TcpTransport::connectionClosed(const Connection &connection) {
 
         strongSelf->transportContext->connectionClosed();
 
+        if (auto timer = strongSelf->transportContext->actualizationPingResendTimer)
+            timer->invalidate();
+
+        strongSelf->transportContext->didSendActualizationPingAfterConnection = false;
+        strongSelf->transportContext->currentActualizationPingMessageId = 0;
+
+        strongSelf->transportContext->currentServerPingId = 0;
+        strongSelf->transportContext->currentServerPingMessageId = 0;
+
         if (auto strongDelegate = strongSelf->delegate.lock())
             strongDelegate->transportNetworkConnectionStateChanged(*strongSelf, false);
 
@@ -168,6 +295,10 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
 
         if (!strongSelf->transportContext->connection->isEqual(connection))
             return;
+
+        if (strongSelf->transportContext->currentActualizationPingMessageId != 0 || strongSelf->transportContext->actualizationPingResendTimer == nullptr)
+            strongSelf->startActualizationPingResendTimer();
+
 
         if (auto strongDelegate = strongSelf->delegate.lock())
         {
@@ -245,4 +376,117 @@ void TcpTransport::connectionIsInvalid() {
     TcpTransport::queue()->async([strongSelf = shared_from_this()] {
         //TODO: invalidate current transport scheme
     });
+}
+
+void TcpTransport::startActualizationPingResendTimer() {
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        auto context = self->transportContext;
+        if (auto timer = context->actualizationPingResendTimer)
+            timer->invalidate();
+
+        context->actualizationPingResendTimer = Timer::make_timer(20.0, true, [weak_self = self->weak_from_this()] {
+            if (auto strongSelf = weak_self.lock())
+                strongSelf->resendActualizationPing();
+
+        }, TcpTransport::queue());
+        context->actualizationPingResendTimer->start();
+    });
+}
+
+void TcpTransport::stopActualizationPingResendTimer() {
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        auto context = self->transportContext;
+
+        if (auto timer = context->actualizationPingResendTimer)
+            timer->invalidate();
+
+        context->actualizationPingResendTimer = nullptr;
+    });
+}
+
+void TcpTransport::resendActualizationPing() {
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        auto context = self->transportContext;
+
+        if (context->currentActualizationPingMessageId != 0)
+        {
+            context->didSendActualizationPingAfterConnection = false;
+            context->currentActualizationPingMessageId = 0;
+
+            self->requestTransactionFromDelegate();
+        }
+    });
+}
+
+std::shared_ptr<MessageTransaction> TcpTransport::protoMessageTransaction(const std::shared_ptr<Proto> &proto) {
+    return nullptr;
+}
+
+void TcpTransport::protoDidReceiveMessage(const std::shared_ptr<Proto> &proto, std::shared_ptr<IncomingMessage> message) {
+    if (auto pingMessage = std::dynamic_pointer_cast<PingMessage>(message->body))
+    {
+        TcpTransport::queue()->async([pingMessage, message, self = shared_from_this()] {
+            LOGV("[TcpTransport PING received]");
+            self->transportContext->currentServerPingMessageId = message->messsageId;
+            self->transportContext->currentServerPingId = pingMessage->pingId;
+
+            self->requestTransactionFromDelegate();
+        });
+    }
+}
+
+void TcpTransport::protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto, std::vector<int> transactionIds) {
+
+}
+
+void TcpTransport::protoMessageDeliveryFailed(const std::shared_ptr<Proto> &proto, int64_t messageId) {
+
+}
+
+void TcpTransport::protoMessagesDeliveryConfirmed(const std::shared_ptr<Proto> &proto, std::vector<int64_t> messages) {
+
+}
+
+void TcpTransport::protoErrorReceived(const std::shared_ptr<Proto> &proto, int32_t errorCode) {
+
+}
+
+void TcpTransport::protoWillAddService(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoDidAddService(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoWillRemoveService(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoDidRemoveService(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoAllTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoDidChangeSession(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoServerDidChangeSession(const std::shared_ptr<Proto> &proto) {
+
+}
+
+void TcpTransport::protoNetworkAvailabilityChanged(const std::shared_ptr<Proto> &proto, bool isNetworkAvailable) {
+
+}
+
+void TcpTransport::protoConnectionStateChanged(const std::shared_ptr<Proto> &proto, bool isConnected) {
+
+}
+
+void TcpTransport::protoAuthTokenUpdated(const std::shared_ptr<Proto> &proto) {
+
 }

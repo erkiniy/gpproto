@@ -2,7 +2,13 @@
 // Created by Jaloliddin Erkiniy on 8/29/18.
 //
 
-#include "TcpTransportContext.h"
+#include "gp/network/TcpTransportContext.h"
+#include "gp/net/TcpConnection.h"
+#include "gp/proto/DatacenterAddress.h"
+#include "gp/network/TcpTransportContextDelegate.h"
+#include "gp/utils/DispatchQueue.h"
+#include "gp/utils/Timer.h"
+
 using namespace gpproto;
 
 void TcpTransportContext::requestConnection() {
@@ -97,6 +103,6 @@ void TcpTransportContext::timerEvent() {
 
 void TcpTransportContext::connectionValidDataReceived() {
     backoffCount = 0;
-
+    LOGV("[TcpTransportContext connectionValidDataReceived] Valid data received");
     invalidateTimer();
 }

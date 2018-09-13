@@ -3,6 +3,10 @@
 //
 
 #include "gp/network/TransportScheme.h"
+#include "gp/proto/DatacenterAddress.h"
+#include "gp/network/TcpTransport.h"
+#include "gp/utils/DispatchQueue.h"
+
 using namespace gpproto;
 
 std::shared_ptr<Transport> TransportScheme::createTransportWithContext(std::shared_ptr<Context> context, int32_t datacenterId, std::shared_ptr<TransportDelegate> delegate) const {

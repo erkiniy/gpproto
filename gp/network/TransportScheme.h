@@ -5,10 +5,15 @@
 #ifndef GPPROTO_TRANSPORTSCHEME_H
 #define GPPROTO_TRANSPORTSCHEME_H
 
-#include "gp/proto/DatacenterAddress.h"
-#include "gp/network/TcpTransport.h"
+#include <memory>
 
 namespace gpproto {
+
+    class DatacenterAddress;
+    class TcpTransport;
+    class Transport;
+    class TransportDelegate;
+    class Context;
 
     enum class TransportType {
         Tcp = 1,
