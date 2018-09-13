@@ -39,6 +39,7 @@ void TcpTransport::stop() {
 
         self->transportContext->stopped = false;
         self->transportContext->connected = false;
+        self->transportContext->needsReconnection = false;
 
         if (auto delegate = self->delegate.lock())
             delegate->transportNetworkConnectionStateChanged(*self, false);
@@ -137,6 +138,8 @@ void TcpTransport::connectionOpened(const Connection &connection) {
 void TcpTransport::connectionClosed(const Connection &connection) {
     auto strongSelf = shared_from_this();
 
+    LOGV("[TcpTransport connectionClosed]");
+
     TcpTransport::queue()->async([&connection, strongSelf] {
         if (!strongSelf->transportContext->connection)
             return;
@@ -145,7 +148,7 @@ void TcpTransport::connectionClosed(const Connection &connection) {
             return;
 
         strongSelf->transportContext->connected = false;
-        strongSelf->transportContext->setDelegate(nullptr);
+        strongSelf->transportContext->connection->setDelegate(nullptr);
         strongSelf->transportContext->connection = nullptr;
 
         strongSelf->transportContext->connectionClosed();
@@ -183,6 +186,8 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
 void TcpTransport::tcpConnectionRequestReconnection(const TcpTransportContext &context) {
     auto self = shared_from_this();
     TcpTransport::queue()->async([&context, self] {
+
+        LOGV("[TcpTransport tcpConnectionRequestReconnection]");
 
         if (self->transportContext->stopped)
             return;

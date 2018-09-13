@@ -30,8 +30,6 @@ namespace gpproto::Crypto {
 
     std::shared_ptr<StreamSlice> aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, const StreamSlice &cypher);
 
-    std::shared_ptr<StreamSlice> rsa_encrypt_pkcs1(const std::string& publicKey, const StreamSlice& plain);
-
     std::shared_ptr<StreamSlice> rsa_encrypt_x509(const std::string &publicKey, const StreamSlice &plain);
 
     std::shared_ptr<StreamSlice> rsa_encrypt(const std::string &publicKey, const StreamSlice &plain);

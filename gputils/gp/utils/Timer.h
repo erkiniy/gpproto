@@ -8,44 +8,56 @@
 #include <functional>
 #include <atomic>
 #include <unordered_map>
-#include "DispatchQueuePool.h"
+#include <memory>
 
 namespace gpproto {
+    class DispatchQueue;
 
 class Timer : public std::enable_shared_from_this<Timer> {
+
     typedef std::function<void()> TimerAction;
+
     public:
-        Timer(float timeout, bool repeats, const TimerAction& action, std::shared_ptr<DispatchQueue> queue = nullptr)
-                : timeout(timeout),
-                  action(action),
+        static std::shared_ptr<Timer> make_timer(float timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr) {
+            return std::shared_ptr<Timer>(new Timer(timeout, repeats, std::move(action), queue));
+        }
+
+        ~Timer() = default;
+
+        const int id;
+
+        mutable float timeout; //seconds
+
+        const bool repeats;
+
+        mutable std::atomic_bool started;
+
+        std::shared_ptr<DispatchQueue> queue;
+
+        const TimerAction action;
+
+        void start();
+
+        void resetTimeout(float timeout);
+
+        void invalidate();
+
+        bool isScheduled() const;
+
+    private:
+        Timer(float timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr)
+                : id(Timer::nextInternalId()),
+                  timeout(timeout),
+                  action(std::move(action)),
                   repeats(repeats),
                   queue(queue),
-                  timerQueue(nullptr),
-                  started(false),
-                  timerToken(0),
-                  invalidatedQueues() {}
+                  started(false) {};
 
-        ~Timer() {
-            if (timerQueue) {
-                DispatchQueuePool::instance().releaseQueue(timerQueue);
-            }
+
+        static int nextInternalId() {
+            static std::atomic_int id = 0;
+            return id++;
         }
-        void start();
-        void resetTimeout(float timeout);
-        void invalidate();
-        bool isScheduled() const;
-        bool repeats;
-        mutable std::atomic_bool started;
-    private:
-        float timeout; //seconds
-        TimerAction action;
-        std::shared_ptr<DispatchQueue> queue;
-        std::shared_ptr<DispatchQueue> timerQueue;
-        mutable std::atomic_int timerToken;
-        std::unordered_map<std::string, std::shared_ptr<DispatchQueue>> invalidatedQueues;
-        std::mutex mtx;
-
-        void releaseInvalidatedQueue(const std::string& name);
     };
 }
 

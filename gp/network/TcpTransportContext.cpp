@@ -24,6 +24,8 @@ void TcpTransportContext::startIfNeeded() {
 void TcpTransportContext::setDelegate(std::shared_ptr<TcpTransportContextDelegate> delegate) {
     auto strongSelf = shared_from_this();
 
+    LOGV("[TcpTransportContext setDelegate] %s", delegate != nullptr ? "delegate" : "nullptr");
+
     queue->async([strongSelf, delegate] {
         strongSelf->delegate = delegate;
     });
@@ -31,10 +33,10 @@ void TcpTransportContext::setDelegate(std::shared_ptr<TcpTransportContextDelegat
 
 void TcpTransportContext::connectionClosed() {
     //TODO: implement reconnect timer;
-    if (!needsReconnection)
-        return;
 
     LOGV("[TcpTransportContext -> connectionClosed]");
+    if (!needsReconnection)
+        return;
 
     backoffCount++;
 
@@ -58,16 +60,15 @@ void TcpTransportContext::startTimer(double timeout) {
 
     invalidateTimer();
 
-    auto strongSelf = shared_from_this();
-
-    queue->async([s = strongSelf, timeout] {
-        std::weak_ptr<TcpTransportContext> weakSelf = s;
-        s->backoffTimer = std::make_shared<Timer>(timeout, false, [weakSelf] {
+    queue->async([self = shared_from_this(), timeout] {
+        std::weak_ptr<TcpTransportContext> weakSelf = self;
+        self->backoffTimer = Timer::make_timer((float)timeout, false, [weakSelf] {
 
             if (auto strongSelf_ = weakSelf.lock())
                 strongSelf_->timerEvent();
 
-        }, s->queue);
+        }, self->queue);
+        self->backoffTimer->start();
     });
 
 }
@@ -78,13 +79,15 @@ void TcpTransportContext::invalidateTimer() {
     backoffTimer = nullptr;
 
     queue->async([reconnectionTimer] {
-        if (auto timer = reconnectionTimer)
+        if (const auto & timer = reconnectionTimer)
             timer->invalidate();
     });
 }
 
 void TcpTransportContext::timerEvent() {
     invalidateTimer();
+
+    LOGV("[TcpTransportContext timerEvent]");
 
     queue->async([strongSelf = shared_from_this()] {
         if (auto strongDelegate = strongSelf->delegate.lock())

@@ -30,7 +30,7 @@ namespace gpproto
         bool stopped = false;
         bool connected = false;
 
-        bool needsReconnection = false;
+        bool needsReconnection = true;
 
         void requestConnection();
         void startIfNeeded();

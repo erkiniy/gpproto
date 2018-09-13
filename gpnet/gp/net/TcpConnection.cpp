@@ -24,7 +24,8 @@ void TcpConnection::start() {
 void TcpConnection::stop() {
     auto strongSelf = shared_from_this();
     TcpConnection::queue()->async([strongSelf] {
-        if (strongSelf->closed) {
+        if (!strongSelf->closed)
+        {
             LOGV("Stopping the socket");
             strongSelf->closeAndNotify();
         }

@@ -92,6 +92,7 @@ void NetworkSocketPosix::Close() {
     std::weak_ptr<NetworkSocketPosix> weakSelf = shared_from_this();
 
     NetworkSocket::queue()->async([weakSelf] {
+        LOGV("[NetworkSocketPosix Close] 1");
         auto strongSelf = weakSelf.lock();
 
         if (!strongSelf)
@@ -101,6 +102,8 @@ void NetworkSocketPosix::Close() {
         strongSelf->failed = true;
         strongSelf->reading = false;
 
+        LOGV("[NetworkSocketPosix Close]");
+
         if (strongSelf->fd >= 0)
         {
             shutdown(strongSelf->fd, SHUT_RDWR);
@@ -109,7 +112,7 @@ void NetworkSocketPosix::Close() {
 
             auto delegate = strongSelf->delegate.lock();
             if (delegate)
-                delegate->networkSocketDidDisconnectFromHost(*strongSelf.get(), *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
+                delegate->networkSocketDidDisconnectFromHost(*strongSelf, *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
         }
     });
 }

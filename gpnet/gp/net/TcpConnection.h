@@ -36,18 +36,18 @@ class TcpConnection final : public Connection, public NetworkSocketDelegate, pub
             LOGV("TcpConnection deinitialized");
         }
 
-        void start();
-        void stop();
+        void start() override;
+        void stop() override;
 
-        void setDelegate(std::shared_ptr<ConnectionDelegate> delegate);
-        void sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const;
-        void closeAndNotify();
+        void setDelegate(std::shared_ptr<ConnectionDelegate> delegate) override;
+        void sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) const override;
+        void closeAndNotify() override;
 
-        void networkSocketDidReadData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
-        void networkSocketDidReadPartialData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag);
-        void networkSocketDidSendData(const NetworkSocket& socket, size_t length, uint8_t tag);
-        void networkSocketDidConnectToHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port);
-        void networkSocketDidDisconnectFromHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port, uint8_t reasonCode);
+        void networkSocketDidReadData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag) override;
+        void networkSocketDidReadPartialData(const NetworkSocket& socket, std::shared_ptr<StreamSlice> data, uint8_t tag) override;
+        void networkSocketDidSendData(const NetworkSocket& socket, size_t length, uint8_t tag) override;
+        void networkSocketDidConnectToHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port) override;
+        void networkSocketDidDisconnectFromHost(const NetworkSocket& socket, const NetworkAddress& address, uint16_t port, uint8_t reasonCode) override;
 
     private:
         std::shared_ptr<NetworkSocket> socket;

@@ -326,104 +326,6 @@ static std::shared_ptr<StreamSlice> rsa_encrypt_(const StreamSlice &plain, BigNu
     return std::shared_ptr<StreamSlice>(res);
 }
 
-std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_pkcs1(const std::string &publicKey, const StreamSlice &plain) {
-    initCrypto();
-
-//    auto spos = publicKey.find("-----BEGIN PUBLIC KEY-----");
-//    auto epos = publicKey.find("-----END PUBLIC KEY-----");
-//
-//    std::string key = publicKey;
-//
-//    if (spos != std::string::npos && epos != std::string::npos) {
-//        auto s = spos + strlen("-----BEGIN PUBLIC KEY-----");
-//        auto e = epos;
-//
-//        key = publicKey.substr(s, e - s);
-//    }
-//
-//    LOGV("Key is %s", key.c_str());
-//
-//    auto data = base64_decode(key);
-//    data = stripPublicKeyHeader(*data);
-//
-//    if (data == nullptr) {
-//        LOGE("Data is null after stripping");
-//        return nullptr;
-//    }
-//
-//    auto cKey = data->rbegin();
-//    auto cKeyLength = data->size;
-
-    auto cKey = publicKey.c_str();
-    auto cKeyLength = publicKey.length();
-
-    BIO *bio = BIO_new_mem_buf((void *)cKey, (int)cKeyLength);
-
-   LOGV("Public key %s", cKey);
-
-    //auto *bio = BIO_new_mem_buf(const_cast<void *>(static_cast<const void *>(cKey)), narrow_cast<int>(cKeyLength));
-
-    if (bio == nullptr) {
-        LOGE("[Crypto rsa_encrypt] -> cannot create BIO");
-        return nullptr;
-    }
-
-    EVP_PKEY *pkey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
-    if (pkey == nullptr)
-    {
-        LOGE("[Crypto rsa_encrypt] -> cannot create public key");
-        return nullptr;
-    }
-
-    if (get_evp_pkey_type(pkey) != EVP_PKEY_RSA) {
-        LOGE("[Crypto rsa_encrypt] -> wrong key type, expected RSA");
-        return nullptr;
-    }
-
-#if OPENSSL_VERSION_NUMBER < 0x10000000L
-    RSA *rsa = pkey->pkey.rsa;
-    int outlen = RSA_size(rsa);
-    auto result = std::make_shared<StreamSlice>(outlen);
-    if (RSA_public_encrypt(narrow_cast<int>(data.size()), const_cast<unsigned char *>(data.ubegin()),
-                         res.as_slice().ubegin(), rsa, RSA_PKCS1_OAEP_PADDING) != outlen) {
-#else
-    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, nullptr);
-    if (!ctx) {
-        LOGE("[Crypto rsa_encrypt] -> cannot create EVP_PKEY_CTX");
-        return nullptr;
-    }
-
-    if (EVP_PKEY_encrypt_init(ctx) <= 0) {
-        LOGE("[Crypto rsa_encrypt] -> cannot init EVP_PKEY_CTX");
-        return nullptr;
-    }
-
-    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
-        LOGE("[Crypto rsa_encrypt] -> cannot set RSA_PKCS1_OAEP padding in EVP_PKEY_CTX");
-        return nullptr;
-    }
-
-    size_t outlen;
-    if (EVP_PKEY_encrypt(ctx, nullptr, &outlen, plain.rbegin(), plain.size) <= 0) {
-        LOGE("[Crypto rsa_encrypt] -> cannot calculate encrypted length");
-        return nullptr;
-    }
-
-    auto result = std::make_shared<StreamSlice>(outlen);
-
-    if (EVP_PKEY_encrypt(ctx, result->begin(), &outlen, plain.rbegin(), plain.size) <= 0) {
-        LOGE("[Crypto rsa_encrypt] -> cannot encrypt");
-        return nullptr;
-    }
-#endif
-
-    BIO_free(bio);
-    EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx);
-
-    return result;
-}
-
 std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, const StreamSlice &plain) {
 
     initCrypto();
@@ -461,31 +363,9 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, c
         return nullptr;
     }
 
-    const BIGNUM *n_num;
-    const BIGNUM *e_num;
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    n_num = rsa->n;
-    e_num = rsa->e;
-#else
-    RSA_get0_key(rsa, &n_num, &e_num, nullptr);
-#endif
-
-    auto n = static_cast<void *>(BN_dup(n_num));
-    auto e = static_cast<void *>(BN_dup(e_num));
-
-    if (n == nullptr || e == nullptr)
-    {
-        LOGE("[Crypto rsa_encrypt] -> n or e is null");
-        return nullptr;
-    }
-
-    BigNum bn_n = BigNum::from_raw(n);
-    BigNum bn_e = BigNum::from_raw(e);
-
     std::shared_ptr<StreamSlice> cypher = std::make_shared<StreamSlice>(256);
 
-    auto buffSize = RSA_public_encrypt(static_cast<int>(plain.size), plain.rbegin(), cypher->begin(), rsa, RSA_PKCS1_PADDING);
+    RSA_public_encrypt(static_cast<int>(plain.size), plain.rbegin(), cypher->begin(), rsa, RSA_PKCS1_PADDING);
 
     BIO_free(bio);
     RSA_free(rsa);
@@ -495,49 +375,6 @@ std::shared_ptr<StreamSlice> Crypto::rsa_encrypt(const std::string &publicKey, c
 
 bool Crypto::isSafeG(int32_t g) {
     return g >= 2 && g <= 7;
-}
-
-std::shared_ptr<StreamSlice> Crypto::rsa_encrypt_x509(const std::string &publicKey, const StreamSlice &plain) {
-
-    initCrypto();
-
-    auto spos = publicKey.find("-----BEGIN PUBLIC KEY-----");
-    auto epos = publicKey.find("-----END PUBLIC KEY-----");
-
-    std::string key = publicKey;
-
-    if (spos != std::string::npos && epos != std::string::npos) {
-        auto s = spos + strlen("-----BEGIN PUBLIC KEY-----");
-        auto e = epos;
-
-        key = publicKey.substr(s, e - s);
-    }
-
-    LOGV("Key is %s", key.c_str());
-
-    auto data = base64_decode(key);
-    data = stripPublicKeyHeader(*data);
-
-    if (data == nullptr) {
-        LOGE("Data is null after stripping");
-        return nullptr;
-    }
-
-    auto cKey = data->rbegin();
-    auto cKeyLength = data->size;
-
-    //LOGV("Stripped key size is %zu", cKeyLength);
-
-//    auto cKey = publicKey.c_str();
-//    auto cKeyLength = (int32_t)publicKey.length();
-
-    BIO *bio = BIO_new_mem_buf((void *)cKey, (int)cKeyLength);
-
-    if (PEM_read_bio_X509(bio, nullptr, nullptr, nullptr) == nullptr) {
-        LOGV("PEM READ BIO error");
-    }
-
-    return nullptr;
 }
 
 std::shared_ptr<StreamSlice> Crypto::mod_exp(const std::shared_ptr<StreamSlice> &base,

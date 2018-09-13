@@ -110,6 +110,7 @@ void Proto::contextDatacenterAuthInfoUpdated(const Context &context, int32_t dat
             {
                 self->setState(self->protoState & (~ProtoStateAwaitingAuthorization));
                 self->resetTransport();
+                self->requestTransportTransactions();
             }
         }
     });
@@ -157,6 +158,7 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
             previousTransport->stop();
 
         self->updateConnectionState();
+
     });
 }
 
@@ -601,7 +603,8 @@ void Proto::requestTimeResync() {
             }
         }
 
-        if (!alreadySyncing) {
+        if (!alreadySyncing)
+        {
             LOGV("[Proto requestTimeResync] -> begin time sync");
             auto timeSyncService = std::make_shared<TimeSyncMessageService>();
             timeSyncService->setDelegate(strongSelf);
@@ -666,6 +669,8 @@ void Proto::transportNetworkAvailabilityChanged(const Transport &transport, bool
 }
 
 void Proto::transportNetworkConnectionStateChanged(const Transport &transport, bool networkIsConnected) {
+    LOGV("[Proto transportNetworkConnectionStateChanged] %d", networkIsConnected);
+
     Proto::queue()->async([self = shared_from_this(), networkIsConnected] {
         for (auto service : self->messageServices)
             service.second->protoConnectionStateChanged(self, networkIsConnected);

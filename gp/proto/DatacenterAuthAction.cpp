@@ -44,7 +44,7 @@ void DatacenterAuthAction::authMessageServiceCompletedWithAuthKey(const Datacent
     if (auto strongContext = context.lock()) {
         strongContext->updateAuthKeyInfoForDatacenterId(authKey, datacenterId);
         complete();
-        LOGV("[DatacenterAuthAction authMessageServiceCompletedWithAuthKey] auth key fetch action finished with keyId %lld", authKey->authKeyId);
+        LOGV("[DatacenterAuthAction authMessageServiceCompletedWithAuthKey] auth key fetch action finished with keyId %lld, saltCount %lu", authKey->authKeyId, authKey->saltSet.size());
     }
 }
 

@@ -55,6 +55,8 @@ int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
 
     for (const auto &salt : saltSet)
     {
+        LOGV("[authSaltForClientMessageId] %lld, %lld, %lld", messageId, salt->firstValidMessageId, salt->lastValidMessageId);
+
         if (messageId >= salt->firstValidMessageId && messageId <= salt->lastValidMessageId)
         {
             if (bestSalt == 0)

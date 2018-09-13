@@ -84,7 +84,7 @@ std::vector<int64_t> Session::messageIdsInContainer(int64_t containerMessageId) 
 }
 
 int64_t Session::actualClientMessageId() const {
-    auto messageId = (int64_t)context->getGlobalTime() + (int64_t)4294967296;
+    auto messageId = (int64_t)(context->getGlobalTime() * 4294967296.0);
 
     while (messageId % 4 != 0) {
         messageId++;

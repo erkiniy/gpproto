@@ -91,6 +91,7 @@ BigNum BigNum::from_raw(void *openssl_big_num) {
 }
 
 BigNum::BigNum(std::unique_ptr<Impl> &&impl) : impl_(std::move(impl)) {
+
 }
 
 void BigNum::ensure_const_time() {
