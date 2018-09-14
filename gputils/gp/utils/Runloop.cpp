@@ -18,31 +18,33 @@ Runloop::Runloop(double ratio) {
 }
 
 void Runloop::schedule(std::shared_ptr<Timer> timer) {
+    typedef std::pair<long long, std::shared_ptr<Timer>> TimerPair;
+
     workerQueue->async([self = shared_from_this(), timer]
     {
-        LOGV("RUNLOOP SCHEDULE");
         std::shared_ptr<Timer> found = nullptr;
 
-        for (const auto & it : self->timerQueue) {
-            if (it->id == timer->id) {
-                found = it;
-                break;
+        for (const auto & it : self->queue) {
+            if (*it.second == *timer) {
+                found = it.second;
+                return;
             }
         }
 
         if (const auto & _timer = found)
             self->invalidate(_timer);
 
-        auto position = self->timerQueue.begin();
+        auto targetTicks = self->targetTicks(timer->timeout);
 
-        for (auto it = self->timerQueue.begin(); it != self->timerQueue.end(); it++) {
-            if ((*it)->timeout >= timer->timeout) {
-                position = it;
-                break;
-            }
-        }
+        auto pair = std::make_pair(targetTicks, timer);
 
-        self->timerQueue.insert(position, timer);
+        auto it = std::lower_bound(self->queue.begin(), self->queue.end(), pair, [](const TimerPair & lhs, const TimerPair & rhs) -> bool {
+            return lhs.first < rhs.first;
+        });
+
+        LOGV("[Runloop schedule] inserting timer with %lld ticks", targetTicks);
+
+        self->queue.insert(it, std::make_pair(targetTicks, timer));
 
         self->run();
     });
@@ -51,11 +53,10 @@ void Runloop::schedule(std::shared_ptr<Timer> timer) {
 void Runloop::invalidate(std::shared_ptr<Timer> timer) {
     workerQueue->async([self = shared_from_this(), timer]
     {
-        for (auto it = self->timerQueue.begin(); it != self->timerQueue.end(); it++)
+        for (auto it = self->queue.begin(); it != self->queue.end(); it++)
         {
-            if ((*it)->id == timer->id) {
-                self->timerQueue.erase(it);
-                LOGV("INVALIDATE TRUE");
+            if (*(*it).second == *timer) {
+                self->queue.erase(it);
                 break;
             }
         }
@@ -69,7 +70,7 @@ void Runloop::run() {
 
         self->workerQueue->async([self]
         {
-            if (self->timerQueue.empty()) {
+            if (self->queue.empty()) {
                 self->ticks = 0;
                 return;
             }
@@ -78,12 +79,12 @@ void Runloop::run() {
 
             self->dump();
 
-            auto closestTimer = *self->timerQueue.begin();
-            auto ticks = (long long)(closestTimer->timeout / self->ratio);
+            auto closestPair = *self->queue.begin();
+            auto closestTimer = closestPair.second;
 
-            if (ticks <= self->ticks)
+            if (closestPair.first <= self->ticks)
             {
-                self->timerQueue.pop_front();
+                self->queue.pop_front();
                 std::shared_ptr<DispatchQueue> _queue = closestTimer->queue;
 
                 if (_queue == nullptr)
@@ -94,7 +95,7 @@ void Runloop::run() {
                     timer->action();
 
                     if (timer->repeats)
-                        self->schedule(timer);
+                        timer->start();
                 });
             }
 
@@ -103,9 +104,19 @@ void Runloop::run() {
     });
 }
 
+long long Runloop::timeoutToTicks(double timeout) {
+    return (long long)(timeout / ratio);
+}
+
+long long Runloop::targetTicks(double timeout) {
+    return timeoutToTicks(timeout) + this->ticks;
+}
+
 void Runloop::dump() {
-    LOGV("\n------Runloop-Dump------");
-    LOGV("------Ticks = %d--------", ticks);
-    LOGV("------Timers = %lu--------\n", timerQueue.size());
+    LOGV("------Runloop-Dump------ %zu timers", queue.size());
+    for (const auto & it : queue)
+        LOGV("-------- Tick = %lld ------ %lld", ticks, it.first);
+    LOGV("------Runloop-Dump------ %zu timers\n", queue.size());
+
 }
 

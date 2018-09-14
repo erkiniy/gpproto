@@ -28,7 +28,7 @@ void Timer::invalidate() {
     Runloop::Default()->invalidate(self);
  }
 
-void Timer::resetTimeout(float timeout) {
+void Timer::resetTimeout(double timeout) {
     invalidate();
 
     this->timeout = timeout;

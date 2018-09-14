@@ -1022,7 +1022,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedMessage(const std::shared_pt
 
 std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<std::shared_ptr<PreparedMessage>> &messages, const std::shared_ptr<Session> &session) const {
     static const uint32_t containerSignature = 0x73f1f8dc;
-
+    LOGV("Generating container with %d", (int)messages.size());
     OutputStream containerOs;
 
     containerOs.writeUInt32(containerSignature);
@@ -1060,7 +1060,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     decryptedOs.writeInt64(salt);
     decryptedOs.writeInt64(session->id);
     decryptedOs.writeInt64(containerMessageId);
-    decryptedOs.writeInt64(containerSeqNo);
+    decryptedOs.writeInt32(containerSeqNo);
     decryptedOs.writeInt32(static_cast<int32_t>(containerData->size));
 
     decryptedOs.writeData(*containerData);

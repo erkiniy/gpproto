@@ -16,13 +16,13 @@ namespace gpproto {
     public:
 
         InputStream(std::shared_ptr<StreamSlice> data) : currentPosition(0), size(data->size) {
-            LOGV("Allocating InputStream");
+            //LOGV("Allocating InputStream");
             this->bytes = (unsigned char *)malloc(data->size);
             memcpy(this->bytes, data->bytes, data->size);
         }
 
         ~InputStream() {
-            LOGV("Dealocating InputStream");
+            //LOGV("Dealocating InputStream");
             if (bytes)
                 free(bytes);
         }

@@ -18,7 +18,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
     typedef std::function<void()> TimerAction;
 
     public:
-        static std::shared_ptr<Timer> make_timer(float timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr) {
+        static std::shared_ptr<Timer> make_timer(double timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr) {
             return std::shared_ptr<Timer>(new Timer(timeout, repeats, std::move(action), queue));
         }
 
@@ -26,7 +26,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
 
         const int id;
 
-        mutable float timeout; //seconds
+        mutable double timeout; //seconds
 
         const bool repeats;
 
@@ -38,14 +38,14 @@ class Timer : public std::enable_shared_from_this<Timer> {
 
         void start();
 
-        void resetTimeout(float timeout);
+        void resetTimeout(double timeout);
 
         void invalidate();
 
         bool isScheduled() const;
 
     private:
-        Timer(float timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr)
+        Timer(double timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr)
                 : id(Timer::nextInternalId()),
                   timeout(timeout),
                   action(std::move(action)),
@@ -59,6 +59,10 @@ class Timer : public std::enable_shared_from_this<Timer> {
             return id++;
         }
     };
+
+    inline bool operator == (const Timer& lhs, const Timer& rhs) {
+        return lhs.id == rhs.id;
+    }
 }
 
 #endif //GPPROTO_TIMER_H

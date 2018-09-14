@@ -18,7 +18,6 @@ namespace gpproto {
 
         OutputStream() : currentSize(0), numberOfChunks(1) {
             bytes = (unsigned char *)malloc(kChunkSize);
-            LOGV("Input Stream allocated\n");
         }
 
         ~OutputStream() {

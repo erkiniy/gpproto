@@ -27,7 +27,7 @@ class TcpConnection final : public Connection, public NetworkSocketDelegate, pub
             return q;
         }
 
-        TcpConnection(IPv4Address& address, uint16_t port) : socket(nullptr), address(address), port(port) {
+        TcpConnection(IPv4Address& address, uint16_t port) : socket(nullptr), address(std::move(address)), port(port) {
             LOGV("TcpConnection initialized");
             closed = false;
         }

@@ -19,6 +19,8 @@
 #include "gp/proto/ProtoInternalMessage.h"
 #include "gp/network/IncomingMessage.h"
 
+#include <cassert>
+
 using namespace gpproto;
 
 void TcpTransport::reset() {
@@ -61,7 +63,7 @@ void TcpTransport::stop() {
         self->transportContext->connection->stop();
         self->transportContext->connection = nullptr;
 
-        //TODO: stop timers;
+        self->stopActualizationPingResendTimer();
     });
 }
 
@@ -296,7 +298,7 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
         if (!strongSelf->transportContext->connection->isEqual(connection))
             return;
 
-        if (strongSelf->transportContext->currentActualizationPingMessageId != 0 || strongSelf->transportContext->actualizationPingResendTimer == nullptr)
+        if (strongSelf->transportContext->currentActualizationPingMessageId != 0 && strongSelf->transportContext->actualizationPingResendTimer == nullptr)
             strongSelf->startActualizationPingResendTimer();
 
 
@@ -341,8 +343,6 @@ void TcpTransport::startIfNeeded() {
 
         self->transportContext->connection = std::make_shared<TcpConnection>(address, self->address->port);
 
-        //auto strongDelegate = std::static_pointer_cast<ConnectionDelegate>(strongSelf);
-
         self->transportContext->connection->setDelegate(self);
 
         self->transportContext->connection->start();
@@ -384,9 +384,13 @@ void TcpTransport::startActualizationPingResendTimer() {
         if (auto timer = context->actualizationPingResendTimer)
             timer->invalidate();
 
+        LOGV("[TcpTransport startActualizationPingResendTimer] setting timer ping message id %lld", context->currentActualizationPingMessageId);
         context->actualizationPingResendTimer = Timer::make_timer(20.0, true, [weak_self = self->weak_from_this()] {
             if (auto strongSelf = weak_self.lock())
                 strongSelf->resendActualizationPing();
+            else {
+                LOGV("[TcpTransport is weak]");
+            }
 
         }, TcpTransport::queue());
         context->actualizationPingResendTimer->start();
@@ -440,7 +444,14 @@ void TcpTransport::protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &
 }
 
 void TcpTransport::protoMessageDeliveryFailed(const std::shared_ptr<Proto> &proto, int64_t messageId) {
-
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        auto transportContext = self->transportContext;
+        if (transportContext->currentActualizationPingMessageId != 0 && transportContext->currentActualizationPingMessageId == messageId)
+        {
+            self->stopActualizationPingResendTimer();
+            transportContext->currentActualizationPingMessageId = 0;
+        }
+    });
 }
 
 void TcpTransport::protoMessagesDeliveryConfirmed(const std::shared_ptr<Proto> &proto, std::vector<int64_t> messages) {
@@ -472,7 +483,10 @@ void TcpTransport::protoAllTransactionsMayHaveFailed(const std::shared_ptr<Proto
 }
 
 void TcpTransport::protoDidChangeSession(const std::shared_ptr<Proto> &proto) {
-
+    TcpTransport::queue()->async([self = shared_from_this()] {
+        self->stopActualizationPingResendTimer();
+        self->transportContext->currentActualizationPingMessageId = 0;
+    });
 }
 
 void TcpTransport::protoServerDidChangeSession(const std::shared_ptr<Proto> &proto) {

@@ -23,7 +23,7 @@ std::shared_ptr<MessageTransaction> TimeSyncMessageService::protoMessageTransact
         OutputStream getFutureSaltsBuffer;
 
         getFutureSaltsBuffer.writeUInt32(0xb921bd04);
-        getFutureSaltsBuffer.writeInt32(saltlist.empty() != 0 ? 5 : 32);
+        getFutureSaltsBuffer.writeInt32(saltlist.empty() != 0 ? 1 : 32);
 
         auto outgoingMessage = std::make_shared<OutgoingMessage>(0, 0, true, getFutureSaltsBuffer.currentBytes());
 
