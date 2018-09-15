@@ -292,7 +292,7 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
     }
 
     if (authInfo == nullptr) {
-        LOGE("[Proto decryptIncomingTransportData] -> missing authkKey");
+        LOGE("[Proto decryptIncomingTransportData] -> missing authKey");
         return nullptr;
     }
 

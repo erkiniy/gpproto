@@ -43,8 +43,7 @@ std::shared_ptr<MessageTransaction> TimeSyncMessageService::protoMessageTransact
     return nullptr;
 }
 
-void TimeSyncMessageService::protoDidReceiveMessage(const std::shared_ptr<Proto> &proto,
-                                                    std::shared_ptr<IncomingMessage> message) {
+void TimeSyncMessageService::protoDidReceiveMessage(const std::shared_ptr<Proto> &proto, std::shared_ptr<IncomingMessage> message) {
     if (const auto & futureSaltsMessage = std::dynamic_pointer_cast<FutureSaltsMessage>(message->body))
     {
         if (futureSaltsMessage->requestMessageId != currentMessageId)
@@ -146,8 +145,7 @@ void TimeSyncMessageService::protoDidReceiveMessage(const std::shared_ptr<Proto>
     }
 }
 
-void TimeSyncMessageService::protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto,
-                                                            std::vector<int> transactionIds) {
+void TimeSyncMessageService::protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto, std::vector<int> transactionIds) {
 
 }
 
