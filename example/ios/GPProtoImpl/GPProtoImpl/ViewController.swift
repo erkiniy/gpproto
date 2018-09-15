@@ -9,18 +9,21 @@
 import UIKit
 
 class ViewController: UIViewController {
-    let proto = ProtoImpl()
+    
+    var client: UnsafeMutableRawPointer!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.view.backgroundColor = .red
         
-        proto?.initProto();
-        proto?.start();
+        client = gp_client_create()
+        gp_client_pause(client)
+        gp_client_resume(client)
+    }
+    
+    deinit {
         
-        let data = Data(bytes: [1, 0, 0, 0])
-        proto?.send(data)
     }
 
     override func didReceiveMemoryWarning() {

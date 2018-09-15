@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 #cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
+#cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/opt/openssl/lib -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -167,11 +168,11 @@ if (OPENSSL_FOUND)
     message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR} ${OPENSSL_LIBRARIES}")
 endif()
 
-enable_testing()
+#enable_testing()
 
 add_subdirectory(gpnet)
 add_subdirectory(gputils)
-add_subdirectory(test)
+#add_subdirectory(test)
 
 set(GPCORE_SOURCE
         gp/proto/Proto.h
