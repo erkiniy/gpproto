@@ -444,7 +444,7 @@ void TcpTransport::protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &
 }
 
 void TcpTransport::protoMessageDeliveryFailed(const std::shared_ptr<Proto> &proto, int64_t messageId) {
-    TcpTransport::queue()->async([self = shared_from_this()] {
+    TcpTransport::queue()->async([self = shared_from_this(), messageId] {
         auto transportContext = self->transportContext;
         if (transportContext->currentActualizationPingMessageId != 0 && transportContext->currentActualizationPingMessageId == messageId)
         {
