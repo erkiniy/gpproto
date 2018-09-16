@@ -169,6 +169,7 @@ size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
         reading = false;
         if (res <= 0) {
             LOGE("Error receiving TCP packet");
+            packet->slice->size = 0;
             Close();
             return 0;
         }
