@@ -118,19 +118,17 @@ void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, i
 std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacenterId(int32_t id) {
     DatacenterAddress *addressPtr = nullptr;
 
-    LOGV("First");
     Context::queue()->sync([self = shared_from_this(), &addressPtr, id]() mutable {
         LOGV("[Context getDatacenterSeedAddressForDatacenterId]");
         auto it = self->datacenterSeedAddressByDatacenterId.find(id);
 
         if (it != self->datacenterSeedAddressByDatacenterId.end()) {
-            LOGV("AddressSeed found");
+            //LOGV("AddressSeed found");
             addressPtr = new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id]));
         }
         if (addressPtr == nullptr)
             LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> addressSeed not found");
     });
-    LOGV("Second");
 
     if (addressPtr != nullptr) {
         LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> address found");
@@ -143,10 +141,8 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacente
 void Context::setDatacenterSeedAddress(DatacenterAddress &&address, int32_t id) {
 
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
-    LOGV("+++++++ Async [setDatacenterSeedAddress] to %s", Context::queue()->name().c_str());
 
     Context::queue()->async([self = shared_from_this(), addr, id] {
-        LOGV("setDatacenterSeedAddress");
         self->datacenterSeedAddressByDatacenterId[id] = addr;
     });
 

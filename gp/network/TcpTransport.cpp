@@ -289,27 +289,31 @@ void TcpTransport::connectionClosed(const Connection &connection) {
 }
 
 void TcpTransport::connectionDidReceiveData(const Connection& connection, std::shared_ptr<StreamSlice> slice) {
-    auto strongSelf = shared_from_this();
-    TcpTransport::queue()->async([&connection, slice, strongSelf] {
+    auto self = shared_from_this();
+    TcpTransport::queue()->async([&connection, slice, self] {
 
-        if (!strongSelf->transportContext->connection)
+        LOGD("[TcpTransport connectionDidReceiveData]");
+
+        if (!self->transportContext->connection)
             return;
 
-        if (!strongSelf->transportContext->connection->isEqual(connection))
+        if (!self->transportContext->connection->isEqual(connection))
             return;
 
-        if (strongSelf->transportContext->currentActualizationPingMessageId != 0 && strongSelf->transportContext->actualizationPingResendTimer == nullptr)
-            strongSelf->startActualizationPingResendTimer();
+        if (self->transportContext->currentActualizationPingMessageId != 0 && self->transportContext->actualizationPingResendTimer == nullptr)
+            self->startActualizationPingResendTimer();
 
+        LOGD("[TcpTransport connectionDidReceiveData] currentActualizationPingMessageId: %lld, actualizationPingResendTimer == nullptr: %d", self->transportContext->currentActualizationPingMessageId, self->transportContext->actualizationPingResendTimer ==
+                nullptr ? 1 : 0)
 
-        if (auto strongDelegate = strongSelf->delegate.lock())
+        if (auto strongDelegate = self->delegate.lock())
         {
-            strongDelegate->transportHasIncomingData(*strongSelf, slice, true, [weakSelf = strongSelf->weak_from_this()](bool success) {
-                 if (auto _strongSelf = weakSelf.lock()) {
+            strongDelegate->transportHasIncomingData(*self, slice, true, [weakSelf = self->weak_from_this()](bool success) {
+                 if (auto _self = weakSelf.lock()) {
                      if (success)
-                         _strongSelf->connectionIsValid();
+                         _self->connectionIsValid();
                      else
-                         _strongSelf->connectionIsInvalid();
+                         _self->connectionIsInvalid();
                  }
              });
         }

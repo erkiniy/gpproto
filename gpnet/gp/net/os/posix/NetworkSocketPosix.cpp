@@ -40,48 +40,54 @@ void NetworkSocketPosix::Open() {
     std::weak_ptr<NetworkSocketPosix> weakSelf = shared_from_this();
 
     NetworkSocket::queue()->async([weakSelf]{
-        auto strongSelf = weakSelf.lock();
+        auto self = weakSelf.lock();
 
-        if (!strongSelf)
+        if (!self)
             return;
 
-        if (strongSelf->protocol == PROTO_UDP) {
+        if (self->protocol == PROTO_UDP) {
             return;
         }
 
-        strongSelf->fd = socket(AF_INET, SOCK_STREAM, 0);
-        strongSelf->reading = false;
+        self->fd = socket(AF_INET, SOCK_STREAM, 0);
+        self->reading = false;
 
         timeval timeout;
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
 
-        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+        if (setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
             LOGE("setsockopt error SO_SNDTIMEO");
             return;
         }
 
-        timeout.tv_sec = 60;
-        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+        timeout.tv_sec = 40;
+        if (setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
             LOGE("setsockopt error SO_RCVTIMEO");
             return;
         }
 
         int nosigpipe = 1;
-        setsockopt(strongSelf->fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
+        setsockopt(self->fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
 
-        int flag = 1;
-        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+        int flag = 0;
+        if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
             LOGE("setsockopt error SO_REUSEADDR");
             return;
         }
 
-        if (setsockopt(strongSelf->fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+        if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+            LOGE("setsockopt error SO_REUSEPORT");
+            return;
+        }
+
+        flag = 1;
+        if (setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
             LOGE("setsockopt error SO_KEEPALIVE");
             return;
         }
 
-        if (setsockopt(strongSelf->fd, SOL_SOCKET, TCP_NODELAY, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+        if (setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
             LOGE("setsockopt error TCP_NODELAY");
             return;
         }
@@ -93,26 +99,26 @@ void NetworkSocketPosix::Close() {
 
     NetworkSocket::queue()->async([weakSelf] {
         LOGV("[NetworkSocketPosix Close] 1");
-        auto strongSelf = weakSelf.lock();
+        auto self = weakSelf.lock();
 
-        if (!strongSelf)
+        if (!self)
             return;
 
-        strongSelf->closing = true;
-        strongSelf->failed = true;
-        strongSelf->reading = false;
+        self->closing = true;
+        self->failed = true;
+        self->reading = false;
 
         LOGV("[NetworkSocketPosix Close]");
 
-        if (strongSelf->fd >= 0)
+        if (self->fd >= 0)
         {
-            shutdown(strongSelf->fd, SHUT_RDWR);
-            close(strongSelf->fd);
-            strongSelf->fd = -1;
+            shutdown(self->fd, SHUT_RDWR);
+            close(self->fd);
+            self->fd = -1;
 
-            auto delegate = strongSelf->delegate.lock();
+            auto delegate = self->delegate.lock();
             if (delegate)
-                delegate->networkSocketDidDisconnectFromHost(*strongSelf, *strongSelf->tcpConnectedAddress, strongSelf->tcpConnectedPort, 0);
+                delegate->networkSocketDidDisconnectFromHost(*self, *self->tcpConnectedAddress, self->tcpConnectedPort, 0);
         }
     });
 }

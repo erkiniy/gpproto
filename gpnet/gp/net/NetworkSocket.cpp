@@ -128,42 +128,42 @@ void NetworkSocket::maybeDequeueRead() {
     std::weak_ptr<NetworkSocket> weakSelf = shared_from_this();
 
     NetworkSocket::queue()->asyncForce([weakSelf] {
-        auto strongSelf = weakSelf.lock();
+        auto self = weakSelf.lock();
 
-        if (!strongSelf)
+        if (!self)
             return;
 
-        if (!strongSelf->readBufferQueue.empty() && strongSelf->Connected() && !strongSelf->Reading())
+        if (!self->readBufferQueue.empty() && self->Connected() && !self->Reading())
         {
-            auto packet = strongSelf->readBufferQueue.front();
-            strongSelf->readBufferQueue.pop_front();
+            auto packet = self->readBufferQueue.front();
+            self->readBufferQueue.pop_front();
 
             NetworkSocket::receiveQueue()->async([packet, weakSelf] {
-                auto strongSelf_ = weakSelf.lock();
+                auto self_ = weakSelf.lock();
 
-                if (!strongSelf_)
+                if (!self_)
                     return;
 
-                if (strongSelf_->Receive(packet.get()))
+                if (self_->Receive(packet.get()))
                 {
                     NetworkSocket::queue()->async([packet, weakSelf] {
 
-                        auto strongSelf__ = weakSelf.lock();
-                        if (!strongSelf__)
+                        auto self__ = weakSelf.lock();
+                        if (!self__)
                             return;
 
-                        auto weakDelegate = strongSelf__->delegate;
+                        auto weakDelegate = self__->delegate;
                         auto strongDelegate = weakDelegate.lock();
 
                         if (strongDelegate)
-                            strongDelegate->networkSocketDidReadData(*strongSelf__, packet->slice, packet->tag);
+                            strongDelegate->networkSocketDidReadData(*self__, packet->slice, packet->tag);
                     });
                 }
             });
         }
 
-        if (strongSelf->isFailed())
-            strongSelf->readBufferQueue.clear();
+        if (self->isFailed())
+            self->readBufferQueue.clear();
     });
 }
 

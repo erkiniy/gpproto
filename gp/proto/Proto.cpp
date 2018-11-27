@@ -141,7 +141,6 @@ bool Proto::isPaused() {
 }
 
 void Proto::setTransport(std::shared_ptr<Transport> transport) {
-    LOGV("+++++++ Async [setTransport] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this(), transport] {
         LOGV("[Proto setTransport] -> changing transport from %s to %s", (self->transport == nullptr ? "nullptr" : "tcp_transport"), (transport == nullptr ? "nullptr" : "tcp_transport"));
 
@@ -165,9 +164,6 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
-    LOGV("+++++++ Async [resetTransport] to %s, unauthorized=%d", Proto::queue()->name().c_str(), useUnauthorizedMode);
-    LOGV("[Reset Transport is in ProtoQueue = %d]", Proto::queue()->isCurrentQueue());
-
     Proto::queue()->async([self = shared_from_this()] {
         if (self->protoState & ProtoStateStopped)
             return;
@@ -541,8 +537,6 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
 }
 
 void Proto::requestTransportTransactions() {
-    LOGV("+++++++ Async [requestTransportTransactions] to %s, unauthorized=%d", Proto::queue()->name().c_str(), useUnauthorizedMode);
-
     Proto::queue()->async([self = shared_from_this()] {
 
         if (self->willRequestTransactionOnNextQueuePass)
@@ -551,7 +545,6 @@ void Proto::requestTransportTransactions() {
         LOGV("[Proto requestTransportTransactions]");
 
         self->willRequestTransactionOnNextQueuePass = true;
-        LOGV("+++++++ Async FORCE [requestTransportTransactions] to %s", Proto::queue()->name().c_str());
         Proto::queue()->asyncForce([self] {
             self->willRequestTransactionOnNextQueuePass = false;
 
@@ -641,7 +634,6 @@ void Proto::resetSessionInfo() {
 }
 
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
-    LOGV("+++++++ Async [addMessageService] to %s", Proto::queue()->name().c_str());
     Proto::queue()->async([self = shared_from_this(), service] {
         auto it = self->messageServices.find(service->internalId);
         if (it == self->messageServices.end()) {
