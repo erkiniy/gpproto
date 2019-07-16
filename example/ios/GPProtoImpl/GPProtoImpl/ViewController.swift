@@ -20,6 +20,7 @@ class ViewController: UIViewController {
         client = gp_client_create()
         gp_client_pause(client)
         gp_client_resume(client)
+        
     }
     
     deinit {

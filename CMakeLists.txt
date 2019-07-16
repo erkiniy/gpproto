@@ -5,10 +5,16 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 #/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl
 
+#install_name_tool -id "@rpath/libgpclient.dylib" libgpclient.dylib
+
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_SKIP_BUILD_RPATH ON)
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
 # Prevent in-source build
 get_filename_component(GP_REAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)

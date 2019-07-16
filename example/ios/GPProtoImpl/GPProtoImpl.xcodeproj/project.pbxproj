@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		928C5AE722DE1C7C00A67B28 /* libgpclient.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 928C5AE622DE1C7C00A67B28 /* libgpclient.dylib */; };
+		928C5AE822DE1C8000A67B28 /* libgpclient.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 928C5AE622DE1C7C00A67B28 /* libgpclient.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		92C143E9211C6A8B0030CFEA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143E8211C6A8B0030CFEA /* AppDelegate.swift */; };
 		92C143EB211C6A8B0030CFEA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143EA211C6A8B0030CFEA /* ViewController.swift */; };
 		92C143F0211C6A8B0030CFEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92C143EF211C6A8B0030CFEA /* Assets.xcassets */; };
@@ -39,12 +41,15 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				928C5AE822DE1C8000A67B28 /* libgpclient.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		928C5AE122DE00BE00A67B28 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../gp/lib; sourceTree = "<group>"; };
+		928C5AE622DE1C7C00A67B28 /* libgpclient.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgpclient.dylib; path = gp/lib/libgpclient.dylib; sourceTree = "<group>"; };
 		92C143E5211C6A8B0030CFEA /* GPProtoImpl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GPProtoImpl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92C143E8211C6A8B0030CFEA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		92C143EA211C6A8B0030CFEA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -65,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				928C5AE722DE1C7C00A67B28 /* libgpclient.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +146,8 @@
 		92C14417211C6BE30030CFEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				928C5AE622DE1C7C00A67B28 /* libgpclient.dylib */,
+				928C5AE122DE00BE00A67B28 /* lib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -445,6 +453,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = PANBV37WA5;
+				DYLIB_INSTALL_NAME_BASE = "";
 				ENABLE_BITCODE = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -459,6 +468,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					gp/lib,
+					"$(PROJECT_DIR)/gp/lib",
 				);
 				MACH_O_TYPE = mh_execute;
 				OTHER_CFLAGS = "";
@@ -484,6 +494,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PANBV37WA5;
+				DYLIB_INSTALL_NAME_BASE = "";
 				ENABLE_BITCODE = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = gp/include;
@@ -494,6 +505,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					gp/lib,
+					"$(PROJECT_DIR)/gp/lib",
 				);
 				MACH_O_TYPE = mh_execute;
 				OTHER_CFLAGS = "";
