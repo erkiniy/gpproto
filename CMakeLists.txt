@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 #cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
-#cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/opt/openssl/lib -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
+
+#cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
+
+#/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl
+
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -256,7 +260,7 @@ set(GPCORE_SOURCE
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
+target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
 
 set(GPCLIENT_SOURCE
         gp/proto/gp_client.h
