@@ -63,7 +63,7 @@ add_library(gpproto::gputils STATIC IMPORTED)
 
 set_target_properties(gpproto::gputils PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:OpenSSL::Crypto>;/usr/lib/libz.dylib;/usr/lib/libz.dylib"
+  INTERFACE_LINK_LIBRARIES "/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl/lib/libcrypto.a;/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.0.sdk/usr/lib/libz.tbd;/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.0.sdk/usr/lib/libz.tbd"
 )
 
 # Create imported target gpproto::gpclient
@@ -78,7 +78,7 @@ add_library(gpproto::gpcore STATIC IMPORTED)
 
 set_target_properties(gpproto::gpcore PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "gpproto::gputils;gpproto::gpnet;\$<LINK_ONLY:OpenSSL::Crypto>"
+  INTERFACE_LINK_LIBRARIES "gpproto::gputils;gpproto::gpnet;/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl/lib/libcrypto.a"
 )
 
 # Create imported target gpproto::GPStatic

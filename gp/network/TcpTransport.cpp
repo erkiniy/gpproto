@@ -292,7 +292,8 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
     auto self = shared_from_this();
     TcpTransport::queue()->async([&connection, slice, self] {
 
-        LOGD("[TcpTransport connectionDidReceiveData]");
+        LOGD("[TcpTransport connectionDidReceiveData] -> bytes = %zu, self.connection == %d", slice->size, self->transportContext->connection !=
+                nullptr);
 
         if (!self->transportContext->connection)
             return;
@@ -300,11 +301,10 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
         if (!self->transportContext->connection->isEqual(connection))
             return;
 
+        LOGD("[TcpTransport connectionDidReceiveData] currentActualizationPingMessageId: %lld, actualizationPingResendTimer == nullptr: %s", self->transportContext->currentActualizationPingMessageId, self->transportContext->actualizationPingResendTimer == nullptr ? "true" : "false");
+
         if (self->transportContext->currentActualizationPingMessageId != 0 && self->transportContext->actualizationPingResendTimer == nullptr)
             self->startActualizationPingResendTimer();
-
-        LOGD("[TcpTransport connectionDidReceiveData] currentActualizationPingMessageId: %lld, actualizationPingResendTimer == nullptr: %d", self->transportContext->currentActualizationPingMessageId, self->transportContext->actualizationPingResendTimer ==
-                nullptr ? 1 : 0)
 
         if (auto strongDelegate = self->delegate.lock())
         {

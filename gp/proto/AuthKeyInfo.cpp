@@ -14,6 +14,8 @@ std::shared_ptr<AuthKeyInfo> AuthKeyInfo::mergeSaltset(const std::vector<std::sh
                                                        double timestamp) {
     auto referenceMessageId = (int64_t)(timestamp * 4294967296.0);
 
+    LOGV("[AuthKeyInfo mergeSaltset]");
+
     std::vector<std::shared_ptr<DatacenterSaltsetInfo>> mergedSaltset;
 
     for (auto & saltInfo : saltSet)

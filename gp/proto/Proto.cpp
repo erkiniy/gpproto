@@ -542,7 +542,7 @@ void Proto::requestTransportTransactions() {
         if (self->willRequestTransactionOnNextQueuePass)
             return;
 
-        LOGV("[Proto requestTransportTransactions]");
+        LOGV("[Proto requestTransportTransactions] ~> willRequestTransactionOnNextQueuePass = %d", self->willRequestTransactionOnNextQueuePass);
 
         self->willRequestTransactionOnNextQueuePass = true;
         Proto::queue()->asyncForce([self] {
@@ -582,6 +582,7 @@ void Proto::completeTimeSync() {
             {
                 timeSyncService->setDelegate(nullptr);
                 strongSelf->removeMessageService(timeSyncService);
+                LOGV("[Proto completeTimeSync] ~> removed timeSyncService");
             }
         }
     });
@@ -648,9 +649,13 @@ void Proto::removeMessageService(const std::shared_ptr<MessageService>& service)
     Proto::queue()->async([strongSelf = shared_from_this(), service] {
         auto it = strongSelf->messageServices.find(service->internalId);
 
-        if (it != strongSelf->messageServices.end()) {
+        if (it != strongSelf->messageServices.end())
+        {
             service->protoWillRemoveService(strongSelf);
+
             strongSelf->messageServices.erase(it);
+
+            service->protoDidRemoveService(strongSelf);
         }
     });
 }
@@ -676,9 +681,11 @@ void Proto::transportNetworkConnectionStateChanged(const Transport &transport, b
 
 void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &saltlist,
                            bool replace) {
-    context->setGlobalTimeDifference(timeDifference);
-
     LOGV("[Proto timeSyncInfoChanged] difference = %f, salts count %zu", timeDifference, saltlist.size());
+
+    //std::this_thread::sleep_for(std::chrono::microseconds((long long)(5000000 * 1.0)));
+
+    context->setGlobalTimeDifference(timeDifference);
 
     if (!saltlist.empty())
     {

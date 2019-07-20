@@ -141,7 +141,7 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
         LOGV("TcpConnection did read data with size = %zu bytes and tag %u", data->size, tag);
         if (tag == (uint8_t)TcpPacketReadTag::shortLength && data->size == 1)
         {
-            uint8_t lengthMarker = 0;
+            uint16_t lengthMarker = 0;
             memcpy(&lengthMarker, data->bytes, 1);
 
             if (lengthMarker >= 0x1 && lengthMarker <= 0x7e)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-#cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
+#cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
 
 #cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
 
@@ -10,11 +10,12 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_SKIP_BUILD_RPATH ON)
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Prevent in-source build
 get_filename_component(GP_REAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
@@ -261,7 +262,9 @@ set(GPCORE_SOURCE
         gp/proto/DatacenterAuthAction.cpp
 
         gp/proto/DatacenterAuthMessageService.cpp
-        gp/proto/DatacenterAuthMessageService.h gp/network/Transport.cpp)
+        gp/proto/DatacenterAuthMessageService.h
+
+        gp/network/Transport.cpp)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)

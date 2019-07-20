@@ -17,13 +17,18 @@
 
 using namespace gpproto;
 
+
+TimeSyncMessageService::~TimeSyncMessageService() {
+    LOGV("TimeSyncMessageService deinitialized");
+}
+
 std::shared_ptr<MessageTransaction> TimeSyncMessageService::protoMessageTransaction(const std::shared_ptr<Proto> &proto) {
     if (currentMessageId < 0)
     {
         OutputStream getFutureSaltsBuffer;
 
         getFutureSaltsBuffer.writeUInt32(0xb921bd04);
-        getFutureSaltsBuffer.writeInt32(saltlist.empty() != 0 ? 1 : 32);
+        getFutureSaltsBuffer.writeInt32(saltlist.size() != 0 ? 1 : 32);
 
         auto outgoingMessage = std::make_shared<OutgoingMessage>(0, 0, true, getFutureSaltsBuffer.currentBytes());
 

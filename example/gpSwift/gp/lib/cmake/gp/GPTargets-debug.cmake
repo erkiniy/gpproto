@@ -29,7 +29,7 @@ list(APPEND _IMPORT_CHECK_FILES_FOR_gpproto::gputils "${_IMPORT_PREFIX}/lib/libg
 set_property(TARGET gpproto::gpclient APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(gpproto::gpclient PROPERTIES
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/lib/libgpclient.dylib"
-  IMPORTED_SONAME_DEBUG "@rpath/libgpclient.dylib"
+  IMPORTED_SONAME_DEBUG "libgpclient.dylib"
   )
 
 list(APPEND _IMPORT_CHECK_TARGETS gpproto::gpclient )

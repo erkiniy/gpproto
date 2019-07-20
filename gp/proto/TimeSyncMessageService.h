@@ -21,6 +21,8 @@ class TimeSyncMessageServiceDelegate {
     public:
         explicit TimeSyncMessageService() : MessageService() {};
 
+        virtual ~TimeSyncMessageService();
+
         void protoDidReceiveMessage(const std::shared_ptr<Proto> &proto, std::shared_ptr<IncomingMessage> message) override;
 
         void protoTransactionsMayHaveFailed(const std::shared_ptr<Proto> &proto, std::vector<int> transactionIds) override;

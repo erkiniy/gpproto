@@ -19,7 +19,7 @@ class TcpConnection final : public Connection, public NetworkSocketDelegate, pub
             shortLength = 0,
             longLength = 1,
             body = 2,
-            head = 3
+            head = 33
         };
 
         static std::shared_ptr<DispatchQueue> queue() {

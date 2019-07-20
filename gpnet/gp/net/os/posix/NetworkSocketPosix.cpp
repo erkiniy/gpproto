@@ -170,6 +170,8 @@ size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
 
     }
     else {
+        LOGV("[NetworkSocketPosix] ~> start reading %zu bytes", packet->slice->size);
+
         reading = true;
         ssize_t res = recv(fd, packet->slice->bytes, packet->slice->size, 0);
         reading = false;
@@ -184,6 +186,8 @@ size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
             packet->address = tcpConnectedAddress;
             packet->port = tcpConnectedPort;
             packet->protocol = protocol;
+
+            LOGV("[NetworkSocketPosix] ~> raw bytes received: %zu bytes, required: %zu, data: %s", (size_t)res, packet->slice->size, packet->slice->description().c_str());
 
             maybeDequeueRead();
 
