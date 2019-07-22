@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 #install_name_tool -id "@rpath/libgpclient.dylib" libgpclient.dylib
 
+#https://github.com/x2on/OpenSSL-for-iPhone
+
 project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)

@@ -530,7 +530,9 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
 
         }
 
-        for (auto it : messageServices)
+        auto services = messageServices;
+
+        for (auto it : services)
             it.second->protoDidReceiveMessage(self, message);
 
     }
@@ -547,6 +549,8 @@ void Proto::requestTransportTransactions() {
         self->willRequestTransactionOnNextQueuePass = true;
         Proto::queue()->asyncForce([self] {
             self->willRequestTransactionOnNextQueuePass = false;
+
+            LOGV("[Proto requestTransportTransactions]");
 
             if (!self->isStopped() && !self->isPaused())
             {
@@ -576,7 +580,8 @@ void Proto::completeTimeSync() {
     Proto::queue()->async([strongSelf = shared_from_this()] {
         strongSelf->setState(strongSelf->protoState & (~ProtoStateAwaitingTimeFixAndSalts));
 
-        for (auto service : strongSelf->messageServices)
+        auto services = strongSelf->messageServices;
+        for (auto service : services)
         {
             if (auto timeSyncService = std::dynamic_pointer_cast<TimeSyncMessageService>(service.second))
             {
