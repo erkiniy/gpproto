@@ -70,7 +70,7 @@ void NetworkSocketPosix::Open() {
         int nosigpipe = 1;
         setsockopt(self->fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
 
-        int flag = 0;
+        int flag = 1;
         if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
             LOGE("setsockopt error SO_REUSEADDR");
             return;

@@ -251,6 +251,9 @@ void TcpTransport::connectionOpened(const Connection &connection) {
         if (auto strongDelegate = strongSelf->delegate.lock())
             strongDelegate->transportNetworkConnectionStateChanged(*strongSelf, true);
 
+        strongSelf->transportContext->didSendActualizationPingAfterConnection = false;
+        strongSelf->transportContext->currentActualizationPingMessageId = 0;
+
         strongSelf->requestTransactionFromDelegate();
     });
 }
@@ -272,9 +275,6 @@ void TcpTransport::connectionClosed(const Connection &connection) {
         strongSelf->transportContext->connection = nullptr;
 
         strongSelf->transportContext->connectionClosed();
-
-        if (auto timer = strongSelf->transportContext->actualizationPingResendTimer)
-            timer->invalidate();
 
         strongSelf->transportContext->didSendActualizationPingAfterConnection = false;
         strongSelf->transportContext->currentActualizationPingMessageId = 0;
@@ -407,6 +407,8 @@ void TcpTransport::stopActualizationPingResendTimer() {
 
         if (auto timer = context->actualizationPingResendTimer)
             timer->invalidate();
+
+        LOGV("[TcpTransport stopActualizationPingResendTimer]");
 
         context->actualizationPingResendTimer = nullptr;
     });

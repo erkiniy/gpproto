@@ -45,14 +45,13 @@ class Timer : public std::enable_shared_from_this<Timer> {
         bool isScheduled() const;
 
     private:
-        Timer(double timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr)
+        Timer(double timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue)
                 : id(Timer::nextInternalId()),
                   timeout(timeout),
                   action(std::move(action)),
                   repeats(repeats),
                   queue(queue),
                   started(false) {};
-
 
         static int nextInternalId() {
             static std::atomic_int id = 0;
