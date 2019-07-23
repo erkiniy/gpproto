@@ -8,8 +8,8 @@
 
 using namespace gpproto;
 
-ClientSync::ClientSync() {
-    auto context = std::make_shared<Context>();
+ClientSync::ClientSync(std::shared_ptr<gp_environment> environment) {
+    auto context = std::make_shared<Context>(environment);
     context->setDatacenterSeedAddress(DatacenterAddress("", "195.158.12.163", 1112), 1);
     proto = std::make_shared<Proto>(context, 1, false);
     proto->initialize();

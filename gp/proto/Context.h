@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <mutex>
 
+struct gp_environment;
+
 namespace gpproto
 {
     class TransportScheme;
@@ -36,7 +38,7 @@ namespace gpproto
 
 class Context final : public std::enable_shared_from_this<Context>, public DatacenterAuthActionDelegate {
     public:
-        Context() = default;
+        Context(std::shared_ptr<gp_environment> & environment): environment(std::move(environment)) {};
 
         ~Context() = default;
 
@@ -89,6 +91,7 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::shared_ptr<ContextChangeListener>> changeListeners;
+        std::shared_ptr<gp_environment> environment;
     };
 }
 

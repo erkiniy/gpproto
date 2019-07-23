@@ -9,9 +9,15 @@
 
 namespace gpproto
 {
-    class RequestMessageService : public MessageService {
+    class Context;
+    class Proto;
+    class Request;
+    class StreamSlice;
 
-        explicit RequestMessageService() : MessageService() {};
+    class RequestMessageService : public MessageService, public std::enable_shared_from_this<RequestMessageService> {
+
+    public:
+        explicit RequestMessageService(const std::shared_ptr<Context>& context) : context(context), MessageService() {};
 
         virtual void protoDidReceiveMessage(const std::shared_ptr<Proto>& proto, std::shared_ptr<IncomingMessage> message) override;
         virtual void protoTransactionsMayHaveFailed(const std::shared_ptr<Proto>& proto, std::vector<int> transactionIds) override;
@@ -35,6 +41,18 @@ namespace gpproto
         virtual void protoConnectionStateChanged(const std::shared_ptr<Proto>& proto, bool isConnected) override;
 
         virtual void protoAuthTokenUpdated(const std::shared_ptr<Proto>& proto) override;
+
+        void addRequest(std::shared_ptr<Request> request);
+        void cancelRequest(int internalId);
+
+
+    private:
+        std::shared_ptr<Context> context;
+        std::weak_ptr<Proto> proto;
+        std::vector<std::shared_ptr<Request>> requests;
+
+        void removeRequestByInternalId(int internalId);
+        std::shared_ptr<StreamSlice> decorateRequestData(std::shared_ptr<Request> request, bool initializeApi);
     };
 }
 

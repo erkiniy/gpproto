@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-void *gp_client_create();
+void *gp_client_create(gp_environment environment);
 
 void gp_destroy(void *client);
 

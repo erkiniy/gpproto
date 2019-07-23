@@ -5,8 +5,10 @@
 #include "gp/proto/gp_client.h"
 #include "gp/proto/ClientSync.h"
 
-void *gp_client_create() {
-    return new gpproto::ClientSync;
+void *gp_client_create(gp_environment environment) {
+    gp_environment* envPtr = (gp_environment *)malloc(sizeof(environment));
+    memcpy(envPtr, &environment, sizeof(environment));
+    return new gpproto::ClientSync(std::shared_ptr<gp_environment>(envPtr));
 }
 
 void gp_destroy(void *client) {

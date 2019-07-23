@@ -12,7 +12,7 @@ extern "C" {
 enum gp_event {
     RESPONSE = 1,
     UPDATE = 2,
-    CONNECTION_STATE = 3
+    PROTO_STATE = 3
 };
 
 enum gp_connection_state {
@@ -46,13 +46,17 @@ typedef struct {
     const gp_data *data;
 } gp_tx_data;
 
-typedef struct {
-    char *encryption_password;
-    char *device_model;
-    char *system_version;
-    char *app_version;
-    char *lang_code;
-} gp_environment;
+struct gp_environment {
+    int api_id;
+    int layer;
+    const bool disable_updates;
+    const char *encryption_password;
+    const char *device_model;
+    const char *system_version;
+    const char *app_version;
+    const char *lang_code;
+    const char *documents_folder;
+};
 
 #ifdef __cplusplus
 }

@@ -17,9 +17,8 @@ namespace gpproto
 
     class ClientSync final {
     public:
-        //struct gp_rx_event;
 
-        ClientSync();
+        ClientSync(std::shared_ptr<gp_environment> environment);
         ClientSync(const ClientSync&) = delete;
 
         ~ClientSync() = default;
