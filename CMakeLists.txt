@@ -226,7 +226,6 @@ set(GPCORE_SOURCE
 
         gp/network/IncomingMessage.h
         gp/network/OutgoingMessage.h
-        gp/network/MessageTransaction.h
 
         gp/network/TcpTransportContext.cpp
         gp/network/TcpTransportContext.h
