@@ -8,19 +8,21 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 namespace gpproto {
 
     class StreamSlice;
     class RequestContext;
 
-    using RequestCompletion = std::function<void(std::shared_ptr<StreamSlice>)> ;
-    using RequestFailure = std::function<void(int, std::string)> ;
+    using RequestCompletion = std::function<void(std::shared_ptr<StreamSlice>)>;
+    using RequestFailure = std::function<void(int, std::string)>;
 
     class Request {
     public:
-        explicit Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
-                : internalId(getNextInternalId()), body(body), completion(std::move(completion)), failure(std::move(failure)) {};
+
+        Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
+                : payload(body), completion(std::move(completion)), failure(std::move(failure)), internalId(getNextInternalId()) {};
 
         ~Request() = default;
 
@@ -32,8 +34,10 @@ namespace gpproto {
             return this->internalId == obj.internalId;
         }
 
-    protected:
-        std::shared_ptr<StreamSlice> body;
+        std::shared_ptr<RequestContext> requestContext;
+
+        std::shared_ptr<StreamSlice> payload;
+
         RequestCompletion completion;
         RequestFailure failure;
 
@@ -43,7 +47,6 @@ namespace gpproto {
             return internalId++;
         }
 
-        std::shared_ptr<RequestContext> requestContext;
     };
 }
 

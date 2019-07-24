@@ -15,11 +15,11 @@ namespace gpproto {
 
         const int64_t messageId;
         const int messageSeqNo;
-        bool waitingForMessageId;
         int transactionId;
-        bool delivered;
-        int64_t responseMessageId;
-        bool willInitializeApi;
+        bool waitingForMessageId = false;
+        bool delivered = false;
+        int64_t responseMessageId = -1;
+        bool willInitializeApi = false;
     };
 }
 

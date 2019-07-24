@@ -84,6 +84,9 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
         void addChangeListener(std::shared_ptr<ContextChangeListener> listener);
         void removeChangeListener(std::shared_ptr<ContextChangeListener> listener);
 
+
+        std::shared_ptr<gp_environment> environment;
+
 private:
         double globalTimeDifference = 0.0;
         std::unordered_map<int32_t, std::shared_ptr<AuthKeyInfo>> authInfoByDatacenterId;
@@ -91,7 +94,6 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::shared_ptr<ContextChangeListener>> changeListeners;
-        std::shared_ptr<gp_environment> environment;
     };
 }
 
