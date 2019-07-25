@@ -20,7 +20,7 @@ namespace gpproto
     class Context;
     class RequestMessageService;
 
-    class ClientSync : public std::enable_shared_from_this<RequestMessageService> {
+    class ClientSync : public std::enable_shared_from_this<ClientSync> {
     public:
 
         ClientSync(std::shared_ptr<gp_environment> environment);

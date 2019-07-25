@@ -35,19 +35,56 @@ void ClientSync::reset() {
 }
 
 int ClientSync::send(const unsigned char *data, size_t length) {
-    auto request = std::make_shared<Request>(std::make_shared<StreamSlice>(data, length),
-            [weakSelf = weak_from_this()](auto responseData) {
+    auto request = std::make_shared<Request>(std::make_shared<StreamSlice>(data, length));
+    int id = request->internalId;
+
+    request->completion = [weakSelf = weak_from_this(), id](std::shared_ptr<StreamSlice> responseData) {
         if (auto self = weakSelf.lock())
         {
+            LOGV("[ClientSync] response received");
 
+            gp_rx_data *data = new gp_rx_data;
+
+            data->id = id;
+            memcpy(data->data, responseData->begin(), responseData->size);
+            data->error = nullptr;
+
+            auto eventPtr = new gp_rx_event;
+            eventPtr->type = RESPONSE;
+            eventPtr->data = data;
+            eventPtr->state = CONNECTED;
+
+            auto event = std::shared_ptr<gp_rx_event>(eventPtr);
+            self->push_back(event);
         }
-        }, [weakSelf = weak_from_this()](int code, std::string desc) {
+    };
+
+    request->failure = [weakSelf = weak_from_this(), id](int code, std::string desc) {
         if (auto self = weakSelf.lock())
         {
+            LOGE("[ClientSync] error received");
 
+            gp_rx_data *data = new gp_rx_data;
+
+            gp_error* error = new gp_error;
+            error->code = code;
+            strcpy(error->desc, desc.c_str());
+
+            data->id = id;
+            data->data = nullptr;
+            data->error = error;
+
+            auto eventPtr = new gp_rx_event;
+            eventPtr->type = RESPONSE;
+            eventPtr->data = data;
+            eventPtr->state = CONNECTED;
+
+            auto event = std::shared_ptr<gp_rx_event>(eventPtr);
+            self->push_back(event);
         }
-    });
-    return request->internalId;
+    };
+
+    return id;
 }
 
 gp_rx_event* ClientSync::receive(double & timeout) {

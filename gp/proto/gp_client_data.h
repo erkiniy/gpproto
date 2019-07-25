@@ -22,7 +22,7 @@ enum gp_connection_state {
 
 typedef struct  {
     int code;
-    const char *desc;
+    char *desc;
 } gp_error;
 
 typedef struct {
@@ -30,10 +30,10 @@ typedef struct {
     const unsigned char *value;
 } gp_data;
 
-struct gp_rx_data{
+struct gp_rx_data {
     int id;
-    const gp_error *error;
-    const gp_data *data;
+    gp_error *error;
+    gp_data *data;
 };
 
 struct gp_rx_event {
