@@ -51,7 +51,7 @@ namespace gpproto
         std::weak_ptr<Proto> proto;
         std::vector<std::shared_ptr<Request>> requests;
 
-        bool willInitializeApi = false;
+        bool willInitializeApi = true;
 
         void removeRequestByInternalId(int internalId);
         std::shared_ptr<StreamSlice> decorateRequestData(std::shared_ptr<Request> request, bool initializeApi);

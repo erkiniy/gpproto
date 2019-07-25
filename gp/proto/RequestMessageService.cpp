@@ -142,8 +142,10 @@ std::shared_ptr<MessageTransaction> RequestMessageService::protoMessageTransacti
             if (auto context = request->requestContext) {
                 messageId = context->messageId;
                 messageSeqNo = context->messageSeqNo;
-                initializeApi = context->willInitializeApi || willInitializeApi;
+                initializeApi = context->willInitializeApi;
             }
+
+            initializeApi |= willInitializeApi;
 
             willInitializeApi = false;
 
@@ -280,6 +282,8 @@ void RequestMessageService::removeRequestByInternalId(int internalId) {
 std::shared_ptr<StreamSlice> RequestMessageService::decorateRequestData(std::shared_ptr<Request> request, bool initializeApi) {
     auto currentData = request->payload;
 
+    LOGV("[RequestMessageService decorateRequestData] initialize = %d, deviceModel = %s", initializeApi, context->environment->device_model);
+
     if (!initializeApi || context->environment == nullptr)
         return currentData;
 
@@ -288,7 +292,7 @@ std::shared_ptr<StreamSlice> RequestMessageService::decorateRequestData(std::sha
     OutputStream buffer;
     buffer.writeUInt32(0x416dda56);
 
-    buffer.writeInt32(environment->api_id);
+    buffer.writeInt32((int32_t)environment->api_id);
     buffer.writeInt32(environment->layer);
     buffer.writeString(environment->device_model);
     buffer.writeString(environment->system_version);

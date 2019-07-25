@@ -38,6 +38,8 @@ int ClientSync::send(const unsigned char *data, size_t length) {
     auto request = std::make_shared<Request>(std::make_shared<StreamSlice>(data, length));
     int id = request->internalId;
 
+    LOGV("Sending request with internalId=%d, size=%zu", id, length);
+
     request->completion = [weakSelf = weak_from_this(), id](std::shared_ptr<StreamSlice> responseData) {
         if (auto self = weakSelf.lock())
         {
@@ -83,6 +85,8 @@ int ClientSync::send(const unsigned char *data, size_t length) {
             self->push_back(event);
         }
     };
+
+    requestService->addRequest(request);
 
     return id;
 }

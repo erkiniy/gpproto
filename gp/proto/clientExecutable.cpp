@@ -12,7 +12,7 @@ int main()
 
     gp_environment env = { .api_id = 0,
                            .layer = 0,
-                           .disable_updates = false,
+                           .disable_updates = 0,
                            .encryption_password = strdup("testPass"),
                            .device_model = strdup("MacBook Pro 13"),
                            .system_version = strdup("10.14.15"),
@@ -21,8 +21,8 @@ int main()
                            .documents_folder = strdup("/docs") };
 
     auto client = gp_client_create(env);
-    //gp_client_pause(client);
-    //gp_client_resume(client);
+    gp_client_pause(client);
+    gp_client_resume(client);
     while (true) {
         std::this_thread::sleep_for(2s);
     }

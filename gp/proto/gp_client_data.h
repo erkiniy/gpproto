@@ -38,27 +38,27 @@ struct gp_rx_data {
 
 struct gp_rx_event {
     enum gp_event type;
-    gp_rx_data *data;
+    struct gp_rx_data *data;
     enum gp_connection_state state;
 
-    ~gp_rx_event() {
-        printf("Deinitializing gp_rx_event");
-        delete data;
-    };
+//    ~gp_rx_event() {
+//        printf("Deinitializing gp_rx_event");
+//        delete data;
+//    };
 };
 
 struct gp_tx_data {
     const gp_data *data;
 
-    ~gp_tx_data() {
-        delete data;
-    }
+//    ~gp_tx_data() {
+//        delete data;
+//    }
 };
 
 struct gp_environment {
     int api_id;
     int layer;
-    const bool disable_updates;
+    const int disable_updates;
     const char *encryption_password;
     const char *device_model;
     const char *system_version;

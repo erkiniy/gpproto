@@ -12,13 +12,13 @@
 extern "C" {
 #endif
 
-void *gp_client_create(gp_environment environment);
+void *gp_client_create(struct gp_environment environment);
 
 void gp_destroy(void *client);
 
-int gp_client_send(void *client, gp_tx_data *request);
+int gp_client_send(void *client, struct gp_tx_data *request);
 
-gp_rx_event *gp_client_receive(void *client, double timeout);
+struct gp_rx_event *gp_client_receive(void *client, double timeout);
 
 void gp_client_pause(void *client);
 

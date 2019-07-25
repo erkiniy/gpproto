@@ -15,6 +15,7 @@
 		92C143F3211C6A8B0030CFEA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92C143F1211C6A8B0030CFEA /* LaunchScreen.storyboard */; };
 		92C143FE211C6A8C0030CFEA /* GPProtoImplTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C143FD211C6A8C0030CFEA /* GPProtoImplTests.swift */; };
 		92C14409211C6A8C0030CFEA /* GPProtoImplUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C14408211C6A8C0030CFEA /* GPProtoImplUITests.swift */; };
+		C045D90022EA01FC0098DBDB /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C045D8FF22EA01FC0098DBDB /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		92C14408211C6A8C0030CFEA /* GPProtoImplUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPProtoImplUITests.swift; sourceTree = "<group>"; };
 		92C1440A211C6A8C0030CFEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92C1441A211C6C760030CFEA /* GPProtoImpl-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GPProtoImpl-Bridging-Header.h"; sourceTree = "<group>"; };
+		C045D8FF22EA01FC0098DBDB /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +119,7 @@
 			children = (
 				92C143E8211C6A8B0030CFEA /* AppDelegate.swift */,
 				92C143EA211C6A8B0030CFEA /* ViewController.swift */,
+				C045D8FF22EA01FC0098DBDB /* Extensions.swift */,
 				92C143EF211C6A8B0030CFEA /* Assets.xcassets */,
 				92C143F1211C6A8B0030CFEA /* LaunchScreen.storyboard */,
 				92C143F4211C6A8B0030CFEA /* Info.plist */,
@@ -288,6 +291,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92C143EB211C6A8B0030CFEA /* ViewController.swift in Sources */,
+				C045D90022EA01FC0098DBDB /* Extensions.swift in Sources */,
 				92C143E9211C6A8B0030CFEA /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

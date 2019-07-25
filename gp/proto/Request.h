@@ -21,7 +21,7 @@ namespace gpproto {
     class Request {
     public:
 
-        Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
+        explicit Request(std::shared_ptr<StreamSlice> body, RequestCompletion completion = [](std::shared_ptr<StreamSlice>){}, RequestFailure failure = [](int, std::string){})
                 : payload(body), completion(std::move(completion)), failure(std::move(failure)), internalId(getNextInternalId()) {};
 
         ~Request() = default;
