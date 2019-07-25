@@ -45,7 +45,8 @@ class ViewController: UIViewController {
         guard let requestData = os.currentBytes else { return }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
-            var gpData = gp_data(length: requestData.count, value: requestData.array)
+            let bytes = requestData.array
+            var gpData = gp_data(length: bytes.count, value: bytes)
             NSLog("GP_DATA \(gpData.length)")
             var txData = gp_tx_data(data: &gpData)
             let id = gp_client_send(self.client, &txData)

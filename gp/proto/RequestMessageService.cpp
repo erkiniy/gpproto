@@ -301,6 +301,8 @@ std::shared_ptr<StreamSlice> RequestMessageService::decorateRequestData(std::sha
 
     buffer.writeData(*currentData);
 
+    LOGV("[RequestMessageService decorateRequestData] Data inside initConnection %s", currentData->description().c_str());
+
     currentData = buffer.currentBytes();
 
     return currentData;

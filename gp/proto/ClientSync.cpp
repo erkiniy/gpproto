@@ -38,13 +38,13 @@ int ClientSync::send(const unsigned char *data, size_t length) {
     auto request = std::make_shared<Request>(std::make_shared<StreamSlice>(data, length));
     int id = request->internalId;
 
-    LOGV("Sending request with internalId=%d, size=%zu", id, length);
+    LOGV("Sending request with internalId=%d, bytes = %s", id, data);
 
     request->completion = [weakSelf = weak_from_this(), id](std::shared_ptr<StreamSlice> responseData) {
+        LOGV("[ClientSync] response received %s", responseData->description().c_str());
+
         if (auto self = weakSelf.lock())
         {
-            LOGV("[ClientSync] response received");
-
             gp_rx_data *data = new gp_rx_data;
 
             data->id = id;
