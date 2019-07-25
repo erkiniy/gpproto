@@ -7,6 +7,7 @@
 #include "gp/proto/Context.h"
 #include "gp/network/TransportScheme.h"
 #include "gp/utils/Common.h"
+#include "gp/utils/Logging.h"
 
 using namespace gpproto;
 

@@ -8,12 +8,12 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 
-#include "gp/utils/Logging.h"
-#include "gp/utils/CustomStringConvertable.h"
+//#include "gp/utils/CustomStringConvertable.h"
 
 namespace gpproto {
-    struct StreamSlice: public CustomStringConvertable {
+    struct StreamSlice  {
 
     public:
         unsigned char *bytes;

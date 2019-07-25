@@ -142,11 +142,8 @@ std::shared_ptr<MessageTransaction> RequestMessageService::protoMessageTransacti
             if (auto context = request->requestContext) {
                 messageId = context->messageId;
                 messageSeqNo = context->messageSeqNo;
-                initializeApi = context->willInitializeApi;
+                initializeApi = context->willInitializeApi || willInitializeApi;
             }
-
-            if (willInitializeApi)
-                initializeApi = true;
 
             willInitializeApi = false;
 

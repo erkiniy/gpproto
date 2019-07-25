@@ -30,21 +30,30 @@ typedef struct {
     const unsigned char *value;
 } gp_data;
 
-typedef struct {
+struct gp_rx_data{
     int id;
     const gp_error *error;
     const gp_data *data;
-} gp_rx_data;
+};
 
-typedef struct {
+struct gp_rx_event {
     enum gp_event type;
     gp_rx_data *data;
-    enum gp_connection_state *state;
-} gp_rx_event;
+    enum gp_connection_state state;
 
-typedef struct {
+    ~gp_rx_event() {
+        printf("Deinitializing gp_rx_event");
+        delete data;
+    };
+};
+
+struct gp_tx_data {
     const gp_data *data;
-} gp_tx_data;
+
+    ~gp_tx_data() {
+        delete data;
+    }
+};
 
 struct gp_environment {
     int api_id;

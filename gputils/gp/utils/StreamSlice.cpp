@@ -4,6 +4,7 @@
 
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/ByteOrder.h"
+#include "gp/utils/Logging.h"
 
 using namespace gpproto;
 

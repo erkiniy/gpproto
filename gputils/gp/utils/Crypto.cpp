@@ -16,6 +16,7 @@
 #include <openssl/pem.h>
 #include <zlib.h>
 
+#include "gp/utils/Logging.h"
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/BigNum.h"
 

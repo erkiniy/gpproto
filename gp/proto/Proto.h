@@ -12,6 +12,7 @@
 #include "gp/proto/Session.h"
 #include "gp/proto/TimeSyncMessageService.h"
 #include "gp/network/TransportDelegate.h"
+#include "gp/utils/Logging.h"
 
 #include <string>
 #include <unordered_set>

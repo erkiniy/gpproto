@@ -9,12 +9,20 @@
 int main()
 {
     using namespace std::chrono_literals;
-    gp_environment env = { 0, 0, false, strdup("testPass"), strdup("MacBook Pro 13"), strdup("10.14.15"), strdup("0.0.1"), strdup("en"), strdup("/docs")};
+
+    gp_environment env = { .api_id = 0,
+                           .layer = 0,
+                           .disable_updates = false,
+                           .encryption_password = strdup("testPass"),
+                           .device_model = strdup("MacBook Pro 13"),
+                           .system_version = strdup("10.14.15"),
+                           .app_version = strdup("0.0.1"),
+                           .lang_code = strdup("en"),
+                           .documents_folder = strdup("/docs") };
 
     auto client = gp_client_create(env);
-    gp_client_pause(client);
-    gp_client_resume(client);
-
+    //gp_client_pause(client);
+    //gp_client_resume(client);
     while (true) {
         std::this_thread::sleep_for(2s);
     }
