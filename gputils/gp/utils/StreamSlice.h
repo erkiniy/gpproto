@@ -10,8 +10,6 @@
 #include <cstdlib>
 #include <string>
 
-//#include "gp/utils/CustomStringConvertable.h"
-
 namespace gpproto {
     struct StreamSlice  {
 
@@ -36,8 +34,7 @@ namespace gpproto {
 
         ~StreamSlice() {
             //LOGV("Destructed StreamSlice with size %lu\n", this->size);
-            if (bytes)
-                delete bytes;
+            free(bytes);
         }
 
         virtual std::string description() const;

@@ -10,7 +10,11 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    var client: UnsafeMutableRawPointer!
+    var isConnected: Bool = false;
+    var client: Int32 = -1
+    var stopped: Bool = false
+    
+    let queue = DispatchQueue(label: "uz.libproto.receive")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +32,32 @@ class ViewController: UIViewController {
                                  documents_folder: strdup("Documents"))
         
         self.client = gp_client_create(env)
+        
+        self.queue.async {
+            while !self.stopped
+            {
+                guard let event = gp_client_receive(self.client, -1.0)?.pointee else { continue }
+                guard let data = event.data?.pointee else { continue }
+                guard let bytes = data.data?.pointee else { continue }
+                
+                let nativeData = Data(bytes: bytes.value, count: bytes.length)
+                
+                let iS = InputStream(data: nativeData)
+                iS.open()
+                
+                let id = try! iS.readNumber(type: UInt32.self)
+                let phoneRegistered = try! iS.readBool()
+                let phoneCodeHash = try! iS.readString()
+                let sendCallTimeout = try! iS.readNumber(type: UInt32.self)
+                let isPassword = try! iS.readBool()
+                
+                iS.close()
+                
+                //DispatchQueue.main.async {
+                    NSLog("Response received \(id), \(phoneRegistered), \(phoneCodeHash), \(sendCallTimeout), \(isPassword)")
+                //}
+            }
+        }
         
         //gp_client_pause(client)
         //gp_client_resume(client)
@@ -52,14 +82,6 @@ class ViewController: UIViewController {
             let id = gp_client_send(self.client, &txData)
             NSLog("SENDING GETCODE \(id)")
         }
-        
-//        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(4)) {
-//            var gpData = gp_data(length: requestData.count, value: requestData.array)
-//            NSLog("GP_DATA \(gpData.length)")
-//            var txData = gp_tx_data(data: &gpData)
-//            let id = gp_client_send(self.client, &txData)
-//            NSLog("SENDING GETCODE \(id)")
-//        }
     }
     
     deinit {

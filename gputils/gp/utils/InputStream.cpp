@@ -3,11 +3,18 @@
 //
 
 #include "gp/utils/InputStream.h"
+#include "gp/utils/StreamSlice.h"
+#include "gp/utils/InputStreamException.h"
 
 #define MIN(X, Y) ((X > Y) ? Y : X)
 #define MAX(X, Y) ((X > Y) ? X : Y)
 
 using namespace gpproto;
+
+InputStream::InputStream(std::shared_ptr<gpproto::StreamSlice> data) : currentPosition(0), size(data->size) {
+    this->bytes = (unsigned char *)malloc(data->size);
+    memcpy(this->bytes, data->bytes, data->size);
+}
 
 uint8_t InputStream::readUInt8() const {
     uint8_t result;

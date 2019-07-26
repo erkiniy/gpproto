@@ -217,6 +217,7 @@ std::shared_ptr<MessageTransaction> RequestMessageService::protoMessageTransacti
 }
 
 void RequestMessageService::protoDidChangeSession(const std::shared_ptr<Proto> &proto) {
+    willInitializeApi = true;
 
     for (const auto request : requests)
         request->requestContext = nullptr;
@@ -227,6 +228,8 @@ void RequestMessageService::protoDidChangeSession(const std::shared_ptr<Proto> &
 }
 
 void RequestMessageService::protoServerDidChangeSession(const std::shared_ptr<Proto> &proto) {
+    willInitializeApi = true;
+
     for (const auto request : requests)
         request->requestContext = nullptr;
 
@@ -239,8 +242,7 @@ void RequestMessageService::protoNetworkAvailabilityChanged(const std::shared_pt
 }
 
 void RequestMessageService::protoConnectionStateChanged(const std::shared_ptr<Proto> &proto, bool isConnected) {
-    if (!isConnected)
-        willInitializeApi = true;
+    willInitializeApi |= !isConnected;
 }
 
 void RequestMessageService::protoAuthTokenUpdated(const std::shared_ptr<Proto> &proto) {

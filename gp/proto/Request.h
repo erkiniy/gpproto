@@ -44,7 +44,7 @@ namespace gpproto {
     private:
         static int getNextInternalId() {
             static std::atomic_int internalId = 0;
-            return internalId++;
+            return ++internalId;
         }
 
     };

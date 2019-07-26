@@ -22,8 +22,7 @@ namespace gpproto {
 
         ~OutputStream() {
             currentSize = 0;
-            if (bytes)
-                free(bytes);
+            free(bytes);
         }
 
         OutputStream(const OutputStream&) = delete;

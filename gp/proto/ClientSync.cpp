@@ -12,13 +12,24 @@
 
 using namespace gpproto;
 
-ClientSync::ClientSync(std::shared_ptr<gp_environment> environment) {
+ClientSync::ClientSync(std::shared_ptr<gp_environment> environment): id(getNextInternalId()) {
     auto context = std::make_shared<Context>(environment);
-    context->setDatacenterSeedAddress(DatacenterAddress("", "195.158.12.163", 1112), 1);
-    proto = std::make_shared<Proto>(context, 1, false);
-    requestService = std::make_shared<RequestMessageService>(context);
-    proto->addMessageService(requestService);
 
+    context->setDatacenterSeedAddress(DatacenterAddress("", "195.158.12.163", 1112), 1);
+
+    proto = std::make_shared<Proto>(context, 1, false);
+
+    requestService = std::make_shared<RequestMessageService>(context);
+
+    proto->addMessageService(requestService);
+}
+
+ClientSync::~ClientSync() {
+
+}
+
+void ClientSync::initialize() {
+    proto->setDelegate(shared_from_this());
     proto->initialize();
 }
 
@@ -30,8 +41,24 @@ void ClientSync::resume() {
     proto->resume();
 }
 
-void ClientSync::reset() {
+void ClientSync::stop() {
+    proto->removeMessageService(requestService);
+    proto->stop();
+}
 
+void ClientSync::connectionStateChanged(const gpproto::Proto &proto, gpproto::ProtoConnectionState state) {
+    LOGI("[ClientSync] ~> ConnectionState changed  = %d", state);
+
+    auto eventPtr = new gp_rx_event;
+    eventPtr->type = PROTO_STATE;
+    eventPtr->state = state == ProtoConnectionState::ProtoConnectionStateConnected ? CONNECTED : CONNECTING;
+
+    auto event = std::shared_ptr<gp_rx_event>(eventPtr);
+    push_back(event);
+}
+
+void ClientSync::connectionStateAvailibilityChanged(const gpproto::Proto &proto, bool isNetworkAvailable) {
+    LOGI("[ClientSync] ~> ConnectionStateAvailibilityChanged changed  = %d", isNetworkAvailable);
 }
 
 int ClientSync::send(const unsigned char *data, size_t length) {
@@ -41,14 +68,23 @@ int ClientSync::send(const unsigned char *data, size_t length) {
     LOGV("Sending request with internalId=%d, bytes = %s", id, data);
 
     request->completion = [weakSelf = weak_from_this(), id](std::shared_ptr<StreamSlice> responseData) {
-        LOGV("[ClientSync] response received %s", responseData->description().c_str());
-
         if (auto self = weakSelf.lock())
         {
+            LOGV("[ClientSync] response received %s", responseData->description().c_str());
+
             gp_rx_data *data = new gp_rx_data;
 
             data->id = id;
-            memcpy(data->data, responseData->begin(), responseData->size);
+
+            auto bytes = (unsigned char *)malloc(responseData->size);
+            memcpy(bytes, responseData->begin(), responseData->size);
+
+            gp_data * innerData = new gp_data;
+            innerData->length = responseData->size;
+            innerData->value = bytes;
+
+            data->data = innerData;
+
             data->error = nullptr;
 
             auto eventPtr = new gp_rx_event;
@@ -92,10 +128,13 @@ int ClientSync::send(const unsigned char *data, size_t length) {
 }
 
 gp_rx_event* ClientSync::receive(double & timeout) {
-    lastReceiveEvent = pop_front();
-    if (lastReceiveEvent == nullptr) return nullptr;
+    auto lastReceiveEvent = currentReceiveEvent;
+    cleanUpEvent(std::move(lastReceiveEvent));
 
-    return lastReceiveEvent.get();
+    currentReceiveEvent = pop_front();
+    if (currentReceiveEvent == nullptr) return nullptr;
+
+    return currentReceiveEvent.get();
 }
 
 void ClientSync::push_back(const std::shared_ptr<gp_rx_event> & event) {
@@ -116,4 +155,20 @@ std::shared_ptr<gp_rx_event> ClientSync::pop_front() {
 
     std::shared_ptr<gp_rx_event> result(std::move(queue.front()));
     return result;
+}
+
+
+void ClientSync::cleanUpEvent(const std::shared_ptr<gp_rx_event> && event) {
+    if (event == nullptr) return;
+
+    if (auto data = event->data)
+    {
+        if (auto innerData = data->data)
+            delete innerData->value;
+
+        if (auto error = data->error)
+            delete error->desc;
+    }
+
+    delete event->data;
 }

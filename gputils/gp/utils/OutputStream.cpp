@@ -2,9 +2,10 @@
 // Created by ProDigital on 8/1/18.
 //
 
-#include "OutputStream.h"
-#include "ByteOrder.h"
-#include "Logging.h"
+#include "gp/utils/OutputStream.h"
+#include "gp/utils/ByteOrder.h"
+#include "gp/utils/Logging.h"
+
 #include <math.h>
 
 using namespace gpproto;

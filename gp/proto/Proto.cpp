@@ -8,6 +8,8 @@
 #include "gp/utils/Crypto.h"
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/InputStream.h"
+#include "gp/utils/InputStreamException.h"
+
 #include "gp/network/TcpTransport.h"
 #include "gp/network/TransportScheme.h"
 #include "gp/network/IncomingMessage.h"
@@ -261,7 +263,6 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
 
         if (decryptedData)
         {
-
             int64_t dataMessageId = 0;
             bool parseError = false;
 
@@ -681,6 +682,9 @@ void Proto::transportNetworkConnectionStateChanged(const Transport &transport, b
     Proto::queue()->async([self = shared_from_this(), networkIsConnected] {
         for (auto service : self->messageServices)
             service.second->protoConnectionStateChanged(self, networkIsConnected);
+
+        if (auto strongDelegate = self->delegate.lock())
+            strongDelegate->connectionStateChanged(*self, networkIsConnected ? ProtoConnectionState::ProtoConnectionStateConnected : ProtoConnectionState::ProtoConnectionStateConnecting);
     });
 }
 

@@ -10,6 +10,9 @@
 #include <deque>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
+
+#include "gp/proto/ProtoDelegate.h"
 
 struct gp_environment;
 struct gp_rx_event;
@@ -20,22 +23,35 @@ namespace gpproto
     class Context;
     class RequestMessageService;
 
-    class ClientSync : public std::enable_shared_from_this<ClientSync> {
+    class ClientSync : public std::enable_shared_from_this<ClientSync>, public ProtoDelegate {
     public:
 
-        ClientSync(std::shared_ptr<gp_environment> environment);
+        explicit ClientSync(std::shared_ptr<gp_environment> environment);
+
         ClientSync(const ClientSync&) = delete;
 
-        ~ClientSync() = default;
+        ~ClientSync();
 
         int send(const unsigned char *data, size_t length);
+
         gp_rx_event* receive(double& timeout);
+
         void pause();
+
         void resume();
-        void reset();
+
+        void stop();
+
+        const int id;
+
+        void initialize();
+
+        void connectionStateAvailibilityChanged(const Proto& proto, bool isNetworkAvailable) override;
+
+        void connectionStateChanged(const Proto& proto, ProtoConnectionState state) override;
 
     private:
-        std::shared_ptr<gp_rx_event> lastReceiveEvent;
+        std::shared_ptr<gp_rx_event> currentReceiveEvent;
         std::shared_ptr<Proto> proto;
         std::shared_ptr<RequestMessageService> requestService;
 
@@ -46,6 +62,13 @@ namespace gpproto
 
         void push_back(const std::shared_ptr<gp_rx_event> & event);
         std::shared_ptr<gp_rx_event> pop_front();
+
+        void cleanUpEvent(const std::shared_ptr<gp_rx_event> && event);
+
+        static int getNextInternalId() {
+            static std::atomic_int internalId = 0;
+            return internalId++;
+        }
     };
 }
 

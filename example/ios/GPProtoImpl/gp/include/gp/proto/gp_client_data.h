@@ -25,34 +25,25 @@ typedef struct  {
     char *desc;
 } gp_error;
 
-typedef struct {
+struct gp_data {
     size_t length;
     const unsigned char *value;
-} gp_data;
+};
 
 struct gp_rx_data {
     int id;
     gp_error *error;
-    gp_data *data;
+    struct gp_data *data;
 };
 
 struct gp_rx_event {
     enum gp_event type;
     struct gp_rx_data *data;
     enum gp_connection_state state;
-
-//    ~gp_rx_event() {
-//        printf("Deinitializing gp_rx_event");
-//        delete data;
-//    };
 };
 
 struct gp_tx_data {
-    const gp_data *data;
-
-//    ~gp_tx_data() {
-//        delete data;
-//    }
+    const struct gp_data *data;
 };
 
 struct gp_environment {
