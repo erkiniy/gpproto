@@ -49,6 +49,7 @@ struct gp_tx_data {
 struct gp_environment {
     int api_id;
     int layer;
+    const unsigned int *supported_types;
     const int disable_updates;
     const char *encryption_password;
     const char *device_model;

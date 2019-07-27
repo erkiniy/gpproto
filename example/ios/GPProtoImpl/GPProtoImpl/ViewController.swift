@@ -21,8 +21,10 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         self.view.backgroundColor = .red
         
+        var types: [UInt32] = [0xe317af7e, 0x727c0b9a, 0xa136b45c, 0x5bff9f3f, 0x101b9b6f, 0x6085868f, 0xd0e0f8e4, 0x517c63bf]
         let env = gp_environment(api_id: 0x2062c46e,
                                  layer: 0,
+                                 supported_types: &types,
                                  disable_updates: 0,
                                  encryption_password: strdup("testPass"),
                                  device_model: strdup("iOS Simulator C++"),
@@ -33,31 +35,31 @@ class ViewController: UIViewController {
         
         self.client = gp_client_create(env)
         
-        self.queue.async {
-            while !self.stopped
-            {
-                guard let event = gp_client_receive(self.client, -1.0)?.pointee else { continue }
-                guard let data = event.data?.pointee else { continue }
-                guard let bytes = data.data?.pointee else { continue }
-                
-                let nativeData = Data(bytes: bytes.value, count: bytes.length)
-                
-                let iS = InputStream(data: nativeData)
-                iS.open()
-                
-                let id = try! iS.readNumber(type: UInt32.self)
-                let phoneRegistered = try! iS.readBool()
-                let phoneCodeHash = try! iS.readString()
-                let sendCallTimeout = try! iS.readNumber(type: UInt32.self)
-                let isPassword = try! iS.readBool()
-                
-                iS.close()
-                
-                //DispatchQueue.main.async {
-                    NSLog("Response received \(id), \(phoneRegistered), \(phoneCodeHash), \(sendCallTimeout), \(isPassword)")
-                //}
-            }
-        }
+//        self.queue.async {
+//            while !self.stopped
+//            {
+//                guard let event = gp_client_receive(self.client, -1.0)?.pointee else { continue }
+//                guard let data = event.data?.pointee else { continue }
+//                guard let bytes = data.data?.pointee else { continue }
+//
+//                let nativeData = Data(bytes: bytes.value, count: bytes.length)
+//
+//                let iS = InputStream(data: nativeData)
+//                iS.open()
+//
+//                let id = try! iS.readNumber(type: UInt32.self)
+//                let phoneRegistered = try! iS.readBool()
+//                let phoneCodeHash = try! iS.readString()
+//                let sendCallTimeout = try! iS.readNumber(type: UInt32.self)
+//                let isPassword = try! iS.readBool()
+//
+//                iS.close()
+//
+//                //DispatchQueue.main.async {
+//                    NSLog("Response received \(id), \(phoneRegistered), \(phoneCodeHash), \(sendCallTimeout), \(isPassword)")
+//                //}
+//            }
+//        }
         
         //gp_client_pause(client)
         //gp_client_resume(client)

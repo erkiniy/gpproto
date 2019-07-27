@@ -528,7 +528,6 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
 
             if (sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount))
                 requestTransportTransactions();
-
         }
 
         auto services = messageServices;

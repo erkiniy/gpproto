@@ -32,13 +32,14 @@ static void removeClient(int id) {
 }
 
 int gp_client_create(gp_environment environment) {
-    std::unique_lock<std::mutex> lock(mutex);
 
     gp_environment* envPtr = (gp_environment *)malloc(sizeof(environment));
     memcpy(envPtr, &environment, sizeof(environment));
 
     auto client = std::make_shared<gpproto::ClientSync>(std::shared_ptr<gp_environment>(envPtr));
     client->initialize();
+
+    std::unique_lock<std::mutex> lock(mutex);
 
     clients[client->id] = client;
 
