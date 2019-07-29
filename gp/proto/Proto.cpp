@@ -623,30 +623,32 @@ void Proto::requestTimeResync() {
 }
 
 void Proto::resetSessionInfo() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
-        if (strongSelf->resetSessionInfoLock != 0)
+    Proto::queue()->async([self = shared_from_this()] {
+        if (self->resetSessionInfoLock != 0)
         {
-            if (getAbsoluteSystemTime() > strongSelf->resetSessionInfoLock + 1)
-                strongSelf->resetSessionInfoLock = 0;
+            if (getAbsoluteSystemTime() > self->resetSessionInfoLock + 1)
+                self->resetSessionInfoLock = 0;
             else { return; }
         }
         else {
-            strongSelf->resetSessionInfoLock = getAbsoluteSystemTime();
+            self->resetSessionInfoLock = getAbsoluteSystemTime();
         }
 
-        strongSelf->sessionInfo = std::make_unique<Session>(strongSelf->context);
+        self->sessionInfo = std::make_unique<Session>(self->context);
 
-        for (auto service : strongSelf->messageServices)
-            service.second->protoDidChangeSession(strongSelf);
+        for (auto service : self->messageServices)
+            service.second->protoDidChangeSession(self);
 
-        strongSelf->resetTransport();
+        self->resetTransport();
     });
 }
 
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
     Proto::queue()->async([self = shared_from_this(), service] {
         auto it = self->messageServices.find(service->internalId);
-        if (it == self->messageServices.end()) {
+
+        if (it == self->messageServices.end())
+        {
             service->protoWillAddService(self);
             self->messageServices[service->internalId] = service;
             service->protoDidAddService(self);

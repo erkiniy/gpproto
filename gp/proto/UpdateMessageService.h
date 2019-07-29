@@ -21,7 +21,6 @@ namespace gpproto
 class UpdateMessageService final: public MessageService, public std::enable_shared_from_this<UpdateMessageService> {
 
     public:
-        UpdateMessageService() = default;
 
         void protoDidReceiveMessage(const std::shared_ptr<Proto>& proto, std::shared_ptr<IncomingMessage> message) override;
 
