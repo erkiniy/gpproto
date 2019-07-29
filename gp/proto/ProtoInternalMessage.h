@@ -17,6 +17,12 @@ namespace gpproto
         virtual ~ProtoInternalMessage() = default;
     };
 
+    class AppSupportedMessage : public ProtoInternalMessage {
+    public:
+        AppSupportedMessage(const std::shared_ptr<StreamSlice> & data): data(std::move(data)) {};
+        const std::shared_ptr<StreamSlice> data;
+    };
+
     class ResPqMessage : public ProtoInternalMessage {
     public:
         ResPqMessage(std::shared_ptr<StreamSlice> nonce, std::shared_ptr<StreamSlice> serverNonce, std::shared_ptr<StreamSlice> pq, uint64_t serverPublicKeyFingerprints)

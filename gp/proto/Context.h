@@ -12,12 +12,14 @@
 
 #include <unordered_map>
 #include <mutex>
+#include <unordered_set>
 
 struct gp_environment;
 
 namespace gpproto
 {
     class TransportScheme;
+    class ProtoInternalMessage;
 
     class ContextChangeListener {
     public:
@@ -38,7 +40,7 @@ namespace gpproto
 
 class Context final : public std::enable_shared_from_this<Context>, public DatacenterAuthActionDelegate {
     public:
-        Context(std::shared_ptr<gp_environment> & environment): environment(std::move(environment)) {};
+        explicit Context(std::shared_ptr<gp_environment> & environment);
 
         ~Context() = default;
 
@@ -84,6 +86,7 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
         void addChangeListener(std::shared_ptr<ContextChangeListener> listener);
         void removeChangeListener(std::shared_ptr<ContextChangeListener> listener);
 
+        std::shared_ptr<ProtoInternalMessage> parseSupportedMessage(const std::shared_ptr<StreamSlice> & data);
 
         std::shared_ptr<gp_environment> environment;
 
@@ -94,6 +97,7 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAddress>> datacenterSeedAddressByDatacenterId;
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::shared_ptr<ContextChangeListener>> changeListeners;
+        std::unordered_set<uint32_t> appSupportedIds;
     };
 }
 

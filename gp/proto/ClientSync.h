@@ -13,6 +13,7 @@
 #include <atomic>
 
 #include "gp/proto/ProtoDelegate.h"
+#include "gp/proto/UpdateMessageService.h"
 
 struct gp_environment;
 struct gp_rx_event;
@@ -22,8 +23,9 @@ namespace gpproto
     class Proto;
     class Context;
     class RequestMessageService;
+    class UpdateMessageService;
 
-    class ClientSync : public std::enable_shared_from_this<ClientSync>, public ProtoDelegate {
+    class ClientSync : public std::enable_shared_from_this<ClientSync>, public ProtoDelegate, public UpdateMessageServiceDelegate {
     public:
 
         explicit ClientSync(std::shared_ptr<gp_environment> environment);
@@ -50,10 +52,13 @@ namespace gpproto
 
         void connectionStateChanged(const Proto& proto, ProtoConnectionState state) override;
 
+        void didReceiveUpdates(const std::shared_ptr<UpdateMessageService>& service, std::shared_ptr<StreamSlice> appData, int32_t date) override;
+
     private:
         std::shared_ptr<gp_rx_event> currentReceiveEvent;
         std::shared_ptr<Proto> proto;
         std::shared_ptr<RequestMessageService> requestService;
+        std::shared_ptr<UpdateMessageService> updateService;
 
         std::mutex mutex;
         std::condition_variable cond;

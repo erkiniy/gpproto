@@ -22,6 +22,7 @@ ClientSync::ClientSync(std::shared_ptr<gp_environment> environment): id(getNextI
     proto = std::make_shared<Proto>(context, 1, false);
 
     requestService = std::make_shared<RequestMessageService>(context);
+    updateService = std::make_shared<UpdateMessageService>();
 
     proto->addMessageService(requestService);
 }
@@ -31,6 +32,8 @@ ClientSync::~ClientSync() {
 }
 
 void ClientSync::initialize() {
+    updateService->setDelegate(shared_from_this());
+
     proto->setDelegate(shared_from_this());
     proto->initialize();
 }
@@ -173,4 +176,33 @@ void ClientSync::cleanUpEvent(const std::shared_ptr<gp_rx_event> && event) {
     }
 
     delete event->data;
+}
+
+void ClientSync::didReceiveUpdates(const std::shared_ptr<gpproto::UpdateMessageService> &service,
+                                   std::shared_ptr<StreamSlice> appData, int32_t date) {
+    LOGV("[ClientSync didReceiveUpdates] updatesReceived");
+
+    gp_rx_data *data = new gp_rx_data;
+
+    data->id = 0;
+
+    auto bytes = (unsigned char *)malloc(appData->size);
+    memcpy(bytes, appData->begin(), appData->size);
+
+    gp_data * innerData = new gp_data;
+    innerData->length = appData->size;
+    innerData->value = bytes;
+
+    data->data = innerData;
+
+    data->error = nullptr;
+
+    auto eventPtr = new gp_rx_event;
+    eventPtr->type = UPDATE;
+    eventPtr->data = data;
+    eventPtr->date = (unsigned int)date;
+    eventPtr->state = CONNECTED;
+
+    auto event = std::shared_ptr<gp_rx_event>(eventPtr);
+    push_back(event);
 }

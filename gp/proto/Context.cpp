@@ -8,8 +8,28 @@
 #include "gp/network/TransportScheme.h"
 #include "gp/utils/Common.h"
 #include "gp/utils/Logging.h"
+#include "gp/proto/ProtoInternalMessage.h"
+
+#include "gp_client_data.h"
 
 using namespace gpproto;
+
+Context::Context(std::shared_ptr<gp_environment> & environment): environment(std::move(environment)) {
+    appSupportedIds.clear();
+
+    for (int i = 0; i < environment->supported_types_count; i++)
+        appSupportedIds.insert(environment->supported_types[i]);
+}
+
+std::shared_ptr<ProtoInternalMessage> Context::parseSupportedMessage(const std::shared_ptr<StreamSlice> & data) {
+    uint32_t signature;
+    memcpy(&signature, data->rbegin(), 4);
+
+    auto it = appSupportedIds.find(signature);
+    if (it == appSupportedIds.end()) return nullptr;
+
+    return std::make_shared<AppSupportedMessage>(std::move(data));
+}
 
 double Context::getGlobalTime() {
     auto timestamp = getAbsoluteSystemTime();

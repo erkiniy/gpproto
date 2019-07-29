@@ -427,6 +427,10 @@ std::vector<std::shared_ptr<IncomingMessage>> Proto::parseIncomingMessages(std::
 std::shared_ptr<ProtoInternalMessage> Proto::parseMessage(const std::shared_ptr<StreamSlice>& data) {
     auto unwrappedData = InternalParser::unwrapMessage(data);
     auto internalMessage = InternalParser::parseMessage(unwrappedData);
+
+    if (internalMessage == nullptr)
+        internalMessage = context->parseSupportedMessage(data);
+
     return internalMessage;
 }
 
