@@ -14,7 +14,7 @@
 
 using namespace gpproto;
 
-Context::Context(std::shared_ptr<gp_environment> & environment): environment(std::move(environment)) {
+Context::Context(std::shared_ptr<gp_environment> & environment): environment(environment) {
     appSupportedIds.clear();
 
     for (int i = 0; i < environment->supported_types_count; i++)

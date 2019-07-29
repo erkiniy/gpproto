@@ -22,7 +22,9 @@ ClientSync::ClientSync(std::shared_ptr<gp_environment> environment): id(getNextI
     proto = std::make_shared<Proto>(context, 1, false);
 
     requestService = std::make_shared<RequestMessageService>(context);
-    updateService = std::make_shared<UpdateMessageService>();
+
+    if (!environment->disable_updates)
+        updateService = std::make_shared<UpdateMessageService>();
 
     proto->addMessageService(requestService);
 }
@@ -32,9 +34,12 @@ ClientSync::~ClientSync() {
 }
 
 void ClientSync::initialize() {
-    updateService->setDelegate(shared_from_this());
+    auto self = shared_from_this();
 
-    proto->setDelegate(shared_from_this());
+    if (updateService != nullptr)
+        updateService->setDelegate(self);
+
+    proto->setDelegate(self);
     proto->initialize();
 }
 

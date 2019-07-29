@@ -39,6 +39,7 @@ struct gp_rx_data {
 struct gp_rx_event {
     enum gp_event type;
     struct gp_rx_data *data;
+    unsigned int date;
     enum gp_connection_state state;
 };
 
@@ -49,7 +50,6 @@ struct gp_tx_data {
 struct gp_environment {
     int api_id;
     int layer;
-    const unsigned int *supported_types;
     const int disable_updates;
     const char *encryption_password;
     const char *device_model;
@@ -57,6 +57,9 @@ struct gp_environment {
     const char *app_version;
     const char *lang_code;
     const char *documents_folder;
+
+    const int supported_types_count;
+    const unsigned int *supported_types;
 };
 
 #ifdef __cplusplus

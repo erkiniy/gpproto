@@ -22,16 +22,18 @@ class ViewController: UIViewController {
         self.view.backgroundColor = .red
         
         var types: [UInt32] = [0xe317af7e, 0x727c0b9a, 0xa136b45c, 0x5bff9f3f, 0x101b9b6f, 0x6085868f, 0xd0e0f8e4, 0x517c63bf]
+        
         let env = gp_environment(api_id: 0x2062c46e,
                                  layer: 0,
-                                 supported_types: &types,
-                                 disable_updates: 0,
+                                 disable_updates: 1,
                                  encryption_password: strdup("testPass"),
                                  device_model: strdup("iOS Simulator C++"),
                                  system_version: strdup("12.4"),
                                  app_version: strdup("0.0.1"),
                                  lang_code: strdup("en"),
-                                 documents_folder: strdup("Documents"))
+                                 documents_folder: strdup("Documents"),
+                                 supported_types_count: Int32(types.count),
+                                 supported_types: &types)
         
         self.client = gp_client_create(env)
         

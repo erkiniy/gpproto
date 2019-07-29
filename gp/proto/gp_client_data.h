@@ -59,7 +59,7 @@ struct gp_environment {
     const char *documents_folder;
 
     const int supported_types_count;
-    const unsigned int supported_types[];
+    const unsigned int *supported_types;
 };
 
 #ifdef __cplusplus
