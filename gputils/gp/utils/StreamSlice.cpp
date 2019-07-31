@@ -5,6 +5,7 @@
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/ByteOrder.h"
 #include "gp/utils/Logging.h"
+#include "gp/utils/Common.h"
 
 using namespace gpproto;
 
@@ -70,4 +71,19 @@ std::string StreamSlice::description() const {
     }
 
     return s;
+}
+
+std::shared_ptr<StreamSlice> StreamSlice::prefix(size_t length) {
+    return std::make_shared<StreamSlice>(rbegin(), MIN(length, size));
+}
+
+std::shared_ptr<StreamSlice> StreamSlice::suffix(size_t length) {
+    return std::make_shared<StreamSlice>(rbegin() + MAX(0, size - length), MIN(length, size));
+}
+
+std::shared_ptr<StreamSlice> StreamSlice::appended(const gpproto::StreamSlice &slice) {
+    auto data = std::make_shared<StreamSlice>(size + slice.size);
+    memcpy(data->begin(), rbegin(), size);
+    memcpy(data->begin() + size, slice.rbegin(), slice.size);
+    return data;
 }

@@ -63,6 +63,11 @@ namespace gpproto {
             //TODO: realloc
         }
 
+        std::shared_ptr<StreamSlice> prefix(size_t length);
+        std::shared_ptr<StreamSlice> suffix(size_t length);
+
+        std::shared_ptr<StreamSlice> appended(const StreamSlice & slice);
+
 //        inline StreamSlice operator + (const StreamSlice& s1, const StreamSlice& s2) {
 //            auto s = StreamSlice(s1.size + s2.size);
 //            memcpy(s.begin(), s1.rbegin(), s1.size);

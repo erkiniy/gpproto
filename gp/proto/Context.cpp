@@ -50,6 +50,12 @@ double Context::getGlobalTimeDifference() {
     return difference;
 }
 
+void Context::setKeychain(const std::shared_ptr<SecureKeychain> & keychain) {
+    Context::queue()->async([self = shared_from_this(), keychain] {
+        self->keychain = keychain;
+    });
+}
+
 void Context::setGlobalTimeDifference(double difference) {
     Context::queue()->async([self = shared_from_this(), difference] {
         self->globalTimeDifference = difference;

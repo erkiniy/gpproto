@@ -9,9 +9,8 @@
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/Common.h"
 
-using namespace gpproto;
-
 namespace gpproto::Crypto {
+
     uint64 pq_factorize(uint64 pq);
 
 //    int pq_factorize_big(const StreamSlice &pq_str, std::string *p_str, std::string *q_str);

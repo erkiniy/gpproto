@@ -12,6 +12,7 @@ namespace gpproto::Random {
     int32_t secureInt32();
     int64_t secureInt64();
 
+    uint8_t fastUInt8();
     uint32_t fastUInt32();
     uint64_t fastUInt64();
 

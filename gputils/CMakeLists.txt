@@ -80,13 +80,19 @@ set(GPUTILS_SOURCE
         gp/utils/BigNum.cpp
         gp/utils/BigNum.h
 
-        gp/utils/Runloop.h gp/utils/Runloop.cpp)
+        gp/utils/Runloop.h
+        gp/utils/Runloop.cpp
+
+        gp/utils/third_party/nlohmann/json.hpp
+
+        gp/utils/SecureKeychain.cpp
+        gp/utils/SecureKeychain.h)
 
 add_library(gputils STATIC ${GPUTILS_SOURCE})
 
 target_include_directories(gputils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
-if (OPENSSL_FOUND)
+    if (OPENSSL_FOUND)
     target_link_libraries(gputils PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
     target_include_directories(gputils SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif()

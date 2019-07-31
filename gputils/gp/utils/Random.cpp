@@ -29,6 +29,13 @@ static unsigned int rand_device_helper() {
     return rd();
 }
 
+uint8_t gpproto::Random::fastUInt8() {
+    auto &rg = rand_device_helper;
+    std::seed_seq seq{ rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg() };
+    std::mt19937 gen(seq);
+    return static_cast<uint8_t>(gen());
+}
+
 uint32_t gpproto::Random::fastUInt32() {
     auto &rg = rand_device_helper;
     std::seed_seq seq{ rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg() };

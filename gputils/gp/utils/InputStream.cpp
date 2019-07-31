@@ -5,9 +5,7 @@
 #include "gp/utils/InputStream.h"
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/InputStreamException.h"
-
-#define MIN(X, Y) ((X > Y) ? Y : X)
-#define MAX(X, Y) ((X > Y) ? X : Y)
+#include "gp/utils/Common.h"
 
 using namespace gpproto;
 

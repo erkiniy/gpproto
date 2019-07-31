@@ -11,8 +11,10 @@
 #include <string>
 #include <memory>
 #include <type_traits>
-
 #include "gp/utils/StreamSlice.h"
+
+#define MIN(X, Y) ((X > Y) ? Y : X)
+#define MAX(X, Y) ((X > Y) ? X : Y)
 
 using int8 = std::int8_t;
 using int16 = std::int16_t;

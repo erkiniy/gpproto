@@ -181,7 +181,7 @@ bool NativeFileSystem::RenameFile(const FileInfo &src, const FileInfo &dest) {
 }
 
 bool NativeFileSystem::IsFileExists(const FileInfo &filePath) const {
-    return (FindFile(BasePath() + filePath.AbsolutePath()) != nullptr);
+    return (FindFile(BasePath() + filePath.Name()) != nullptr);
 }
 
 bool NativeFileSystem::IsFile(const gpproto::FileInfo &filePath) const {

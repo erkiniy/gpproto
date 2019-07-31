@@ -2,7 +2,9 @@
 // Created by ProDigital on 7/30/18.
 //
 
-#include "StringUtils.h"
+#include "gp/utils/StringUtils.h"
+#include "gp/utils/StreamSlice.h"
+
 using namespace gpproto;
 
 std::vector<std::string> StringUtils::Split(const std::string &text, char delimeter) {
@@ -48,4 +50,13 @@ bool StringUtils::EndsWith(const std::string &fullString, std::string const& suf
         return (0 == fullString.compare(fullString.length() - suffix.length(), suffix.length(), suffix));
 
     return false;
+}
+
+std::shared_ptr<StreamSlice> StringUtils::toData(const std::string & string) {
+    auto data = string.data();
+    return std::make_shared<StreamSlice>((unsigned char *)data, strlen(data) + 1);
+}
+
+std::string StringUtils::fromData(const gpproto::StreamSlice & utf8Data) {
+    return std::string((char *)utf8Data.rbegin());
 }

@@ -3,7 +3,10 @@
 //
 
 #include "gp/utils/Common.h"
+
 #include <chrono>
+
+using namespace gpproto;
 
 unsigned char hexToChar(const char& c) {
     if (c >= '0' && c <= '9')
@@ -178,8 +181,15 @@ unsigned char *_base64_decode(const char *data, size_t input_length, size_t *out
 
 std::string base64_encode(const gpproto::StreamSlice& input) {
     using namespace gpproto;
+    size_t outputLength;
 
+    auto encodedStringBytes = _base64_encode(input.rbegin(), input.size, &outputLength);
 
+    auto encodedString = std::string(encodedStringBytes, outputLength);
+
+    free(encodedStringBytes);
+
+    return encodedString;
 }
 
 std::shared_ptr<gpproto::StreamSlice> base64_decode(const std::string& base64) {
@@ -190,8 +200,7 @@ std::shared_ptr<gpproto::StreamSlice> base64_decode(const std::string& base64) {
 
     unsigned char *decodedData = _base64_decode(data, (size_t)(strlen(data)), &outputLength);
 
-    std::shared_ptr<StreamSlice> s = std::make_shared<StreamSlice>(outputLength);
-    memcpy(s->begin(), decodedData, outputLength);
+    std::shared_ptr<StreamSlice> s = std::make_shared<StreamSlice>(decodedData, outputLength);
 
     free(decodedData);
 

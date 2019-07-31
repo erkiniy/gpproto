@@ -181,11 +181,11 @@ if (OPENSSL_FOUND)
     message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR} ${OPENSSL_LIBRARIES}")
 endif()
 
-#enable_testing()
+enable_testing()
 
 add_subdirectory(gpnet)
 add_subdirectory(gputils)
-#add_subdirectory(test)
+add_subdirectory(test)
 
 set(GPCORE_SOURCE
         gp/proto/Proto.h

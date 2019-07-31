@@ -20,6 +20,7 @@ namespace gpproto
 {
     class TransportScheme;
     class ProtoInternalMessage;
+    class SecureKeychain;
 
     class ContextChangeListener {
     public:
@@ -56,6 +57,8 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
         double getGlobalTimeDifference();
 
         void setGlobalTimeDifference(double difference);
+
+        void setKeychain(const std::shared_ptr<SecureKeychain> & keychain);
 
         std::shared_ptr<AuthKeyInfo> getAuthKeyInfoForDatacenterId(int32_t id);
 
@@ -98,6 +101,8 @@ private:
         std::unordered_map<int32_t, std::shared_ptr<DatacenterAuthAction>> datacenterAuthActionsByDatacenterId;
         std::unordered_map<int, std::shared_ptr<ContextChangeListener>> changeListeners;
         std::unordered_set<uint32_t> appSupportedIds;
+
+        std::shared_ptr<SecureKeychain> keychain;
     };
 }
 

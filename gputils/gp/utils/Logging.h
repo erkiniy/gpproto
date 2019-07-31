@@ -5,7 +5,6 @@
 #ifndef GPPROTO_LOGGING_H
 #define GPPROTO_LOGGING_H
 
-
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
@@ -18,7 +17,7 @@ void gp_log_file_printf(char level, const char* msg, ...);
 void gp_log_file_write_header(FILE* file);
 void gp_log_printf(char level, const char* msg, ...);
 
-std::mutex mtx;
+static std::mutex log_mtx;
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -58,7 +57,7 @@ std::mutex mtx;
 
 #include <stdio.h>
 
-#define GP_LOG_PRINT(verb, msg, ...) { mtx.lock(); gp_log_printf(verb, msg, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); mtx.unlock(); }
+#define GP_LOG_PRINT(verb, msg, ...) { log_mtx.lock(); gp_log_printf(verb, msg, ##__VA_ARGS__); gp_log_file_printf(verb, msg, ##__VA_ARGS__); log_mtx.unlock(); }
 
 #define LOGV(msg, ...) GP_LOG_PRINT('V', msg, ##__VA_ARGS__)
 #define LOGD(msg, ...) GP_LOG_PRINT('D', msg, ##__VA_ARGS__)

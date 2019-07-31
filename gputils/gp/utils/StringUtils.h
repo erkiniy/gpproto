@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace gpproto {
+    class StreamSlice;
+
     class StringUtils {
     public:
         static std::vector<std::string> Split(const std::string &text, char delimeter);
@@ -19,6 +21,9 @@ namespace gpproto {
 
         static bool EndsWith(const std::string &fullString, std::string const& suffix);
 
+        static std::shared_ptr<StreamSlice> toData(const std::string & string);
+
+        static std::string fromData(const StreamSlice & utf8Data);
     };
 }
 

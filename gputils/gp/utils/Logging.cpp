@@ -2,12 +2,13 @@
 // Created by ProDigital on 7/27/18.
 //
 
-#include "Logging.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
 #include <cmath>
+
+#include "gp/utils/Logging.h"
 
 FILE* gplogFile = NULL;
 

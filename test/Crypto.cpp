@@ -6,12 +6,17 @@
 #define BOOST_TEST_MODULE TimerTests
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+
 #include "gp/utils/Logging.h"
 #include "gp/utils/Crypto.h"
 #include "gp/utils/Common.h"
 #include "gp/utils/Random.h"
 #include "gp/utils/OutputStream.h"
+#include "gp/utils/StringUtils.h"
+#include "gp/utils/SecureKeychain.h"
+#include "gp/utils/third_party/nlohmann/json.hpp"
 
+using json = nlohmann::json;
 using namespace gpproto;
 
 BOOST_AUTO_TEST_CASE(random_test) {
@@ -71,4 +76,50 @@ BOOST_AUTO_TEST_CASE(gzip_test) {
         LOGV("UNZIPPED STRING is %s", str.c_str());
     }
 }
+
+BOOST_AUTO_TEST_CASE(base64_test) {
+    std::string text = "jas djas dkjas dkjsa dkjas dkas dkjad";
+
+    auto slice = StringUtils::toData(text);
+
+    LOGV("Text data = %s", slice->description().c_str());
+
+    auto encodedString = base64_encode(*slice);
+    LOGV("Encoded string = %s", encodedString.c_str());
+
+    auto decodedData = base64_decode(encodedString);
+    LOGV("Decoded data = %s", decodedData->description().c_str());
+
+    auto otherText = StringUtils::fromData(*decodedData);
+    LOGV("Decoded text = %s", otherText.c_str());
+
+    BOOST_ASSERT(text == otherText);
+}
+
+BOOST_AUTO_TEST_CASE(secure_keychain) {
+
+    ///Users/jaloliddinerkiniy/Desktop/TestKeychain
+    SecureKeychain keychain("SuperSecret", "/Users/jaloliddinerkiniy/Desktop/TestKeychain", "batak");
+
+    json j = keychain.getObject("person", "auth");
+    if (j.is_null()) {
+        LOGV("JSON is null");
+
+        json obj;
+        obj["name"] = "jalolName";
+        obj["age"] = 28;
+
+        keychain.setObject(obj, "person", "auth");
+    }
+    else {
+        LOGV("Result json is = %s", j.dump().c_str());
+    }
+
+    //BOOST_ASSERT(true);
+}
+
+BOOST_AUTO_TEST_CASE(auth_and_salts) {
+
+}
+
 
