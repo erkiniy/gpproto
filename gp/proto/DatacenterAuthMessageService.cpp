@@ -360,7 +360,7 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
                 //LOGV("Decrypting with \nAESKEY = %s\nAESIV = %s", tempAesKey->description().c_str(), tempAesIV->description().c_str());
 
-                auto answerWithHash = Crypto::aes_cbc_decrypt(aesKey, &aesIV, *serverDhParamsOkMessage->encryptedResponse);
+                auto answerWithHash = Crypto::aes_cbc_decrypt(aesKey, aesIV, *serverDhParamsOkMessage->encryptedResponse);
 
                 if (answerWithHash == nullptr || answerWithHash->size < 20 + 16) {
                     LOGE("[DatacenterAuthMessageService protoDidReceiveMessage] -> aes decryption error");
@@ -495,7 +495,7 @@ void gpproto::DatacenterAuthMessageService::protoDidReceiveMessage(const std::sh
 
                 auto clientDataWithHash = clientDataWithHashStream.currentBytes();
 
-                encryptedClientData = Crypto::aes_cbc_encrypt(aesKey, &aesIV, *clientDataWithHash);
+                encryptedClientData = Crypto::aes_cbc_encrypt(aesKey, aesIV, *clientDataWithHash);
                 stage = DatacenterAuthStage::keyVerification;
                 currentStateMessageId = 0;
                 currentStateMessageSeqNo = 0;

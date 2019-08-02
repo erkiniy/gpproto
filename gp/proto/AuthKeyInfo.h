@@ -6,6 +6,7 @@
 #define GPPROTO_AUTHKEYINFO_H
 
 #include <vector>
+#include <gputils/gp/utils/Logging.h>
 
 namespace gpproto
 {
@@ -18,7 +19,9 @@ namespace gpproto
                 authKey(std::move(key)),
                 authKeyId(id),
                 saltSet(std::move(saltSet))
-        {};
+        {
+            LOGV("[AuthInfo cons] saltsetCount = %d, this=%d", this->saltSet.size(), this);
+        };
 
         ~AuthKeyInfo() = default;
 

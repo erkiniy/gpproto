@@ -29,6 +29,16 @@
 
 using namespace gpproto;
 
+Proto::Proto(std::shared_ptr<gpproto::Context> context, int32_t datacenterId, bool useUnauthorizedMode) :
+        useUnauthorizedMode(useUnauthorizedMode),
+        datacenterId(datacenterId),
+        context(context),
+        sessionInfo(std::make_shared<Session>(context)) {
+    LOGV("Allocated Proto with unauthoried %d", useUnauthorizedMode);
+
+    authInfo = context->getAuthKeyInfoForDatacenterId(datacenterId);
+};
+
 void Proto::initialize() {
     auto self = shared_from_this();
     context->addChangeListener(self);
@@ -104,6 +114,8 @@ void Proto::contextDatacenterAuthInfoUpdated(const Context &context, int32_t dat
     Proto::queue()->async([self = shared_from_this(), datacenterId, authInfo] {
         if (!self->useUnauthorizedMode && datacenterId == self->datacenterId && authInfo != nullptr)
         {
+            LOGV("Setting authInfo %d", authInfo == nullptr);
+
             self->authInfo = authInfo;
             if (self->protoState & ProtoStateAwaitingAuthorization)
             {
@@ -308,7 +320,7 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
 
     auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(authInfo->authKey, embeddedMessageKey);
 
-    auto decryptedData = Crypto::aes_cbc_decrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *remainingData);
+    auto decryptedData = Crypto::aes_cbc_decrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *remainingData);
 
     if (decryptedData->size < 32) {
         LOGE("[Proto decryptIncomingTransportData] -> decrypted data is less than 32 bytes");
@@ -704,6 +716,7 @@ void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::sh
     if (!saltlist.empty())
     {
         auto updatedAuthInfo = replace ? authInfo->replaceSaltset(saltlist) : authInfo->mergeSaltset(saltlist, context->getGlobalTime());
+        context->updateAuthKeyInfoForDatacenterId(updatedAuthInfo, datacenterId);
         authInfo = updatedAuthInfo;
 
         if (canAskTransactions() || canAskServiceTransactions())
@@ -803,6 +816,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
 
             int64_t messageSalt = 0;
             if (!self->useUnauthorizedMode) {
+                LOGV("[Proto authInfo] %d", self->authInfo == nullptr);
                 messageSalt = self->authInfo->authSaltForClientMessageId(self->sessionInfo->actualClientMessageId());
                 saltSetEmpty = messageSalt == 0;
             }
@@ -974,7 +988,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
 
             auto paddedData = decryptedOs.currentBytes();
 
-            auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+            auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *paddedData);
             encryptedOs.writeData(*encryptedData);
 
             auto transportTransaction = std::make_shared<TransportTransaction>(encryptedOs.currentBytes(), [self, timeFixMessageId, timeFixSeqNo](bool success, int transactionId) {
@@ -1027,7 +1041,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedMessage(const std::shared_pt
     encryptedOs.writeInt64(authInfo->authKeyId);
     encryptedOs.writeData(*messageKey);
 
-    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *paddedData);
     encryptedOs.writeData(*encryptedData);
 
     return encryptedOs.currentBytes();
@@ -1091,7 +1105,7 @@ std::shared_ptr<StreamSlice> Proto::dataForEncryptedContainer(const std::vector<
     encryptedOs.writeInt64(authInfo->authKeyId);
     encryptedOs.writeData(*messageKey);
 
-    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, &encryptionKey->aes_iv, *paddedData);
+    auto encryptedData = Crypto::aes_cbc_encrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *paddedData);
     encryptedOs.writeData(*encryptedData);
 
     return encryptedOs.currentBytes();

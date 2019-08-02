@@ -47,13 +47,7 @@ namespace gpproto
 
         static const int MaxUnacknowlegedMessagesCount = 2;
 
-        explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false)
-                : useUnauthorizedMode(useUnauthorizedMode),
-                  datacenterId(datacenterId),
-                  context(context),
-                  sessionInfo(std::make_shared<Session>(context)) {
-            LOGV("Allocated Proto with unauthoried %d", useUnauthorizedMode);
-        };
+        explicit Proto(std::shared_ptr<Context> context, int32_t datacenterId, bool useUnauthorizedMode = false);
 
         ~Proto() {
             LOGV("[Proto deallocating]");

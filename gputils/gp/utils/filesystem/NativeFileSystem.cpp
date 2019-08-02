@@ -72,7 +72,7 @@ bool NativeFileSystem::IsReadOnly() const {
     if (stat(BasePath().c_str(), &fileStat) < 0)
         return false;
 
-    return fileStat.st_mode & S_IWUSR;
+    return fileStat.st_mode & S_IWGRP;
 }
 
 FilePtr NativeFileSystem::OpenFile(const FileInfo &filePath, int mode) {
@@ -118,7 +118,7 @@ bool NativeFileSystem::CreateFile(const FileInfo &filePath) {
 }
 
 bool NativeFileSystem::RemoveFile(const FileInfo &filePath) {
-    FilePtr file = FindFile(filePath);
+    FilePtr file = FindFile(BasePath() + filePath.Name());
     if (!IsReadOnly() && file)
     {
         FileInfo fileInfo(BasePath(), file->fileInfo().AbsolutePath(), false);

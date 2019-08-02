@@ -12,19 +12,19 @@
 extern "C" {
 #endif
 
-void *gp_client_create();
+int gp_client_create(struct gp_environment environment);
 
-void gp_destroy(void *client);
+void gp_destroy(int client);
 
-int gp_client_send(void *client, gp_tx_data *request);
+int gp_client_send(int client, struct gp_tx_data *request);
 
-gp_rx_event *gp_client_receive(void *client, double timeout);
+struct gp_rx_event *gp_client_receive(int client, double timeout);
 
-void gp_client_pause(void *client);
+void gp_client_pause(int client);
 
-void gp_client_resume(void *client);
+void gp_client_resume(int client);
 
-void gp_client_reset_credentials(void *client);
+void gp_client_reset_credentials(int client);
 
 #ifdef __cplusplus
 } //extern "C"

@@ -9,6 +9,7 @@
 #include "gp/proto/Request.h"
 #include "gp/proto/RequestMessageService.h"
 #include "gp/utils/StreamSlice.h"
+#include "gp/utils/SecureKeychain.h"
 
 #include "gp_client_data.h"
 
@@ -18,6 +19,8 @@ ClientSync::ClientSync(std::shared_ptr<gp_environment> environment): id(getNextI
     auto context = std::make_shared<Context>(environment);
 
     context->setDatacenterSeedAddress(DatacenterAddress("", "195.158.12.163", 1112), 1);
+
+    context->setKeychain(std::make_shared<SecureKeychain>("proto", environment->documents_folder, environment->encryption_password));
 
     proto = std::make_shared<Proto>(context, 1, false);
 

@@ -9,10 +9,16 @@
 #include "gp/utils/Common.h"
 #include "gp/utils/Logging.h"
 #include "gp/proto/ProtoInternalMessage.h"
+#include "gp/utils/SecureKeychain.h"
+#include "gp/proto/JsonAdapter.h"
+#include "gp/proto/DatacenterSaltsetInfo.h"
+
+#include "gp/utils/third_party/nlohmann/json.hpp"
 
 #include "gp_client_data.h"
 
 using namespace gpproto;
+using namespace nlohmann;
 
 Context::Context(std::shared_ptr<gp_environment> & environment): environment(environment) {
     appSupportedIds.clear();
@@ -53,6 +59,8 @@ double Context::getGlobalTimeDifference() {
 void Context::setKeychain(const std::shared_ptr<SecureKeychain> & keychain) {
     Context::queue()->async([self = shared_from_this(), keychain] {
         self->keychain = keychain;
+
+        self->authInfoByDatacenterId = JsonAdapter::toAuthKeyInfoByDatacenterId(keychain->getObject("authInfoById", "persistent"));
     });
 }
 
@@ -86,13 +94,11 @@ std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) 
 
 void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
     Context::queue()->async([self = shared_from_this(), keyInfo, id] {
+
         self->setAuthKeyInfoForDatacenterId(keyInfo, id);
 
-        if (keyInfo != nullptr && id != 0)
+        if (keyInfo != nullptr)
         {
-            LOGV("[Context updateAuthKeyInfoForDatacenterId] -> auth info updated");
-            //TODO: keychain
-
             for (const auto & listener : self->changeListeners)
             {
                 if (auto strongListener = listener.second)
@@ -106,11 +112,12 @@ void Context::updateAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyI
 void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo, int32_t id) {
 
     Context::queue()->async([self = shared_from_this(), keyInfo, id] {
-        if (keyInfo != nullptr && id != 0)
-            self->authInfoByDatacenterId[id] = keyInfo;
-    });
-#warning implement storing to keychain
 
+        if (keyInfo != nullptr)
+            self->authInfoByDatacenterId[id] = keyInfo;
+
+        self->keychain->setObject(JsonAdapter::fromAuthKeyInfoByDatacenterId(self->authInfoByDatacenterId), "authInfoById", "persistent");
+    });
 }
 
 std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(int32_t id) {

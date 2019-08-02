@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(random_test) {
 };
 
 BOOST_AUTO_TEST_CASE(aes_test) {
-    /*
+
     std::string ivString = "3197377f86b1329832839d395a6e65a7";
     auto iv = hexToData(ivString);
 
@@ -57,9 +57,8 @@ BOOST_AUTO_TEST_CASE(aes_test) {
 
     auto cypher = Crypto::aes_cbc_encrypt(keyInt, &ivInt, plainSlice);
 
-    //LOGV("Plain data = %s", plainSlice.description().c_str());
-    //LOGV("Encrypted data = %s", cypher->description().c_str());
-     */
+    LOGV("Plain data = %s", plainSlice.description().c_str());
+    LOGV("Encrypted data = %s", cypher->description().c_str());
 };
 
 BOOST_AUTO_TEST_CASE(gzip_test) {
@@ -100,22 +99,26 @@ BOOST_AUTO_TEST_CASE(secure_keychain) {
 
     ///Users/jaloliddinerkiniy/Desktop/TestKeychain
     SecureKeychain keychain("SuperSecret", "/Users/jaloliddinerkiniy/Desktop/TestKeychain", "batak");
+    std::string name("jalol");
 
     json j = keychain.getObject("person", "auth");
     if (j.is_null()) {
         LOGV("JSON is null");
 
         json obj;
-        obj["name"] = "jalolName";
-        obj["age"] = 28;
+        obj["name"] = name;
 
         keychain.setObject(obj, "person", "auth");
+        BOOST_ASSERT(false);
     }
     else {
         LOGV("Result json is = %s", j.dump().c_str());
+
+        std::string n = j["name"];
+
+        BOOST_ASSERT(n == name);
     }
 
-    //BOOST_ASSERT(true);
 }
 
 BOOST_AUTO_TEST_CASE(auth_and_salts) {

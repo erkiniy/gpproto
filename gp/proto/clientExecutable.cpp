@@ -18,7 +18,7 @@ int main()
                            .system_version = strdup("10.14.15"),
                            .app_version = strdup("0.0.1"),
                            .lang_code = strdup("en"),
-                           .documents_folder = strdup("/docs") };
+                           .documents_folder = strdup("/Users/jaloliddinerkiniy/Desktop/TestKeychain/Internal") };
 
     auto client = gp_client_create(env);
     gp_client_pause(client);

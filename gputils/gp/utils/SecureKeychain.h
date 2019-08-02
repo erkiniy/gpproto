@@ -39,8 +39,8 @@ namespace gpproto
 
         std::unordered_map<std::string, json> dictByGroup;
 
-        std::unique_ptr<UInt256> key;
-        std::unique_ptr<UInt128> iv;
+        UInt256 key;
+        UInt128 iv;
 
         std::mutex mutex;
 

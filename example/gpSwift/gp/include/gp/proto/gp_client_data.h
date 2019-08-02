@@ -12,7 +12,7 @@ extern "C" {
 enum gp_event {
     RESPONSE = 1,
     UPDATE = 2,
-    CONNECTION_STATE = 3
+    PROTO_STATE = 3
 };
 
 enum gp_connection_state {
@@ -22,37 +22,45 @@ enum gp_connection_state {
 
 typedef struct  {
     int code;
-    const char *desc;
+    char *desc;
 } gp_error;
 
-typedef struct {
+struct gp_data {
     size_t length;
     const unsigned char *value;
-} gp_data;
+};
 
-typedef struct {
+struct gp_rx_data {
     int id;
-    const gp_error *error;
-    const gp_data *data;
-} gp_rx_data;
+    gp_error *error;
+    struct gp_data *data;
+};
 
-typedef struct {
+struct gp_rx_event {
     enum gp_event type;
-    gp_rx_data *data;
-    enum gp_connection_state *state;
-} gp_rx_event;
+    struct gp_rx_data *data;
+    unsigned int date;
+    enum gp_connection_state state;
+};
 
-typedef struct {
-    const gp_data *data;
-} gp_tx_data;
+struct gp_tx_data {
+    const struct gp_data *data;
+};
 
-typedef struct {
-    char *encryption_password;
-    char *device_model;
-    char *system_version;
-    char *app_version;
-    char *lang_code;
-} gp_environment;
+struct gp_environment {
+    int api_id;
+    int layer;
+    const int disable_updates;
+    const char *encryption_password;
+    const char *device_model;
+    const char *system_version;
+    const char *app_version;
+    const char *lang_code;
+    const char *documents_folder;
+
+    const int supported_types_count;
+    const unsigned int *supported_types;
+};
 
 #ifdef __cplusplus
 }

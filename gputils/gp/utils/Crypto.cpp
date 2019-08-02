@@ -197,7 +197,7 @@ std::shared_ptr<StreamSlice> Crypto::sha256Subdata(const StreamSlice &data, size
     return output;
 }
 
-std::shared_ptr<StreamSlice> aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv,
+std::shared_ptr<StreamSlice> aes_cbc_xcrypt(const UInt256 &aes_key, const UInt128 &aes_iv,
                                             const StreamSlice &data, bool encrypt) {
     AES_KEY key;
     int err;
@@ -211,18 +211,21 @@ std::shared_ptr<StreamSlice> aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes
 
     auto out = std::make_shared<StreamSlice>(data.size);
 
-    AES_cbc_encrypt(data.bytes, out->begin(), data.size, &key, aes_iv->raw, encrypt);
+    UInt128 iv_disposable;
+    memcpy(iv_disposable.raw, aes_iv.raw, 16);
+
+    AES_cbc_encrypt(data.bytes, out->begin(), data.size, &key, iv_disposable.raw, encrypt);
 
     return out;
 }
 
-std::shared_ptr<StreamSlice> Crypto::aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv,
+std::shared_ptr<StreamSlice> Crypto::aes_cbc_encrypt(const UInt256 &aes_key, const UInt128 &aes_iv,
                                                      const StreamSlice& plain) {
     initCrypto();
     return aes_cbc_xcrypt(aes_key, aes_iv, plain, true);
 }
 
-std::shared_ptr<StreamSlice> Crypto::aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv,
+std::shared_ptr<StreamSlice> Crypto::aes_cbc_decrypt(const UInt256 &aes_key, const UInt128 &aes_iv,
                                                      const StreamSlice& cypher) {
     initCrypto();
     return aes_cbc_xcrypt(aes_key, aes_iv, cypher, false);
