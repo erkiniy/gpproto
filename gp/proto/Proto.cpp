@@ -94,6 +94,10 @@ void Proto::stop() {
     });
 }
 
+double Proto::getGlobalTime() {
+    return context->getGlobalTime();
+}
+
 void Proto::contextDatacenterTransportSchemeUpdated(const Context &context, int32_t datacenterId,
                                                     std::shared_ptr<TransportScheme> scheme) {
     Proto::queue()->async([self = shared_from_this(), datacenterId, scheme] {

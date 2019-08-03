@@ -61,6 +61,8 @@ namespace gpproto
         void resume();
         void stop();
 
+        double getGlobalTime();
+
         void setDelegate(std::shared_ptr<ProtoDelegate> delegate);
 
         const bool useUnauthorizedMode;

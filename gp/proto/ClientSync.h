@@ -44,6 +44,8 @@ namespace gpproto
 
         void stop();
 
+        double getGlobalTime();
+
         const int id;
 
         void initialize();

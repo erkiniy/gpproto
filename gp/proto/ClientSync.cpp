@@ -61,6 +61,10 @@ void ClientSync::stop() {
     proto->stop();
 }
 
+double ClientSync::getGlobalTime() {
+    return proto->getGlobalTime();
+}
+
 void ClientSync::connectionStateChanged(const gpproto::Proto &proto, gpproto::ProtoConnectionState state) {
     LOGI("[ClientSync] ~> ConnectionState changed  = %d", state);
 

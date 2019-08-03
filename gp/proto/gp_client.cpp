@@ -84,3 +84,11 @@ void gp_client_resume(int client) {
 void gp_client_reset_credentials(int client) {
 
 }
+
+double gp_client_get_global_time(int client) {
+    if (auto clientSync = clientForId(client)) {
+        return clientSync->getGlobalTime();
+    }
+
+    return 0.0;
+}

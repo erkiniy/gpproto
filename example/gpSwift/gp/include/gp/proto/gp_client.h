@@ -26,6 +26,8 @@ void gp_client_resume(int client);
 
 void gp_client_reset_credentials(int client);
 
+double gp_client_get_global_time(int client);
+
 #ifdef __cplusplus
 } //extern "C"
 #endif

@@ -23,8 +23,12 @@ int main()
     auto client = gp_client_create(env);
     gp_client_pause(client);
     gp_client_resume(client);
+
     while (true) {
         std::this_thread::sleep_for(2s);
+
+        auto globalTime = gp_client_get_global_time(client);
+        printf("Global time is %lf\n", globalTime);
     }
 
     return 0;
