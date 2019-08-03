@@ -39,8 +39,10 @@ ClientSync::~ClientSync() {
 void ClientSync::initialize() {
     auto self = shared_from_this();
 
-    if (updateService != nullptr)
+    if (updateService != nullptr) {
+        proto->addMessageService(updateService);
         updateService->setDelegate(self);
+    }
 
     proto->setDelegate(self);
     proto->initialize();

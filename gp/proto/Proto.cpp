@@ -771,7 +771,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
             bool hasHighPriorityMessages = false;
             bool transactionExpectsDataInResponse = false;
 
-            LOGV("[Proto transportReadyForTransaction] -> messageServices count = %d", (int)self->messageServices.size());
+            //LOGV("[Proto transportReadyForTransaction] -> messageServices count = %d", (int)self->messageServices.size());
 
             for (auto& service : self->messageServices)
             {

@@ -14,11 +14,11 @@ int main()
                            .layer = 0,
                            .disable_updates = 0,
                            .encryption_password = strdup("testPass"),
-                           .device_model = strdup("MacBook Pro 13"),
+                           .device_model = strdup("mac mini Jalol"),
                            .system_version = strdup("10.14.15"),
                            .app_version = strdup("0.0.1"),
                            .lang_code = strdup("en"),
-                           .documents_folder = strdup("/Users/jaloliddinerkiniy/Desktop/TestKeychain/Internal") };
+                           .documents_folder = strdup("/Users/jalol/Desktop/TestKeychain") };
 
     auto client = gp_client_create(env);
     gp_client_pause(client);
