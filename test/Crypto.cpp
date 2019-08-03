@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(aes_test) {
 
     auto plainSlice = StreamSlice(reinterpret_cast<const unsigned char *>(data), size);
 
-    auto cypher = Crypto::aes_cbc_encrypt(keyInt, &ivInt, plainSlice);
+    auto cypher = Crypto::aes_cbc_encrypt(keyInt, ivInt, plainSlice);
 
     LOGV("Plain data = %s", plainSlice.description().c_str());
     LOGV("Encrypted data = %s", cypher->description().c_str());
