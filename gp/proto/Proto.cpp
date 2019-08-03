@@ -954,11 +954,11 @@ void Proto::transportReadyForTransaction(const Transport &transport,
             auto timeFixMessageId = self->sessionInfo->generateClientMessageId(monotonicityViolated);
             auto timeFixSeqNo = self->sessionInfo->generateClientSeqNo(false);
 
-            LOGV("[Proto transportReadyForTransaction] -> Time fix message_id %lld", timeFixMessageId);
+            //LOGV("[Proto transportReadyForTransaction] -> Time fix message_id %lld", timeFixMessageId);
 
             int64_t randomId = Random::secureInt64();
 
-            LOGV("[Proto transportReadyForTransaction] -> Time fix random_id %lld", randomId);
+            //LOGV("[Proto transportReadyForTransaction] -> Time fix random_id %lld", randomId);
 
             OutputStream pingBuffer;
             pingBuffer.writeUInt32(0x7abe77ec);

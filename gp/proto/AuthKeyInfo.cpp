@@ -75,5 +75,7 @@ int64_t AuthKeyInfo::authSaltForClientMessageId(int64_t messageId) const {
             saltSet.erase(saltSet.begin() + i);
     }
 
+    LOGV("[AuthKeyInfo] remaining salts count = %zu", saltSet.size())
+
     return bestSalt;
 }
