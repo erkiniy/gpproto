@@ -52,6 +52,8 @@ double Context::getGlobalTimeDifference() {
     double difference = *diffPtr;
     delete diffPtr;
 
+    LOGV("[Context] timeDifference = %lf", difference);
+
     return difference;
 }
 

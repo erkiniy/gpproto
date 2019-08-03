@@ -711,7 +711,7 @@ void Proto::transportNetworkConnectionStateChanged(const Transport &transport, b
 
 void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &saltlist,
                            bool replace) {
-    LOGV("[Proto timeSyncInfoChanged] difference = %f, salts count %zu", timeDifference, saltlist.size());
+    LOGV("[Proto timeSyncInfoChanged] difference = %lf, salts count %zu", timeDifference, saltlist.size());
 
     //std::this_thread::sleep_for(std::chrono::microseconds((long long)(5000000 * 1.0)));
 
