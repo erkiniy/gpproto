@@ -38,8 +38,7 @@ std::shared_ptr<ProtoInternalMessage> Context::parseSupportedMessage(const std::
 }
 
 double Context::getGlobalTime() {
-    auto timestamp = getAbsoluteSystemTime();
-    return timestamp + getGlobalTimeDifference();
+    return getAbsoluteSystemTime() + getGlobalTimeDifference();
 }
 
 double Context::getGlobalTimeDifference() {
@@ -56,9 +55,11 @@ double Context::getGlobalTimeDifference() {
     return difference;
 }
 
-void Context::setKeychain(const std::shared_ptr<SecureKeychain> & keychain) {
+void Context::setKeychain(std::shared_ptr<SecureKeychain> keychain) {
     Context::queue()->async([self = shared_from_this(), keychain] {
         self->keychain = keychain;
+
+        self->globalTimeDifference = JsonAdapter::toTimeDifference(keychain->getObject("globalTimeDifference", "temp"));
 
         self->authInfoByDatacenterId = JsonAdapter::toAuthKeyInfoByDatacenterId(keychain->getObject("authInfoById", "persistent"));
     });
@@ -68,7 +69,8 @@ void Context::setGlobalTimeDifference(double difference) {
     Context::queue()->async([self = shared_from_this(), difference] {
         self->globalTimeDifference = difference;
     });
-#warning implement storing to keychain
+
+    keychain->setObject(JsonAdapter::fromTimeDifference(difference), "globalTimeDifference", "temp");
 }
 
 std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) {
@@ -124,7 +126,7 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(
 
     DatacenterAddress *addressPtr = nullptr;
     Context::queue()->sync([self = shared_from_this(), &addressPtr, id]() mutable {
-        LOGV("[Context getDatacenterAddressForDatacenterId]");
+        //LOGV("[Context getDatacenterAddressForDatacenterId]");
         auto it = self->datacenterAddressByDatacenterId.find(id);
 
         if (it != self->datacenterAddressByDatacenterId.end())
@@ -157,7 +159,6 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacente
         auto it = self->datacenterSeedAddressByDatacenterId.find(id);
 
         if (it != self->datacenterSeedAddressByDatacenterId.end()) {
-            //LOGV("AddressSeed found");
             addressPtr = new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id]));
         }
         if (addressPtr == nullptr)
@@ -215,7 +216,6 @@ void Context::addressSetForDatacenterIdRequired(int32_t id) {
 }
 
 void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
-    LOGV("+++++++ Async [authInfoForDatacenterWithIdRequired] to %s", Context::queue()->name().c_str());
     Context::queue()->async([self = shared_from_this(), id] {
         LOGV("[Context authInfoForDatacenterWithIdRequired]");
 
@@ -224,11 +224,8 @@ void Context::authInfoForDatacenterWithIdRequired(int32_t id) {
         if (it == self->datacenterAuthActionsByDatacenterId.end())
         {
             auto authAction = std::make_shared<DatacenterAuthAction>();
-            LOGV("[Context authInfoForDatacenterWithIdRequired] -> createdAuthAction");
             authAction->setDelegate(self);
-            LOGV("[Context authInfoForDatacenterWithIdRequired] -> setDelegate");
             self->datacenterAuthActionsByDatacenterId.insert({id, authAction});
-            LOGV("[Context authInfoForDatacenterWithIdRequired] -> insert");
 
             authAction->execute(self, id);
         }
@@ -269,8 +266,7 @@ void Context::addChangeListener(std::shared_ptr<ContextChangeListener> listener)
         auto it = self->changeListeners.find(listener->internalId);
 
         if (it == self->changeListeners.end())
-            self->changeListeners.insert({listener->internalId, listener});
-            //self->changeListeners[listener->internalId] = listener;
+            self->changeListeners[listener->internalId] = listener;
 
     });
 }

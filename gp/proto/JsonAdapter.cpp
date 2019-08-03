@@ -168,3 +168,23 @@ std::unordered_map<int, std::shared_ptr<AuthKeyInfo>> JsonAdapter::toAuthKeyInfo
     }
     return m;
 }
+
+double JsonAdapter::toTimeDifference(json obj) {
+    double difference = 0.0;
+
+    if (obj.is_null()) return 0.0;
+
+    try {
+        difference = obj["timeDifference"];
+    } catch (std::exception &e) { }
+
+    return difference;
+}
+
+json JsonAdapter::fromTimeDifference(double difference) {
+    json obj;
+
+    obj["timeDifference"] = difference;
+
+    return obj;
+}

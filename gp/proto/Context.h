@@ -58,7 +58,7 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
 
         void setGlobalTimeDifference(double difference);
 
-        void setKeychain(const std::shared_ptr<SecureKeychain> & keychain);
+        void setKeychain(std::shared_ptr<SecureKeychain> keychain);
 
         std::shared_ptr<AuthKeyInfo> getAuthKeyInfoForDatacenterId(int32_t id);
 

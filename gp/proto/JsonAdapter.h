@@ -28,7 +28,12 @@ namespace gpproto
 
         static std::unordered_map<int, std::shared_ptr<AuthKeyInfo>> toAuthKeyInfoByDatacenterId(json obj);
         static json fromAuthKeyInfoByDatacenterId(const std::unordered_map<int, std::shared_ptr<AuthKeyInfo>>& authInfos);
+
+        static double toTimeDifference(json obj);
+        static json fromTimeDifference(double difference);
     };
+
+
 }
 
 #endif //GPPROTO_JSONADAPTER_H
