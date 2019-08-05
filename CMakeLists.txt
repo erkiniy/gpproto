@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 #cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -DCMAKE_INSTALL_PREFIX:PATH=../example/gpSwift/gp -DCMAKE_BUILD_TYPE=Debug
 
+#cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DPLATFORM=SIMULATOR64 -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
+
 #cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
 
 #/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl
@@ -9,7 +11,7 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 #https://github.com/x2on/OpenSSL-for-iPhone
 
-project(GPProto VERSION 0.0.1 LANGUAGES CXX C)
+project(GPProto VERSION 1.0.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -117,8 +119,7 @@ if (MSVC)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /W4 /wd4100 /wd4127 /wd4324 /wd4505 /wd4702")
 elseif (CLANG OR GCC)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD14_FLAG} -fno-omit-frame-pointer -fno-exceptions -fno-rtti")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG} -fno-aligned-allocation")
     if (APPLE)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S")
     else()
@@ -126,7 +127,6 @@ elseif (CLANG OR GCC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,--exclude-libs,ALL")
     endif()
-
     if (MEMPROF)
         CHECK_CXX_COMPILER_FLAG(-no-pie CXX_NO_PIE_FLAG)
         if (CXX_NO_PIE_FLAG)
@@ -281,30 +281,43 @@ target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURC
 target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
 
+include(GenerateExportHeader)
+
 set(GPCLIENT_SOURCE
         gp/proto/gp_client.h
         gp/proto/gp_client.cpp
         gp/proto/gp_client_data.h)
 
+
 add_library(gpclient SHARED ${GPCLIENT_SOURCE})
 target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(gpclient PRIVATE gpcore)
 
+message(STATUS "Current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
+
+generate_export_header(gpclient EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/gp/proto/gp_client_export.h)
+target_include_directories(gpclient PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+#set_target_properties(gpclient PROPERTIES VERSION ${PROJECT_VERSION})
+
 add_library(GPStatic INTERFACE)
 target_link_libraries(GPStatic INTERFACE gpclient)
 
-add_executable(clientInternal gp/proto/clientExecutable.cpp)
-target_link_libraries(clientInternal gpclient)
+#add_executable(clientInternal gp/proto/clientExecutable.cpp)
+#target_link_libraries(clientInternal gpclient)
 
-install(TARGETS gpclient gpcore GPStatic EXPORT GPTargets
+install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
 
-install(EXPORT GPTargets
-        FILE GPTargets.cmake
-        NAMESPACE gpproto::
-        DESTINATION lib/cmake/gp)
+#install(EXPORT GPTargets
+#        FILE GPTargets.cmake
+#        NAMESPACE gpproto::
+#        DESTINATION lib/cmake/gp)
 
 install(FILES gp/proto/gp_client.h gp/proto/gp_client_data.h DESTINATION include/gp/proto)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gp/proto/gp_client_export.h DESTINATION include/gp/proto)

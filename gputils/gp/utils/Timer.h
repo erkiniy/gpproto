@@ -19,7 +19,8 @@ class Timer : public std::enable_shared_from_this<Timer> {
 
     public:
         static std::shared_ptr<Timer> make_timer(double timeout, bool repeats, TimerAction&& action, std::shared_ptr<DispatchQueue> queue = nullptr) {
-            return std::shared_ptr<Timer>(new Timer(timeout, repeats, std::move(action), queue));
+            auto timer = new Timer(timeout, repeats, std::move(action), queue);
+            return std::shared_ptr<Timer>(timer);
         }
 
         ~Timer() = default;

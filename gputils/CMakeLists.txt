@@ -102,8 +102,8 @@ if (ZLIB_FOUND)
     target_include_directories(gputils SYSTEM PRIVATE ${ZLIB_INCLUDE_DIR})
 endif()
 
-install(TARGETS gputils EXPORT GPTargets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include)
+#install(TARGETS gputils EXPORT GPTargets
+#        LIBRARY DESTINATION lib
+#        ARCHIVE DESTINATION lib
+#        RUNTIME DESTINATION bin
+#        INCLUDES DESTINATION include)
