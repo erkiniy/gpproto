@@ -7,31 +7,37 @@
 
 #include <functional>
 #include <string>
-#include <list>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <condition_variable>
+#include <deque>
 
 #include "gp/utils/Semaphore.h"
 
 namespace gpproto {
     class DispatchQueue {
         typedef std::function<void()> DispatchWork;
+
+        class DispatchWorker {
+        public:
+            DispatchWorker(DispatchWork && work, bool sync): work(std::move(work)), sync(sync) {};
+            const DispatchWork work;
+            const bool sync;
+
+            DispatchWorker(const DispatchWorker &) = delete;
+        };
     public:
-
-        DispatchQueue(std::string name) : _name(std::move(name)), _finished(false), _asyncSemaphore(), _syncSemaphore(),
-                                          _runningSynchronous(false) {
+        explicit DispatchQueue(std::string name) : _name(std::move(name)),
+                                          _finished(false),
+                                          _asyncSemaphore(),
+                                          _syncSemaphore() {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
-            this->_jobs = std::list<DispatchWork>();
         }
 
-        ~DispatchQueue() {
-            _finished = true;
-            _jobs.clear();
-            _asyncSemaphore.notify();
-            _thread.join();
-        }
+        DispatchQueue(const DispatchQueue&) = delete;
+
+        ~DispatchQueue();
 
         void sync(DispatchWork && work);
 
@@ -49,21 +55,16 @@ namespace gpproto {
 
     private:
         const std::string _name;
-        std::list<DispatchWork> _jobs;
-        std::list<DispatchWork> _tempJobs;
+        std::deque<DispatchWorker> _jobs;
+        std::deque<DispatchWorker> _tempJobs;
         std::thread _thread;
         std::thread::id _threadId;
         std::recursive_mutex _mutex;
         std::atomic_bool started;
 
-        bool _finished;
-        bool _runningSynchronous;
+        volatile bool _finished;
         Semaphore _asyncSemaphore;
         Semaphore _syncSemaphore;
-
-        void _initialize() {
-
-        }
 
         void _async(DispatchWork && work, bool force);
 
@@ -74,37 +75,32 @@ namespace gpproto {
             while (!_finished) {
                 maybeDispatchWorker();
             }
+
+            printf("Thread worker finished");
         }
 
         void maybeDispatchWorker()
         {
             _mutex.lock();
 
-            _tempJobs = _jobs;
+            _tempJobs = std::move(_jobs);
 
             _jobs.clear();
 
             _mutex.unlock();
 
-            //printf("Before invoke list number %lu of %s\n", l.size(), name().c_str());
+            if (_finished) return;
 
             while (!_tempJobs.empty())
             {
-                (*_tempJobs.begin())();
+                auto worker = _tempJobs.begin();
+                worker->work();
+
+                if (worker->sync)
+                    _syncSemaphore.notify();
+
                 _tempJobs.pop_front();
             }
-
-            bool sync = false;
-
-            _mutex.lock();
-            sync = _runningSynchronous;
-
-            if (sync && _jobs.empty())
-            {
-                _runningSynchronous = false;
-                _syncSemaphore.notify();
-            }
-            _mutex.unlock();
 
             _asyncSemaphore.wait();
         }

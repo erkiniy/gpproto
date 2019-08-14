@@ -2,7 +2,7 @@
 // Created by Jaloliddin Erkiniy on 8/6/18.
 //
 
-#include "DispatchQueuePool.h"
+#include "gp/utils/DispatchQueuePool.h"
 using namespace gpproto;
 
 std::shared_ptr<DispatchQueue> DispatchQueuePool::getQueue() {

@@ -4,6 +4,7 @@
 
 #include "gp/proto/Session.h"
 #include "gp/utils/Logging.h"
+#include "gp/proto/ScheduledMessageConfirmation.h"
 
 using namespace gpproto;
 
@@ -49,8 +50,19 @@ bool Session::messageIdProcessed(int64_t messageId) {
     return it != processedMessageIds.end();
 }
 
-void Session::scheduleMessageConfirmation(int64_t messageId) {
-    scheduledConfirmationMessageIds.insert(messageId);
+void Session::scheduleMessageConfirmation(int64_t messageId, size_t size) {
+    bool found = false;
+
+    for (const auto & item : scheduledConfirmationMessageIds)
+    {
+        if (item->messageId == messageId) {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+        scheduledConfirmationMessageIds.push_back(std::make_shared<ScheduledMessageConfirmation>(messageId, size));
 }
 
 bool Session::scheduledMessageConfirmationsExceedThreashold(int maxSize) {
@@ -58,10 +70,10 @@ bool Session::scheduledMessageConfirmationsExceedThreashold(int maxSize) {
 }
 
 std::vector<int64_t> Session::getScheduledConfirmationMessageIds() const {
-    std::vector<int64_t> v = std::vector<int64_t>(scheduledConfirmationMessageIds.size());
+    std::vector<int64_t> v;
 
-    for (auto mid : scheduledConfirmationMessageIds)
-        v.push_back(mid);
+    for (const auto & item : scheduledConfirmationMessageIds)
+        v.push_back(item->messageId);
 
     return v;
 }
@@ -92,4 +104,33 @@ int64_t Session::actualClientMessageId() const {
 
     return messageId;
 
+}
+
+void Session::assignTransactionIdToScheduledMessageConfirmationdIds(int id, std::vector<int64_t> mids) {
+
+    for (const auto & confirmation : scheduledConfirmationMessageIds)
+    {
+        for (const auto & mid : mids)
+        {
+            if (mid == confirmation->messageId) {
+                confirmation->transactionIds.insert(id);
+                break;
+            }
+        }
+    }
+}
+
+void Session::removeScheduledConfirmationWithTransactionId(int transactionId) {
+    std::vector<std::shared_ptr<ScheduledMessageConfirmation>> newScheduledMessageConfirmations;
+
+    for (const auto & confirmation : scheduledConfirmationMessageIds)
+    {
+        if (confirmation->transactionIds.find(transactionId) == confirmation->transactionIds.end()) {
+            newScheduledMessageConfirmations.push_back(confirmation);
+        }
+    }
+
+    scheduledConfirmationMessageIds = newScheduledMessageConfirmations;
+
+    LOGV("[Session] Remaining messageConfirmationIds count = %d", scheduledConfirmationMessageIds.size());
 }

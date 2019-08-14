@@ -7,26 +7,32 @@
 
 #include <stdio.h>
 #include "gp/proto/gp_client_data.h"
+#include "gp/proto/gp_client_export.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int gp_client_create(struct gp_environment environment);
+GPCLIENT_EXPORT int gp_client_create(struct gp_environment *environment);
 
-void gp_destroy(int client);
+GPCLIENT_EXPORT void gp_destroy(int client);
 
-int gp_client_send(int client, struct gp_tx_data *request);
+GPCLIENT_EXPORT int gp_client_send(int client, struct gp_tx_data *request);
 
-struct gp_rx_event *gp_client_receive(int client, double timeout);
+GPCLIENT_EXPORT struct gp_rx_event *gp_client_receive(int client, double timeout);
 
-void gp_client_pause(int client);
+GPCLIENT_EXPORT void gp_client_pause(int client);
 
-void gp_client_resume(int client);
+GPCLIENT_EXPORT void gp_client_resume(int client);
 
-void gp_client_reset_credentials(int client);
+GPCLIENT_EXPORT void gp_client_stop(int client);
 
-double gp_client_get_global_time(int client);
+GPCLIENT_EXPORT void gp_client_reset_credentials(int client);
+
+GPCLIENT_EXPORT double gp_client_get_global_time(int client);
+
+GPCLIENT_EXPORT void gp_client_cancel_request(int client, int id);
+
 
 #ifdef __cplusplus
 } //extern "C"

@@ -77,7 +77,7 @@ void Runloop::run() {
 
             self->ticks++;
 
-            self->dump();
+            //self->dump();
 
             auto closestPair = *self->queue.begin();
             auto closestTimer = closestPair.second;

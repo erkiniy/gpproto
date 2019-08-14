@@ -2,7 +2,7 @@
 // Created by System Administrator on 7/17/18.
 //
 
-#include "NetworkSocket.h"
+#include "gp/net/NetworkSocket.h"
 #if defined(_WIN32)
 #include "os/windows/NetworkSocketWinsock.h"
 #include "winsock2.h"
@@ -10,15 +10,17 @@
 #include "os/posix/NetworkSocketPosix.h"
 #endif
 
+#include "gp/utils/DispatchQueuePool.h"
 
 using namespace gpproto;
 
 NetworkSocket::NetworkSocket(NetworkProtocol protocol, NetworkAddress* address) : protocol(protocol), address(address) {
     this->failed = false;
+    this->receiveQueue = DispatchQueuePool::instance().getQueue();
 }
 
 NetworkSocket::~NetworkSocket() {
-
+    DispatchQueuePool::instance().releaseQueue(receiveQueue);
 }
 
 std::string NetworkSocket::GetLocalInterfaceInfo(IPv4Address *inet4addr) {
@@ -138,7 +140,7 @@ void NetworkSocket::maybeDequeueRead() {
             auto packet = self->readBufferQueue.front();
             self->readBufferQueue.pop_front();
 
-            NetworkSocket::receiveQueue()->async([packet, weakSelf] {
+            self->receiveQueue->async([packet, weakSelf] {
                 auto self_ = weakSelf.lock();
 
                 if (!self_)

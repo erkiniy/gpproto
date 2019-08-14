@@ -7,6 +7,17 @@
 
 using namespace gpproto;
 
+DispatchQueue::~DispatchQueue() {
+    _mutex.lock();
+    _finished = true;
+    _jobs.clear();
+    _mutex.unlock();
+    _asyncSemaphore.notify();
+    _syncSemaphore.notify();
+
+    _thread.join();
+}
+
 void DispatchQueue::async(DispatchQueue::DispatchWork && work) {
     _async(std::move(work), false);
 }
@@ -24,15 +35,15 @@ void DispatchQueue::sync(DispatchQueue::DispatchWork && work) {
         //LOGV("<--------------> Dispatched %s SYNC", this->name().c_str());
         _mutex.lock();
 
-        _runningSynchronous = true;
-
-        _jobs.push_back(work);
+        if (!_finished)
+            _jobs.emplace_back(std::move(work), true);
 
         _mutex.unlock();
 
         _asyncSemaphore.notify();
 
-        _syncSemaphore.wait();
+        if (!_finished)
+            _syncSemaphore.wait();
     }
 }
 
@@ -43,10 +54,12 @@ void DispatchQueue::_async(DispatchQueue::DispatchWork && work, bool force) {
     }
     else
     {
-        //LOGV("<--------------> Dispatched %s ASYNC", this->name().c_str());
         _mutex.lock();
 
-        _jobs.push_back(work);
+        //LOGV("<--------------> Dispatched %s ASYNC. Jobs.count = %d", this->name().c_str(), _jobs.size());
+
+        if (!_finished)
+            _jobs.emplace_back(std::move(work), false);
 
         _mutex.unlock();
 

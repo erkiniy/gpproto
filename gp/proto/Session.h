@@ -11,6 +11,7 @@
 #include "Context.h"
 
 namespace gpproto {
+    class ScheduledMessageConfirmation;
     class Session final {
     public:
         explicit Session(std::shared_ptr<Context> context)
@@ -34,7 +35,7 @@ namespace gpproto {
         void setMessageProcessed(int64_t messageId);
         bool messageIdProcessed(int64_t messageId);
 
-        void scheduleMessageConfirmation(int64_t messageId);
+        void scheduleMessageConfirmation(int64_t messageId, size_t size);
         bool scheduledMessageConfirmationsExceedThreashold(int maxSize);
         std::vector<int64_t> getScheduledConfirmationMessageIds() const;
         void removeScheduledConfirmationMessageIds();
@@ -44,13 +45,16 @@ namespace gpproto {
 
         int64_t actualClientMessageId() const;
 
+        void assignTransactionIdToScheduledMessageConfirmationdIds(int id, std::vector<int64_t> mids);
+        void removeScheduledConfirmationWithTransactionId(int transactionId);
+
     private:
         std::shared_ptr<Context> context;
         int32_t seqNo = 0;
         int64_t lastClientMessageId = 0;
         int64_t lastServerMessageId = 0;
         std::unordered_set<int64_t> processedMessageIds;
-        std::unordered_set<int64_t> scheduledConfirmationMessageIds;
+        std::vector<std::shared_ptr<ScheduledMessageConfirmation>> scheduledConfirmationMessageIds;
         std::unordered_map<int64_t, std::vector<int64_t>> containerMessageIdsMapping;
     };
 }

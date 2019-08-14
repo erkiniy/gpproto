@@ -42,19 +42,16 @@ double Context::getGlobalTime() {
 }
 
 double Context::getGlobalTimeDifference() {
-    double *diffPtr = nullptr;
+
+    auto diffPtr = std::make_shared<double>();
 
     Context::queue()->sync([self = shared_from_this(), &diffPtr]() mutable {
         auto diff = self->globalTimeDifference;
-        diffPtr = new double(diff);
+        auto ptr = new double(diff);
+        diffPtr.reset(ptr);
     });
 
-    double difference = *diffPtr;
-    delete diffPtr;
-
-    LOGV("[Context] timeDifference = %lf", difference);
-
-    return difference;
+    return *diffPtr;
 }
 
 void Context::setKeychain(std::shared_ptr<SecureKeychain> keychain) {
@@ -76,19 +73,19 @@ void Context::setGlobalTimeDifference(double difference) {
 }
 
 std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) {
-    AuthKeyInfo* infoPtr = nullptr;
+    std::shared_ptr<AuthKeyInfo> infoPtr;
 
     Context::queue()->sync([self = shared_from_this(), id, &infoPtr]() mutable {
         auto it = self->authInfoByDatacenterId.find(id);
 
         if (it != self->authInfoByDatacenterId.end())
-            infoPtr = new AuthKeyInfo((*self->authInfoByDatacenterId[id]));
+            infoPtr.reset(new AuthKeyInfo((*self->authInfoByDatacenterId[id])));
 
     });
 
     if (infoPtr != nullptr) {
         LOGV("[Context getAuthKeyInfoForDatacenterId] -> auth info found");
-        return std::shared_ptr<AuthKeyInfo>(infoPtr);
+        return infoPtr;
     }
 
     LOGV("[Context getAuthKeyInfoForDatacenterId] -> auth info not found");
@@ -126,22 +123,20 @@ void Context::setAuthKeyInfoForDatacenterId(std::shared_ptr<AuthKeyInfo> keyInfo
 
 std::shared_ptr<DatacenterAddress> Context::getDatacenterAddressForDatacenterId(int32_t id) {
 
-    DatacenterAddress *addressPtr = nullptr;
+    std::shared_ptr<DatacenterAddress> addressPtr;
+
     Context::queue()->sync([self = shared_from_this(), &addressPtr, id]() mutable {
         //LOGV("[Context getDatacenterAddressForDatacenterId]");
         auto it = self->datacenterAddressByDatacenterId.find(id);
 
         if (it != self->datacenterAddressByDatacenterId.end())
-            addressPtr = new DatacenterAddress(*(self->datacenterAddressByDatacenterId[id]));
+            addressPtr.reset(new DatacenterAddress(*(self->datacenterAddressByDatacenterId[id])));
 
         LOGV("[Context getDatacenterAddressForDatacenterId] -> returning address %d", addressPtr != nullptr);
 
     });
 
-    if (addressPtr != nullptr)
-        return std::shared_ptr<DatacenterAddress>(addressPtr);
-
-    return nullptr;
+    return addressPtr;
 }
 
 void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, int32_t id) {
@@ -154,14 +149,14 @@ void Context::setDatacenterAddressForDatacenterId(DatacenterAddress&& address, i
 }
 
 std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacenterId(int32_t id) {
-    DatacenterAddress *addressPtr = nullptr;
+    std::shared_ptr<DatacenterAddress> addressPtr;
 
     Context::queue()->sync([self = shared_from_this(), &addressPtr, id]() mutable {
         LOGV("[Context getDatacenterSeedAddressForDatacenterId]");
         auto it = self->datacenterSeedAddressByDatacenterId.find(id);
 
         if (it != self->datacenterSeedAddressByDatacenterId.end()) {
-            addressPtr = new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id]));
+            addressPtr.reset(new DatacenterAddress(*(self->datacenterSeedAddressByDatacenterId[id])));
         }
         if (addressPtr == nullptr)
             LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> addressSeed not found");
@@ -169,13 +164,13 @@ std::shared_ptr<DatacenterAddress> Context::getDatacenterSeedAddressForDatacente
 
     if (addressPtr != nullptr) {
         LOGV("[Context getDatacenterSeedAddressForDatacenterId] -> address found");
-        return std::shared_ptr<DatacenterAddress>(addressPtr);
+        return addressPtr;
     }
 
     return nullptr;
 }
 
-void Context::setDatacenterSeedAddress(DatacenterAddress &&address, int32_t id) {
+void Context::setDatacenterSeedAddress(DatacenterAddress && address, int32_t id) {
 
     auto addr = std::make_shared<DatacenterAddress>(std::move(address));
 

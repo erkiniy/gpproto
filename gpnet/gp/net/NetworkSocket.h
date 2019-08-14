@@ -37,11 +37,6 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
             return q;
         }
 
-        static std::shared_ptr<DispatchQueue> receiveQueue() {
-            static auto q = std::make_shared<DispatchQueue>("uz.gpproto.tcpReceiveQueue");
-            return q;
-        }
-
         NetworkSocket(NetworkProtocol protocol, NetworkAddress* address);
         virtual ~NetworkSocket();
 
@@ -86,6 +81,7 @@ class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
         void maybeDequeueRead();
 
     private:
+        std::shared_ptr<DispatchQueue> receiveQueue;
         std::list<std::shared_ptr<NetworkPacket>> readBufferQueue;
         std::list<std::shared_ptr<NetworkPacket>> sendBufferQueue;
     };

@@ -157,7 +157,6 @@ void TcpTransport::requestTransactionFromDelegate() {
         {
             transportContext->didSendActualizationPingAfterConnection = true;
             auto randomId = Random::secureInt64();
-            LOGV("[TcpTransport generating ping with randomId %lld]", randomId);
 
             OutputStream pingBuffer;
             pingBuffer.writeUInt32(0x7abe77ec);
@@ -292,16 +291,13 @@ void TcpTransport::connectionDidReceiveData(const Connection& connection, std::s
     auto self = shared_from_this();
     TcpTransport::queue()->async([&connection, slice, self] {
 
-        LOGD("[TcpTransport connectionDidReceiveData] -> bytes = %zu, self.connection == %d", slice->size, self->transportContext->connection !=
-                nullptr);
+        LOGD("[TcpTransport connectionDidReceiveData] -> bytes = %zu", slice->size);
 
         if (!self->transportContext->connection)
             return;
 
         if (!self->transportContext->connection->isEqual(connection))
             return;
-
-        LOGD("[TcpTransport connectionDidReceiveData] currentActualizationPingMessageId: %lld, actualizationPingResendTimer == nullptr: %s", self->transportContext->currentActualizationPingMessageId, self->transportContext->actualizationPingResendTimer == nullptr ? "true" : "false");
 
         if (self->transportContext->currentActualizationPingMessageId != 0 && self->transportContext->actualizationPingResendTimer == nullptr)
             self->startActualizationPingResendTimer();
@@ -336,7 +332,7 @@ void TcpTransport::tcpConnectionRequestReconnection(const TcpTransportContext &c
 void TcpTransport::startIfNeeded() {
     LOGV("[TcpTransport startIfNeeded]");
     TcpTransport::queue()->async([self = shared_from_this()] {
-        LOGV("[TcpTransport startIfNeeded] connection is %s", self->transportContext->connection == nullptr ? "nil" : "not nil");
+        //LOGV("[TcpTransport startIfNeeded] connection is %s", self->transportContext->connection == nullptr ? "nil" : "not nil");
         if (self->transportContext->connection)
             return;
 

@@ -11,7 +11,9 @@
 class Semaphore {
 public:
     Semaphore (int count_ = 0)
-            : count(count_) {}
+            : count(count_) {};
+
+    Semaphore(const Semaphore&) = delete;
 
     inline void notify()
     {

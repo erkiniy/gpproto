@@ -9,6 +9,7 @@
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/Logging.h"
 #include "gp/utils/InputStream.h"
+#include "gp/utils/InputStreamException.h"
 #include "gp/utils/Crypto.h"
 
 namespace gpproto::InternalParser {
@@ -28,8 +29,16 @@ namespace gpproto::InternalParser {
         if (signature == 0x3072cfa1)
         {
             auto packetData = data->subData(4, data->size - 4);
-            return decompressGZip(packetData);
+            auto is = std::make_unique<InputStream>(packetData);
+            try {
+                auto packetBytes = is->readBytes();
+                return decompressGZip(packetBytes);
+            } catch (InputStreamException & e) {
+                LOGV("[InternalParser] InputStream error %s", e.message.c_str());
+                return nullptr;
+            }
         }
+
         return data;
     }
 

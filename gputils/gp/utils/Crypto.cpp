@@ -233,17 +233,16 @@ std::shared_ptr<StreamSlice> Crypto::aes_cbc_decrypt(const UInt256 &aes_key, con
 
 std::shared_ptr<StreamSlice> Crypto::gzip_zip(const std::shared_ptr<StreamSlice> &data) {
 #warning implement gzip_zip
-    return nullptr;
+    return data;
 }
 
 std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlice> &data) {
     const int kMemoryChunkSize = 1024;
 
     auto length = data->size;
-    int windowBits = 15 + 32;
+    //int windowBits = 15 + 32;
     int retCode;
 
-    unsigned char output[kMemoryChunkSize];
     uInt gotBack;
     std::unique_ptr<OutputStream> os = std::make_unique<OutputStream>();
     z_stream stream;
@@ -251,16 +250,20 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
     if (length == 0)
         return nullptr;
 
-    bzero(&stream, sizeof(z_stream));
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
     stream.avail_in = static_cast<uInt>(length);
     stream.next_in = data->bytes;
 
-    retCode = inflateInit2(&stream, windowBits);
+    retCode = inflateInit2(&stream, MAX_WBITS + 32);
     if (retCode != Z_OK)
     {
-        LOGE("Inflate failed with error %d", retCode);
+        LOGE("Inflate failed with error when inflateInit2 = %d", retCode);
         return nullptr;
     }
+
+    auto output = (unsigned char *)malloc(kMemoryChunkSize);
 
     do {
         stream.avail_out = kMemoryChunkSize;
@@ -268,7 +271,7 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
         retCode = inflate(&stream, Z_NO_FLUSH);
         if ((retCode != Z_OK) && (retCode != Z_STREAM_END))
         {
-            LOGE("Inflate failed with error %d", retCode);
+            LOGE("Inflate failed with error when inflate %d", retCode);
             inflateEnd(&stream);
             return nullptr;
         }
@@ -282,9 +285,7 @@ std::shared_ptr<StreamSlice> Crypto::gzip_unzip(const std::shared_ptr<StreamSlic
     } while (retCode == Z_OK);
 
     inflateEnd(&stream);
-
-    if (retCode != Z_STREAM_END)
-        return nullptr;
+    free(output);
 
     return os->currentBytes();
 }

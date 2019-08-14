@@ -32,7 +32,7 @@ namespace gpproto
 
         ClientSync(const ClientSync&) = delete;
 
-        ~ClientSync();
+        ~ClientSync() = default;
 
         int send(const unsigned char *data, size_t length);
 
@@ -43,6 +43,8 @@ namespace gpproto
         void resume();
 
         void stop();
+
+        void cancel(int requestId);
 
         double getGlobalTime();
 
@@ -70,7 +72,9 @@ namespace gpproto
         void push_back(const std::shared_ptr<gp_rx_event> & event);
         std::shared_ptr<gp_rx_event> pop_front();
 
-        void cleanUpEvent(const std::shared_ptr<gp_rx_event> && event);
+        void cleanUpEvent(const std::shared_ptr<gp_rx_event> event);
+
+        void notifyReceiveQueue();
 
         static int getNextInternalId() {
             static std::atomic_int internalId = 0;

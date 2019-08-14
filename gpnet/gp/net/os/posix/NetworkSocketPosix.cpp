@@ -172,27 +172,35 @@ size_t NetworkSocketPosix::Receive(NetworkPacket *packet) {
     else {
         LOGV("[NetworkSocketPosix] ~> start reading %zu bytes", packet->slice->size);
 
+        ssize_t res = 0;
+        ssize_t receivedSize = 0;
+
         reading = true;
-        ssize_t res = recv(fd, packet->slice->bytes, packet->slice->size, 0);
+        do
+        {
+            res = recv(fd, packet->slice->bytes + receivedSize, packet->slice->size - receivedSize, 0);
+            if (res <= 0) {
+                LOGE("Error receiving TCP packet");
+                packet->slice->size = 0;
+                Close();
+                return 0;
+            }
+            else {
+                receivedSize += res;
+            }
+        } while (receivedSize < packet->slice->size);
         reading = false;
-        if (res <= 0) {
-            LOGE("Error receiving TCP packet");
-            packet->slice->size = 0;
-            Close();
-            return 0;
-        }
-        else {
-            packet->slice->size = (size_t)res;
-            packet->address = tcpConnectedAddress;
-            packet->port = tcpConnectedPort;
-            packet->protocol = protocol;
 
-            //LOGV("[NetworkSocketPosix] ~> raw bytes received: %zu bytes, required: %zu, data: %s", (size_t)res, packet->slice->size, packet->slice->description().c_str());
+        packet->address = tcpConnectedAddress;
+        packet->port = tcpConnectedPort;
+        packet->protocol = protocol;
 
-            maybeDequeueRead();
+        //LOGV("[NetworkSocketPosix] ~> raw bytes received: %zu bytes, required: %zu, data: %s", (size_t)res, packet->slice->size, packet->slice->description().c_str());
 
-            return (size_t)res;
-        }
+        maybeDequeueRead();
+
+        return (size_t)res;
+
     }
 
     return 0;

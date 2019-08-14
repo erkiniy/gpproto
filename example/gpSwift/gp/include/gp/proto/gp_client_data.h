@@ -50,16 +50,16 @@ struct gp_tx_data {
 struct gp_environment {
     int api_id;
     int layer;
-    const int disable_updates;
-    const char *encryption_password;
-    const char *device_model;
-    const char *system_version;
-    const char *app_version;
-    const char *lang_code;
-    const char *documents_folder;
+    int disable_updates;
+    char *encryption_password;
+    char *device_model;
+    char *system_version;
+    char *app_version;
+    char *lang_code;
+    char *documents_folder;
 
-    const int supported_types_count;
-    const unsigned int *supported_types;
+    int supported_types_count;
+    unsigned int *supported_types;
 };
 
 #ifdef __cplusplus

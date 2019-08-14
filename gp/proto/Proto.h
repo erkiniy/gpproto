@@ -146,6 +146,8 @@ namespace gpproto
 
         void timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>>& saltlist, bool replace);
 
+        void transportTransactionsSucceeded(int transcationId);
+
     };
 }
 

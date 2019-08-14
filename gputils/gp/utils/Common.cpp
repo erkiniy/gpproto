@@ -39,7 +39,12 @@ std::shared_ptr<gpproto::StreamSlice> hexToData(std::string hex) {
 double getAbsoluteSystemTime() {
     //return (double)(std::chrono::microseconds(std::time(nullptr)).count()) / 1000000.0;
     //return (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::microseconds(1));
-    return (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000.0;
+    //return (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / (double)1000.0;
+    return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+int64_t getAbsoluteSystemTimeInMillis() {
+    return (int64_t)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 void byteSwapUInt64(uint64_t& number) {

@@ -136,9 +136,11 @@ void TcpConnection::networkSocketDidDisconnectFromHost(const NetworkSocket& sock
 
 void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
                                              std::shared_ptr<StreamSlice> data, uint8_t tag) {
-    auto strongSelf = shared_from_this();
-    TcpConnection::queue()->async([strongSelf, data, tag] {
+    TcpConnection::queue()->async([self = shared_from_this(), data, tag] {
         LOGV("TcpConnection did read data with size = %zu bytes and tag %u", data->size, tag);
+
+        if (!self->socket) return;
+
         if (tag == (uint8_t)TcpPacketReadTag::shortLength && data->size == 1)
         {
             uint16_t lengthMarker = 0;
@@ -147,13 +149,13 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
             if (lengthMarker >= 0x1 && lengthMarker <= 0x7e)
             {
                 lengthMarker <<= 2;
-                strongSelf->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
+                self->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             }
             else if (lengthMarker == 0x7f)
-                strongSelf->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
+                self->socket->readDataWithTimeout(10.0, 3, (uint8_t)TcpConnection::TcpPacketReadTag::longLength);
             else {
                 LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
-                strongSelf->closeAndNotify();
+                self->closeAndNotify();
             }
         }
         else if (tag == (uint8_t)TcpPacketReadTag::longLength && data->size == 3)
@@ -165,18 +167,18 @@ void TcpConnection::networkSocketDidReadData(const NetworkSocket& socket,
             lengthMarker <<= 2;
 
             if (lengthMarker > 0 && lengthMarker < 4 * 1024 * 1024)
-                strongSelf->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
+                self->socket->readDataWithTimeout(10.0, lengthMarker, (uint8_t)TcpConnection::TcpPacketReadTag::body);
             else {
                 LOGE("TcpConnection: Received wrong packet length %u", lengthMarker);
-                strongSelf->closeAndNotify();
+                self->closeAndNotify();
             }
         }
         else if (tag == (uint8_t)TcpPacketReadTag::body && data->size > 0)
         {
-            if (auto strongDelegate = strongSelf->delegate.lock())
-                strongDelegate->connectionDidReceiveData(*strongSelf, data);
+            if (auto strongDelegate = self->delegate.lock())
+                strongDelegate->connectionDidReceiveData(*self, data);
 
-            strongSelf->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
+            self->socket->readDataWithTimeout(10.0, 1, (uint8_t)TcpConnection::TcpPacketReadTag::shortLength);
         }
     });
 }

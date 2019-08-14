@@ -45,12 +45,14 @@ void Proto::initialize() {
 }
 
 void Proto::setDelegate(std::shared_ptr<ProtoDelegate> delegate) {
+    LOGD("setDelegate");
     Proto::queue()->async([self = shared_from_this(), delegate] {
         self->delegate = delegate;
     });
 }
 
 void Proto::pause() {
+    LOGD("pause");
     Proto::queue()->async([self = shared_from_this()] {
         LOGV("Pausing proto with old state %d", self->protoState);
         if ((self->protoState & ProtoStatePaused) == 0)
@@ -64,6 +66,7 @@ void Proto::pause() {
 }
 
 void Proto::resume() {
+    LOGD("resume");
     Proto::queue()->async([self = shared_from_this()] {
 
         if (self->protoState & ProtoStatePaused)
@@ -78,6 +81,7 @@ void Proto::resume() {
 }
 
 void Proto::stop() {
+    LOGD("stop");
     Proto::queue()->async([self = shared_from_this()] {
         if ((self->protoState & ProtoStateStopped) == 0)
         {
@@ -100,6 +104,7 @@ double Proto::getGlobalTime() {
 
 void Proto::contextDatacenterTransportSchemeUpdated(const Context &context, int32_t datacenterId,
                                                     std::shared_ptr<TransportScheme> scheme) {
+    LOGD("contextDatacenterTransportSchemeUpdated");
     Proto::queue()->async([self = shared_from_this(), datacenterId, scheme] {
         if (datacenterId == self->datacenterId && !self->isStopped() && self->transportScheme == nullptr)
         {
@@ -115,6 +120,7 @@ void Proto::contextDatacenterTransportSchemeUpdated(const Context &context, int3
 
 void Proto::contextDatacenterAuthInfoUpdated(const Context &context, int32_t datacenterId,
                                              std::shared_ptr<AuthKeyInfo> authInfo) {
+    LOGD("contextDatacenterAuthInfoUpdated");
     Proto::queue()->async([self = shared_from_this(), datacenterId, authInfo] {
         if (!self->useUnauthorizedMode && datacenterId == self->datacenterId && authInfo != nullptr)
         {
@@ -159,6 +165,7 @@ bool Proto::isPaused() {
 }
 
 void Proto::setTransport(std::shared_ptr<Transport> transport) {
+    LOGD("setTransport");
     Proto::queue()->async([self = shared_from_this(), transport] {
         LOGV("[Proto setTransport] -> changing transport from %s to %s", (self->transport == nullptr ? "nullptr" : "tcp_transport"), (transport == nullptr ? "nullptr" : "tcp_transport"));
 
@@ -182,16 +189,17 @@ void Proto::setTransport(std::shared_ptr<Transport> transport) {
 }
 
 void Proto::resetTransport() {
+    LOGD("resetTransport");
     Proto::queue()->async([self = shared_from_this()] {
         if (self->protoState & ProtoStateStopped)
             return;
 
         LOGV("[Proto resetTransport] -> unauthorized %d", self->useUnauthorizedMode);
 
-        if (auto _transport = self->transport)
+        if (auto transport = self->transport)
         {
-            _transport->setDelegate(nullptr);
-            _transport->stop();
+            transport->setDelegate(nullptr);
+            transport->stop();
 
             self->setTransport(nullptr);
         }
@@ -229,6 +237,7 @@ void Proto::resetTransport() {
 }
 
 void Proto::allTransactionsMayHaveFailed() {
+    LOGD("allTransactionsMayHaveFailed");
     Proto::queue()->async([self = shared_from_this()] {
         if (self->isStopped())
             return;
@@ -239,16 +248,17 @@ void Proto::allTransactionsMayHaveFailed() {
 }
 
 void Proto::updateConnectionState() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
+    LOGD("updateConnectionState");
+    Proto::queue()->async([self = shared_from_this()] {
 
-        if (strongSelf->transport)
-            strongSelf->transport->updateConnectionState();
+        if (self->transport)
+            self->transport->updateConnectionState();
         else
         {
-            if (auto delegate = strongSelf->delegate.lock())
+            if (auto delegate = self->delegate.lock())
             {
-                delegate->connectionStateAvailibilityChanged(*strongSelf, false);
-                delegate->connectionStateChanged(*strongSelf, ProtoConnectionState::ProtoConnectionStateConnecting);
+                delegate->connectionStateAvailibilityChanged(*self, false);
+                delegate->connectionStateChanged(*self, ProtoConnectionState::ProtoConnectionStateConnecting);
             }
         }
     });
@@ -256,7 +266,9 @@ void Proto::updateConnectionState() {
 
 void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr<StreamSlice> data,
                                      bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) {
+    LOGD("transportHasIncomingData");
     Proto::queue()->async([&transport, strongSelf = shared_from_this(), data, requestTransactionAfterProcessing, decodeResult] {
+        LOGE("[Proto transportHasIncomingData] -> %zu bytes", data->size);
 
         if (strongSelf->transport == nullptr || !strongSelf->transport->isEqual(transport) || strongSelf->isStopped())
             return;
@@ -290,6 +302,9 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
                 LOGE("[Proto transportHasIncomingData] -> parse error");
                 return;
             }
+            else {
+                strongSelf->transportTransactionsSucceeded(transport.internalId);
+            }
 
             for (const auto & incomingMessage : parsedMessages)
                 strongSelf->processIncomingMessage(incomingMessage);
@@ -309,46 +324,50 @@ std::shared_ptr<StreamSlice> Proto::decryptIncomingTransportData(const std::shar
         return nullptr;
     }
 
+    auto is = std::make_unique<InputStream>(data);
+    try {
+        int64 authKeyId = is->readInt64();
 
-    int64_t authKeyId = 0;
-    memcpy(&authKeyId, data->rbegin(), 8);
+        if (authKeyId != authInfo->authKeyId) {
+            LOGE("[Proto decryptIncomingTransportData] -> received message with wrong authKey id from expected");
+            return nullptr;
+        }
 
-    if (authKeyId != authInfo->authKeyId) {
-        LOGE("[Proto decryptIncomingTransportData] -> received message with wrong authKey id from expected");
+        auto embeddedMessageKey = is->readData(16);
+        auto remainingData = is->readRemainingData();
+        auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(authInfo->authKey, embeddedMessageKey);
+
+        auto decryptedData = Crypto::aes_cbc_decrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *remainingData);
+
+        if (decryptedData->size < 32) {
+            LOGE("[Proto decryptIncomingTransportData] -> decrypted data is less than 32 bytes");
+            return nullptr;
+        }
+
+        size_t messageDataLength = 0;
+        auto messageLengthData = decryptedData->subData(28, 4);
+        memcpy(&messageDataLength, messageLengthData->rbegin(), 4);
+
+        if (messageDataLength > decryptedData->size - 32) {
+            LOGE("[Proto decryptIncomingTransportData] -> wrong message length %lu while decrypted message length is %lu", messageDataLength, decryptedData->size);
+            return nullptr;
+        }
+
+        auto messageKeyFull = Crypto::sha256Subdata(*decryptedData, 0, 32 + messageDataLength);
+        auto messageKey = messageKeyFull->suffix(16);
+
+        if (*messageKey != *embeddedMessageKey) {
+            LOGE("[Proto decryptIncomingTransportData] -> received message key is different from computed");
+            return nullptr;
+        }
+
+        return decryptedData;
+    }
+    catch (InputStreamException & exception)
+    {
+        LOGE("[Proto decryptIncomingTransportData] error = %s", exception.message.c_str());
         return nullptr;
     }
-
-    auto remainingData = data->subData(24, data->size - 24);
-
-    auto embeddedMessageKey = data->subData(8, 16);
-
-    auto encryptionKey = MessageEncryptionKey::messageEncryptionKeyForAuthKey(authInfo->authKey, embeddedMessageKey);
-
-    auto decryptedData = Crypto::aes_cbc_decrypt(encryptionKey->aes_key, encryptionKey->aes_iv, *remainingData);
-
-    if (decryptedData->size < 32) {
-        LOGE("[Proto decryptIncomingTransportData] -> decrypted data is less than 32 bytes");
-        return nullptr;
-    }
-
-    size_t messageDataLength = 0;
-    auto messageLengthData = decryptedData->subData(28, 32);
-    memcpy(&messageDataLength, messageLengthData->rbegin(), 4);
-
-    if (messageDataLength > decryptedData->size - 32) {
-        LOGE("[Proto decryptIncomingTransportData] -> wrong message length %lu while decrypted message length is %lu", messageDataLength, decryptedData->size);
-        return nullptr;
-    }
-
-    auto messageKeyFull = Crypto::sha256Subdata(*decryptedData, 0, 32 + messageDataLength);
-    auto messageKey = messageKeyFull->subData(16, 16);
-
-    if (*messageKey != *embeddedMessageKey) {
-        LOGE("[Proto decryptIncomingTransportData] -> received message key is different from computed");
-        return nullptr;
-    }
-
-    return decryptedData;
 }
 
 std::vector<std::shared_ptr<IncomingMessage>> Proto::parseIncomingMessages(std::shared_ptr<StreamSlice> data,
@@ -458,7 +477,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
     {
         LOGV("[Proto processIncomingMessage] -> duplicate message received %lld", message->messsageId);
         forceAcks = true;
-        sessionInfo->scheduleMessageConfirmation(message->messsageId);
+        sessionInfo->scheduleMessageConfirmation(message->messsageId, message->length);
 
         requestTransportTransactions();
         return;
@@ -544,7 +563,7 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
     else {
         if (!useUnauthorizedMode && message->seqNo % 2 != 0)
         {
-            sessionInfo->scheduleMessageConfirmation(message->messsageId);
+            sessionInfo->scheduleMessageConfirmation(message->messsageId, message->length);
 
             if (sessionInfo->scheduledMessageConfirmationsExceedThreashold(MaxUnacknowlegedMessagesCount))
                 requestTransportTransactions();
@@ -559,14 +578,16 @@ void Proto::processIncomingMessage(const std::shared_ptr<IncomingMessage> &messa
 }
 
 void Proto::requestTransportTransactions() {
+    LOGD("requestTransportTransactions");
     Proto::queue()->async([self = shared_from_this()] {
+
+        LOGV("[Proto requestTransportTransactions %d]", self->willRequestTransactionOnNextQueuePass);
 
         if (self->willRequestTransactionOnNextQueuePass)
             return;
 
-        LOGV("[Proto requestTransportTransactions] ~> willRequestTransactionOnNextQueuePass = %d", self->willRequestTransactionOnNextQueuePass);
-
         self->willRequestTransactionOnNextQueuePass = true;
+        LOGD("requestTransportTransactions before");
         Proto::queue()->asyncForce([self] {
             self->willRequestTransactionOnNextQueuePass = false;
 
@@ -575,12 +596,11 @@ void Proto::requestTransportTransactions() {
             if (!self->isStopped() && !self->isPaused())
             {
                 if (self->transport == nullptr) {//NOTE: not waiting on unauthorized
-                    LOGV("[Proto requestTransportTransactions] transport is null and unauthorized = %d", self->useUnauthorizedMode);
+                    //LOGV("[Proto requestTransportTransactions] transport is null and unauthorized = %d", self->useUnauthorizedMode);
                     self->resetTransport();
                     //LOGV("[Proto requestTransportTransactions] transport should be %s if unauthorized=%d", self->transport == nullptr ? "null" : "tcp_transport", self->useUnauthorizedMode);
                 }
-                LOGV("[Proto requestTransportTransactions] is ProtoQueue = %d", Proto::queue()->isCurrentQueue());
-                LOGV("[Proto requestTransportTransactions] after resetting transport = %s, unauthorized=%d", self->transport == nullptr ? "nullptr" : "tcp_transport", self->useUnauthorizedMode);
+                //LOGV("[Proto requestTransportTransactions] after resetting transport = %s, unauthorized=%d", self->transport == nullptr ? "nullptr" : "tcp_transport", self->useUnauthorizedMode);
                 if (self->transport)
                     self->transport->setDelegateNeedsTransaction();
             }
@@ -590,23 +610,25 @@ void Proto::requestTransportTransactions() {
 
 
 void Proto::initiateTimeSync() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
-        strongSelf->setState(strongSelf->protoState | ProtoStateAwaitingTimeFixAndSalts);
-        strongSelf->requestTimeResync();
+    LOGD("initiateTimeSync");
+    Proto::queue()->async([self = shared_from_this()] {
+        self->setState(self->protoState | ProtoStateAwaitingTimeFixAndSalts);
+        self->requestTimeResync();
     });
 }
 
 void Proto::completeTimeSync() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
-        strongSelf->setState(strongSelf->protoState & (~ProtoStateAwaitingTimeFixAndSalts));
+    LOGD("completeTimeSync");
+    Proto::queue()->async([self = shared_from_this()] {
+        self->setState(self->protoState & (~ProtoStateAwaitingTimeFixAndSalts));
 
-        auto services = strongSelf->messageServices;
+        auto services = self->messageServices;
         for (auto service : services)
         {
             if (auto timeSyncService = std::dynamic_pointer_cast<TimeSyncMessageService>(service.second))
             {
                 timeSyncService->setDelegate(nullptr);
-                strongSelf->removeMessageService(timeSyncService);
+                self->removeMessageService(timeSyncService);
                 LOGV("[Proto completeTimeSync] ~> removed timeSyncService");
             }
         }
@@ -614,10 +636,11 @@ void Proto::completeTimeSync() {
 }
 
 void Proto::requestTimeResync() {
-    Proto::queue()->async([strongSelf = shared_from_this()] {
+    LOGD("requestTimeResync");
+    Proto::queue()->async([self = shared_from_this()] {
         bool alreadySyncing = false;
 
-        for (auto& service : strongSelf->messageServices) {
+        for (auto& service : self->messageServices) {
             if (std::dynamic_pointer_cast<TimeSyncMessageService>(service.second)) {
                 alreadySyncing = true;
                 break;
@@ -628,9 +651,9 @@ void Proto::requestTimeResync() {
         {
             LOGV("[Proto requestTimeResync] -> begin time sync");
             auto timeSyncService = std::make_shared<TimeSyncMessageService>();
-            timeSyncService->setDelegate(strongSelf);
+            timeSyncService->setDelegate(self);
 
-            strongSelf->addMessageService(timeSyncService);
+            self->addMessageService(timeSyncService);
         }
         else {
             LOGV("[Proto requestTimeResync] already syncing");
@@ -639,6 +662,7 @@ void Proto::requestTimeResync() {
 }
 
 void Proto::resetSessionInfo() {
+    LOGD("resetSessionInfo");
     Proto::queue()->async([self = shared_from_this()] {
         if (self->resetSessionInfoLock != 0)
         {
@@ -660,6 +684,7 @@ void Proto::resetSessionInfo() {
 }
 
 void Proto::addMessageService(std::shared_ptr<MessageService> service) {
+    LOGD("addMessageService");
     Proto::queue()->async([self = shared_from_this(), service] {
         auto it = self->messageServices.find(service->internalId);
 
@@ -673,6 +698,7 @@ void Proto::addMessageService(std::shared_ptr<MessageService> service) {
 }
 
 void Proto::removeMessageService(const std::shared_ptr<MessageService>& service) {
+    LOGD("removeMessageService");
     Proto::queue()->async([strongSelf = shared_from_this(), service] {
         auto it = strongSelf->messageServices.find(service->internalId);
 
@@ -688,6 +714,7 @@ void Proto::removeMessageService(const std::shared_ptr<MessageService>& service)
 }
 
 void Proto::transportNetworkAvailabilityChanged(const Transport &transport, bool networkIsAvailable) {
+    LOGD("transportNetworkAvailabilityChanged");
     Proto::queue()->async([self = shared_from_this(), networkIsAvailable] {
         for (auto service : self->messageServices)
             service.second->protoNetworkAvailabilityChanged(self, networkIsAvailable);
@@ -698,9 +725,9 @@ void Proto::transportNetworkAvailabilityChanged(const Transport &transport, bool
 }
 
 void Proto::transportNetworkConnectionStateChanged(const Transport &transport, bool networkIsConnected) {
-    LOGV("[Proto transportNetworkConnectionStateChanged] %d", networkIsConnected);
-
+    LOGD("transportNetworkConnectionStateChanged");
     Proto::queue()->async([self = shared_from_this(), networkIsConnected] {
+        LOGV("[Proto transportNetworkConnectionStateChanged] %d", networkIsConnected);
         for (auto service : self->messageServices)
             service.second->protoConnectionStateChanged(self, networkIsConnected);
 
@@ -712,8 +739,6 @@ void Proto::transportNetworkConnectionStateChanged(const Transport &transport, b
 void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::shared_ptr<DatacenterSaltsetInfo>> &saltlist,
                            bool replace) {
     LOGV("[Proto timeSyncInfoChanged] difference = %lf, salts count %zu", timeDifference, saltlist.size());
-
-    //std::this_thread::sleep_for(std::chrono::microseconds((long long)(5000000 * 1.0)));
 
     context->setGlobalTimeDifference(timeDifference);
 
@@ -730,6 +755,7 @@ void Proto::timeSyncInfoChanged(double timeDifference, const std::vector<std::sh
 
 void Proto::timeSyncServiceCompleted(const TimeSyncMessageService &service, double timeDifference,
                                      std::vector<std::shared_ptr<DatacenterSaltsetInfo>> saltlist) {
+    LOGD("timeSyncServiceCompleted");
     Proto::queue()->async([self = shared_from_this(), &service, timeDifference, saltlist = std::move(saltlist)] {
         auto it = self->messageServices.find(service.internalId);
 
@@ -747,11 +773,12 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                                          std::function<void(
                                                  std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) {
 
+    LOGD("transportReadyForTransaction");
     Proto::queue()->async([self = shared_from_this(), &transport, transportSpecificTransaction, transactionsReady] {
         LOGV("[Proto transportReadyForTransaction] -> when transport is %s", self->transport == nullptr ? "nullptr" : "transport");
         if (self->transport == nullptr || !self->transport->isEqual(transport)) {
-            LOGE("[Proto transportReadyForTransaction] -> when transport id is %d", self->transport == nullptr ? -1 : self->transport->internalId);
-            LOGE("[Proto transportReadyForTransaction] -> when received transport id is %d", self->transport == nullptr ? -1 : transport.internalId);
+            //LOGE("[Proto transportReadyForTransaction] -> when transport id is %d", self->transport == nullptr ? -1 : self->transport->internalId);
+            //LOGE("[Proto transportReadyForTransaction] -> when received transport id is %d", self->transport == nullptr ? -1 : transport.internalId);
             transactionsReady({});
             return;
         }
@@ -795,16 +822,22 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                 msgsAckStream->writeUInt32(0x1cb5c415); //vector
                 msgsAckStream->writeInt32(static_cast<int32_t>(scheduledMessageConfirmations.size()));
 
-                for (auto &id : scheduledMessageConfirmations)
+                for (auto id : scheduledMessageConfirmations) {
+                    LOGV("[Proto generating ack with mid = %lld]", id);
                     msgsAckStream->writeInt64(id);
+                }
 
                 auto outgoingMessage = std::make_shared<OutgoingMessage>(0, 0, false, msgsAckStream->currentBytes());
                 auto messageTransaction = std::make_shared<MessageTransaction>(
                         std::initializer_list<std::shared_ptr<OutgoingMessage>>{outgoingMessage},
                         [](std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {},
                         [] {},
-                        [](std::unordered_map<int, int> messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
+                        [self, outgoingMessage, scheduledMessageConfirmations](std::unordered_map<int, int> messageInternalIdToTransactionId, std::unordered_map<int, std::shared_ptr<PreparedMessage>> messageInternalIdToPreparedMessage) {
 
+                            if (messageInternalIdToTransactionId.find(outgoingMessage->internalId) != messageInternalIdToTransactionId.end() && messageInternalIdToPreparedMessage.find(outgoingMessage->internalId) != messageInternalIdToPreparedMessage.end())
+                            {
+                                self->sessionInfo->assignTransactionIdToScheduledMessageConfirmationdIds(messageInternalIdToTransactionId[outgoingMessage->internalId], scheduledMessageConfirmations);
+                            }
                         });
 
                 messageTransactions.push_back(std::move(messageTransaction));
@@ -820,7 +853,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
 
             int64_t messageSalt = 0;
             if (!self->useUnauthorizedMode) {
-                LOGV("[Proto authInfo] %d", self->authInfo == nullptr);
+                LOGV("[Proto authInfo is null] %d", self->authInfo == nullptr);
                 messageSalt = self->authInfo->authSaltForClientMessageId(self->sessionInfo->actualClientMessageId());
                 saltSetEmpty = messageSalt == 0;
             }
@@ -912,6 +945,7 @@ void Proto::transportReadyForTransaction(const Transport &transport,
                     for (const auto & payload : transactionPayloadList)
                     {
                         auto transportTransaction = std::make_shared<TransportTransaction>(payload, [messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage)](bool success, int transactionId) mutable {
+                            LOGD("transportReadyForTransaction completed");
                             Proto::queue()->async([messageTransactions = std::move(messageTransactions), messageInternalIdToPreparedMessage = std::move(messageInternalIdToPreparedMessage), success, transactionId] {
                                 if (success)
                                 {
@@ -996,10 +1030,10 @@ void Proto::transportReadyForTransaction(const Transport &transport,
             encryptedOs.writeData(*encryptedData);
 
             auto transportTransaction = std::make_shared<TransportTransaction>(encryptedOs.currentBytes(), [self, timeFixMessageId, timeFixSeqNo](bool success, int transactionId) {
+                LOGD("transportReadyForTransaction timefix completed");
                 Proto::queue()->async([self, timeFixMessageId, timeFixSeqNo, success] {
                     if (success)
                     {
-                        LOGV("[Proto transportReadyForTransaction] -> Time fix transaction success with message_id %lld", timeFixMessageId);
                         self->timeFixContext = std::make_shared<TimeFixContext>(timeFixMessageId, timeFixSeqNo, getAbsoluteSystemTime());
                     }
                     else {
@@ -1136,4 +1170,11 @@ void Proto::paddedData(OutputStream &os) const {
         os.writeUInt8(static_cast<uint8_t>(randomBuffer[index]));
         index++;
     }
+}
+
+void Proto::transportTransactionsSucceeded(int transcationId) {
+    LOGD("transportTransactionsSucceeded");
+    Proto::queue()->async([self = shared_from_this(), transcationId] {
+        self->sessionInfo->removeScheduledConfirmationWithTransactionId(transcationId);
+    });
 }

@@ -145,7 +145,7 @@ std::shared_ptr<MessageTransaction> RequestMessageService::protoMessageTransacti
                 initializeApi = context->willInitializeApi;
             }
 
-            initializeApi |= willInitializeApi;
+            initializeApi = initializeApi || willInitializeApi;
 
             willInitializeApi = false;
 
@@ -219,7 +219,9 @@ std::shared_ptr<MessageTransaction> RequestMessageService::protoMessageTransacti
 void RequestMessageService::protoDidChangeSession(const std::shared_ptr<Proto> &proto) {
     willInitializeApi = true;
 
-    for (const auto request : requests)
+    LOGV("[RequestMessageService didChangeSession]");
+
+    for (const auto & request : requests)
         request->requestContext = nullptr;
 
     if (!requests.empty())
@@ -230,7 +232,7 @@ void RequestMessageService::protoDidChangeSession(const std::shared_ptr<Proto> &
 void RequestMessageService::protoServerDidChangeSession(const std::shared_ptr<Proto> &proto) {
     willInitializeApi = true;
 
-    for (const auto request : requests)
+    for (const auto & request : requests)
         request->requestContext = nullptr;
 
     if (!requests.empty())
@@ -242,7 +244,7 @@ void RequestMessageService::protoNetworkAvailabilityChanged(const std::shared_pt
 }
 
 void RequestMessageService::protoConnectionStateChanged(const std::shared_ptr<Proto> &proto, bool isConnected) {
-    willInitializeApi |= !isConnected;
+    willInitializeApi = true;
 }
 
 void RequestMessageService::protoAuthTokenUpdated(const std::shared_ptr<Proto> &proto) {
@@ -254,6 +256,7 @@ void RequestMessageService::protoErrorReceived(const std::shared_ptr<Proto>& pro
 }
 
 void RequestMessageService::addRequest(std::shared_ptr<Request> request) {
+    LOGD("addRequest");
     Proto::queue()->async([self = shared_from_this(), request] {
         if (auto proto = self->proto.lock())
         {
@@ -268,6 +271,7 @@ void RequestMessageService::cancelRequest(int internalId) {
 }
 
 void RequestMessageService::removeRequestByInternalId(int internalId) {
+    LOGD("removeRequestByInternalId");
     Proto::queue()->async([self = shared_from_this(), internalId] {
 
         for (auto it = self->requests.begin(); it != self->requests.end(); ++it) {
@@ -284,7 +288,7 @@ void RequestMessageService::removeRequestByInternalId(int internalId) {
 std::shared_ptr<StreamSlice> RequestMessageService::decorateRequestData(std::shared_ptr<Request> request, bool initializeApi) {
     auto currentData = request->payload;
 
-    LOGV("[RequestMessageService decorateRequestData] initialize = %d, deviceModel = %s", initializeApi, context->environment->device_model);
+    LOGV("[RequestMessageService decorateRequestData] initialize = %d, size = %zu", initializeApi, request->payload->size);
 
     if (!initializeApi || context->environment == nullptr)
         return currentData;

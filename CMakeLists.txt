@@ -274,7 +274,7 @@ set(GPCORE_SOURCE
         gp/proto/UpdateMessageService.h
 
         gp/proto/JsonAdapter.cpp
-        gp/proto/JsonAdapter.h)
+        gp/proto/JsonAdapter.h gp/proto/ScheduledMessageConfirmation.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
