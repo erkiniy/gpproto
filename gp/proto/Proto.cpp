@@ -270,7 +270,7 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
                                      bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) {
     LOGD("transportHasIncomingData");
     Proto::queue()->async([&transport, strongSelf = shared_from_this(), data, requestTransactionAfterProcessing, decodeResult] {
-        LOGE("[Proto transportHasIncomingData] -> %zu bytes", data->size);
+        LOGD("[Proto transportHasIncomingData] -> %zu bytes", data->size);
 
         if (strongSelf->transport == nullptr || !strongSelf->transport->isEqual(transport) || strongSelf->isStopped())
             return;
