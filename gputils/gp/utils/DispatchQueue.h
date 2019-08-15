@@ -21,17 +21,16 @@ namespace gpproto {
 
         class DispatchWorker {
         public:
-            DispatchWorker(DispatchWork && work, bool sync): work(std::move(work)), sync(sync) {};
+            DispatchWorker(DispatchWork && work, std::shared_ptr<Semaphore> semaphore = nullptr): work(std::move(work)), syncSemaphore(semaphore) {};
             const DispatchWork work;
-            const bool sync;
+            const std::shared_ptr<Semaphore> syncSemaphore;
 
             DispatchWorker(const DispatchWorker &) = delete;
         };
     public:
         explicit DispatchQueue(std::string name) : _name(std::move(name)),
                                           _finished(false),
-                                          _asyncSemaphore(),
-                                          _syncSemaphore() {
+                                          _asyncSemaphore() {
             this->_thread = std::thread(&DispatchQueue::threadWorker, this);
         }
 
@@ -64,7 +63,6 @@ namespace gpproto {
 
         volatile bool _finished;
         Semaphore _asyncSemaphore;
-        Semaphore _syncSemaphore;
 
         void _async(DispatchWork && work, bool force);
 
@@ -96,8 +94,8 @@ namespace gpproto {
                 auto worker = _tempJobs.begin();
                 worker->work();
 
-                if (worker->sync)
-                    _syncSemaphore.notify();
+                if (auto syncSemaphore = worker->syncSemaphore)
+                    syncSemaphore->notify();
 
                 _tempJobs.pop_front();
             }

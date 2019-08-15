@@ -24,6 +24,7 @@ BOOST_AUTO_TEST_CASE(dispatch_test) {
 
     {
         auto queue = std::make_unique<DispatchQueue>("uz.gpproto.testQueue");
+        auto semaphore = std::make_shared<Semaphore>();
 
         BOOST_CHECK(!queue->isCurrentQueue());
 
@@ -67,9 +68,10 @@ BOOST_AUTO_TEST_CASE(dispatch_test) {
         queue->sync([&] {
             BOOST_TEST_MESSAGE("Inside last queue sync");
             BOOST_CHECK_EQUAL(x, 47);
+            semaphore->notify();
         });
 
-        //semaphore->wait();
+        semaphore->wait();
 
         BOOST_TEST_MESSAGE("dispatch_test finished");
     }

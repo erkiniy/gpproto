@@ -34,9 +34,11 @@ Proto::Proto(std::shared_ptr<gpproto::Context> context, int32_t datacenterId, bo
         datacenterId(datacenterId),
         context(context),
         sessionInfo(std::make_shared<Session>(context)) {
+
     LOGV("Allocated Proto with unauthoried %d", useUnauthorizedMode);
 
     authInfo = context->getAuthKeyInfoForDatacenterId(datacenterId);
+    context->authInfoForDatacenterWithIdRequired(datacenterId);
 };
 
 void Proto::initialize() {

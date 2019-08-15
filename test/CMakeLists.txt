@@ -15,7 +15,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 
 add_definitions (-DBOOST_TEST_DYN_LINK )
 
-#[[
+
 add_executable(TestExecutable mytest.cpp mytest.h)
 target_link_libraries(TestExecutable
                       gputils
@@ -25,7 +25,7 @@ target_link_libraries(TestExecutable
 
 
 add_test(NAME TestUtils COMMAND TestExecutable -l message)
-
+#[[
 add_executable(Logging Logging.cpp)
 target_link_libraries(Logging
                       gputils

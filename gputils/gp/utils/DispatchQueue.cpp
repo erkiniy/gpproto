@@ -13,7 +13,6 @@ DispatchQueue::~DispatchQueue() {
     _jobs.clear();
     _mutex.unlock();
     _asyncSemaphore.notify();
-    _syncSemaphore.notify();
 
     _thread.join();
 }
@@ -35,15 +34,17 @@ void DispatchQueue::sync(DispatchQueue::DispatchWork && work) {
         //LOGV("<--------------> Dispatched %s SYNC", this->name().c_str());
         _mutex.lock();
 
+        auto syncSemaphore = std::make_shared<Semaphore>();
+
         if (!_finished)
-            _jobs.emplace_back(std::move(work), true);
+            _jobs.emplace_back(std::move(work), syncSemaphore);
 
         _mutex.unlock();
 
         _asyncSemaphore.notify();
 
         if (!_finished)
-            _syncSemaphore.wait();
+            syncSemaphore->wait();
     }
 }
 
@@ -59,7 +60,7 @@ void DispatchQueue::_async(DispatchQueue::DispatchWork && work, bool force) {
         //LOGV("<--------------> Dispatched %s ASYNC. Jobs.count = %d", this->name().c_str(), _jobs.size());
 
         if (!_finished)
-            _jobs.emplace_back(std::move(work), false);
+            _jobs.emplace_back(std::move(work));
 
         _mutex.unlock();
 
