@@ -25,11 +25,11 @@ static std::mutex log_mtx;
 
 #define TAG "gpproto-native"
 
-#define LOGV(...) { _android_log_print(ANDROID_LOG_VERBOSE, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('V', __VA_ARGS__);}
-#define LOGD(...) { _android_log_print(ANDROID_LOG_DEBUG, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('D', __VA_ARGS__);}
-#define LOGI(...) { _android_log_print(ANDROID_LOG_INFO, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('I', __VA_ARGS__);}
-#define LOGW(...) { _android_log_print(ANDROID_LOG_WARN, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('W', __VA_ARGS__);}
-#define LOGE(...) { _android_log_print(ANDROID_LOG_ERROR, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('E', __VA_ARGS__);}
+#define LOGV(...) { __android_log_print(ANDROID_LOG_VERBOSE, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('V', __VA_ARGS__);}
+#define LOGD(...) { __android_log_print(ANDROID_LOG_DEBUG, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('D', __VA_ARGS__);}
+#define LOGI(...) { __android_log_print(ANDROID_LOG_INFO, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('I', __VA_ARGS__);}
+#define LOGW(...) { __android_log_print(ANDROID_LOG_WARN, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('W', __VA_ARGS__);}
+#define LOGE(...) { __android_log_print(ANDROID_LOG_ERROR, TAG, _LOG_WRAP(__VA_ARGS__)); gp_log_file_printf('E', __VA_ARGS__);}
 
 #elif defined(__APPLE__) && TARGET_OS_IPHONE && defined(GPPRTO_HAVE_LOG)
 #include "os/darwin/GPLogWrapperDarwin.h"

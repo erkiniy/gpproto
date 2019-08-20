@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 #cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
 
+#cmake .. -DCMAKE_TOOLCHAIN_FILE=../example/android/ndk/android-ndk-r20/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_NATIVE_API_LEVEL=16 -DOPENSSL_ROOT_DIR=../example/android/openssl-1.1.1a-clang/ -DOPENSSL_CRYPTO_LIBRARY=../example/android/openssl-1.1.1a-clang/arm64-v8a/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/android/openssl-1.1.1a-clang/arm64-v8a/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/android/openssl-1.1.1a-clang/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/android/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Release
+
 #/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl
 
 #install_name_tool -id "@rpath/libgpclient.dylib" libgpclient.dylib
@@ -119,12 +121,13 @@ if (MSVC)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /W4 /wd4100 /wd4127 /wd4324 /wd4505 /wd4702")
 elseif (CLANG OR GCC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG} -fno-aligned-allocation")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD17_FLAG} -fno-aligned-allocation -fexceptions -frtti -fno-fast-math")
     if (APPLE)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-dead_strip,-x,-S")
     else()
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-x,-S,-fvisibility=hidden")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,--exclude-libs,ALL")
     endif()
     if (MEMPROF)
@@ -274,12 +277,18 @@ set(GPCORE_SOURCE
         gp/proto/UpdateMessageService.h
 
         gp/proto/JsonAdapter.cpp
-        gp/proto/JsonAdapter.h gp/proto/ScheduledMessageConfirmation.h)
+        gp/proto/JsonAdapter.h
+
+        gp/proto/ScheduledMessageConfirmation.h)
 
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
+
+if (ANDROID)
+    target_link_libraries(gpcore PRIVATE android log)
+endif()
 
 include(GenerateExportHeader)
 
@@ -288,10 +297,17 @@ set(GPCLIENT_SOURCE
         gp/proto/gp_client.cpp
         gp/proto/gp_client_data.h)
 
-
 add_library(gpclient SHARED ${GPCLIENT_SOURCE})
 target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(gpclient PRIVATE gpcore)
+
+if (ANDROID)
+    set(GP_JNI_SOURCES
+            gp/proto/jni/swig_module_libclient_wrap.c)
+
+    add_library(gpjniclient SHARED ${GP_JNI_SOURCES})
+    target_link_libraries(gpjniclient PRIVATE gpclient)
+endif()
 
 message(STATUS "Current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -313,6 +329,15 @@ install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
+
+if (ANDROID)
+    install(TARGETS gpjniclient
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+            INCLUDES DESTINATION include)
+endif()
+
 
 #install(EXPORT GPTargets
 #        FILE GPTargets.cmake

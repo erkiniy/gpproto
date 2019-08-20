@@ -49,7 +49,7 @@ void TcpConnection::sendDatas(std::list<std::shared_ptr<StreamSlice>> datas) con
                  continue;
 
              if (length % 4) {
-                 LOGE("TcpConnection: attempt to send a packet with length %lu. Should be divisble by 4", length);
+                 LOGE("TcpConnection: attempt to send a packet with length %zu. Should be divisible by 4", length);
                  return;
              }
 

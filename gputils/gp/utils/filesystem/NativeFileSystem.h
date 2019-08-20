@@ -7,7 +7,7 @@
 
 #include "FileSystem.h"
 
-struct SDir;
+struct DIR;
 
 namespace gpproto {
 
@@ -48,7 +48,7 @@ namespace gpproto {
 
     private:
         FilePtr FindFile(const FileInfo& fileInfo) const;
-        void BuildFileList(SDir* dir, std::string basePath, TFileList& outFileList);
+        void BuildFileList(DIR* dir, std::string basePath, TFileList& outFileList);
 
     private:
         std::string _basePath;

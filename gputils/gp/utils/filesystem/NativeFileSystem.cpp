@@ -13,7 +13,6 @@
 using namespace gpproto;
 
 const uint64_t kChunkSize = 1024;
-struct SDir : public DIR {};
 
 NativeFileSystem::NativeFileSystem(const std::string &basePath)
 : _basePath(basePath)
@@ -33,7 +32,7 @@ void NativeFileSystem::Initialize() {
     if (_isInitialized)
         return;
 
-    SDir* dir = static_cast<SDir*>(opendir(BasePath().c_str()));
+    DIR* dir = opendir(BasePath().c_str());
     if (dir)
     {
         BuildFileList(dir, BasePath(), _fileList);
@@ -214,8 +213,7 @@ FilePtr NativeFileSystem::FindFile(const FileInfo &fileInfo) const {
     return nullptr;
 }
 
-
-void NativeFileSystem::BuildFileList(SDir *dir, std::string basePath, FileSystem::TFileList &outFileList) {
+void NativeFileSystem::BuildFileList(DIR *dir, std::string basePath, FileSystem::TFileList &outFileList) {
 
     if (!StringUtils::EndsWith(basePath, "/"))
         basePath += "/";
@@ -226,7 +224,7 @@ void NativeFileSystem::BuildFileList(SDir *dir, std::string basePath, FileSystem
     {
         std::string fileName = ent->d_name;
         std::string filePath = basePath + fileName;
-        SDir *childDir = static_cast<SDir*>(opendir(filePath.c_str()));
+        DIR *childDir = opendir(filePath.c_str());
 
         bool isDotOrDotDot = StringUtils::EndsWith(fileName, ".") && childDir;
 

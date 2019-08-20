@@ -67,9 +67,10 @@ void NetworkSocketPosix::Open() {
             return;
         }
 
+#ifdef SO_NOSIGPIPE
         int nosigpipe = 1;
         setsockopt(self->fd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
-
+#endif
         int flag = 1;
         if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
             LOGE("setsockopt error SO_REUSEADDR");
@@ -150,7 +151,12 @@ size_t NetworkSocketPosix::Send(NetworkPacket *packet) {
 
     }
     else {
-        ssize_t res = send(fd, packet->slice->bytes, packet->slice->size, 0);
+        int flags = 0;
+
+#ifdef MSG_NOSIGNAL
+        flags |= MSG_NOSIGNAL;
+#endif
+        ssize_t res = send(fd, packet->slice->bytes, packet->slice->size, flags);
 
         if (res <= 0) {
             LOGE("Error sending packet");
