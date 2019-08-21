@@ -3,13 +3,14 @@
 //
 
 
-#include "gp/proto/ClientSync.h"
 #include "gp/proto/Proto.h"
 #include "gp/proto/Context.h"
 #include "gp/proto/Request.h"
 #include "gp/proto/RequestMessageService.h"
 #include "gp/utils/StreamSlice.h"
 #include "gp/utils/SecureKeychain.h"
+#include "gp/utils/Semaphore.h"
+#include "gp/proto/ClientSync.h"
 
 #include "gp_client_data.h"
 
@@ -38,6 +39,8 @@ static std::shared_ptr<Context> obtainContext(std::shared_ptr<gp_environment> en
 }
 
 ClientSync::ClientSync(std::shared_ptr<gp_environment> environment): id(getNextInternalId()) {
+
+    semaphore = std::make_shared<Semaphore>();
 
     auto context = obtainContext(environment);
 
@@ -185,13 +188,12 @@ void ClientSync::push_back(const std::shared_ptr<gp_rx_event> & event) {
 
         LOGV("[ClientSync] push_back queue.size = %zu", queue.size());
     }
-
-    cond.notify_one();
+    semaphore->notify();
 }
 
 std::shared_ptr<gp_rx_event> ClientSync::pop_front() {
+    semaphore->wait();
     std::unique_lock<std::mutex> lock(this->mutex);
-    this->cond.wait(lock);
 
     LOGV("[ClientSync pop_front] queue.size = %zu", queue.size());
 

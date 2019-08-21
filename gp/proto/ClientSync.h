@@ -18,6 +18,8 @@
 struct gp_environment;
 struct gp_rx_event;
 
+class Semaphore;
+
 namespace gpproto
 {
     class Proto;
@@ -65,8 +67,7 @@ namespace gpproto
         std::shared_ptr<UpdateMessageService> updateService;
 
         std::mutex mutex;
-        std::condition_variable cond;
-
+        std::shared_ptr<Semaphore> semaphore;
         std::deque<std::shared_ptr<gp_rx_event>> queue;
 
         void push_back(const std::shared_ptr<gp_rx_event> & event);

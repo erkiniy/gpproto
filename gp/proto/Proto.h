@@ -5,7 +5,6 @@
 #ifndef GPPROTO_PROTO_H
 #define GPPROTO_PROTO_H
 
-#include "gp/utils/DispatchQueue.h"
 #include "gp/proto/ProtoDelegate.h"
 #include "gp/network/Transport.h"
 #include "gp/proto/Context.h"
@@ -27,6 +26,7 @@ namespace gpproto
     class InputStream;
     class MessageService;
     class OutputStream;
+    class DispatchQueue;
     struct TimeFixContext;
 
     typedef enum : uint32_t {
@@ -40,10 +40,7 @@ namespace gpproto
     class Proto final : public std::enable_shared_from_this<Proto>, public TransportDelegate, public TimeSyncMessageServiceDelegate, public ContextChangeListener {
     public:
 
-        static std::shared_ptr<DispatchQueue> queue() {
-            static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.manager");
-            return q;
-        }
+        static std::shared_ptr<DispatchQueue> queue();
 
         static const int MaxUnacknowlegedMessagesCount = 2;
 

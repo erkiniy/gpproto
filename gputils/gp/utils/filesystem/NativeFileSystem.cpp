@@ -2,11 +2,10 @@
 // Created by ProDigital on 7/30/18.
 //
 
-#include "NativeFileSystem.h"
-#include <dirent.h>
+#include "gp/utils/filesystem/NativeFileSystem.h"
 #include <fstream>
 #include "gp/utils/StringUtils.h"
-#include "NativeFile.h"
+#include "gp/utils/filesystem/NativeFile.h"
 #include <sys/stat.h>
 #include <array>
 

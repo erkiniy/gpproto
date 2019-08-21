@@ -9,6 +9,7 @@
 #include "gp/utils/OutputStream.h"
 #include "gp/utils/InputStream.h"
 #include "gp/utils/InputStreamException.h"
+#include "gp/utils/DispatchQueue.h"
 
 #include "gp/network/TcpTransport.h"
 #include "gp/network/TransportScheme.h"
@@ -28,6 +29,11 @@
 #include <unordered_map>
 
 using namespace gpproto;
+
+std::shared_ptr<DispatchQueue> Proto::queue() {
+    static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.manager");
+    return q;
+}
 
 Proto::Proto(std::shared_ptr<gpproto::Context> context, int32_t datacenterId, bool useUnauthorizedMode) :
         useUnauthorizedMode(useUnauthorizedMode),

@@ -8,6 +8,8 @@
 #include "gp/network/TransportScheme.h"
 #include "gp/utils/Common.h"
 #include "gp/utils/Logging.h"
+#include "gp/utils/DispatchQueue.h"
+
 #include "gp/proto/ProtoInternalMessage.h"
 #include "gp/utils/SecureKeychain.h"
 #include "gp/proto/JsonAdapter.h"
@@ -25,6 +27,11 @@ Context::Context(std::shared_ptr<gp_environment> & environment): environment(env
 
     for (int i = 0; i < environment->supported_types_count; i++)
         appSupportedIds.insert(environment->supported_types[i]);
+}
+
+std::shared_ptr<DispatchQueue> Context::queue() {
+    static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.context");
+    return q;
 }
 
 std::shared_ptr<ProtoInternalMessage> Context::parseSupportedMessage(const std::shared_ptr<StreamSlice> & data) {

@@ -2,19 +2,31 @@
 // Created by Erkiniy Jaloliddin on 7/25/18.
 //
 
-#include "gp/utils/DispatchQueue.h"
+#include "gp/utils/Semaphore.h"
 #include "gp/utils/Logging.h"
+#include "gp/utils/DispatchQueue.h"
 
 using namespace gpproto;
+
+DispatchQueue::DispatchQueue(std::string name): _name(std::move(name)),
+                                                  _finished(false),
+                                                  _asyncSemaphore(new Semaphore) {
+    this->_thread = std::thread(&DispatchQueue::threadWorker, this);
+}
 
 DispatchQueue::~DispatchQueue() {
     _mutex.lock();
     _finished = true;
     _jobs.clear();
     _mutex.unlock();
-    _asyncSemaphore.notify();
+    _asyncSemaphore->notify();
 
     _thread.join();
+}
+
+DispatchQueue::DispatchWorker::DispatchWorker(gpproto::DispatchQueue::DispatchWork &&work,
+                                              std::shared_ptr<Semaphore> semaphore): work(std::move(work)), syncSemaphore(std::move(semaphore)) {
+
 }
 
 void DispatchQueue::async(DispatchQueue::DispatchWork && work) {
@@ -41,7 +53,7 @@ void DispatchQueue::sync(DispatchQueue::DispatchWork && work) {
 
         _mutex.unlock();
 
-        _asyncSemaphore.notify();
+        _asyncSemaphore->notify();
 
         if (!_finished)
             syncSemaphore->wait();
@@ -64,6 +76,32 @@ void DispatchQueue::_async(DispatchQueue::DispatchWork && work, bool force) {
 
         _mutex.unlock();
 
-        _asyncSemaphore.notify();
+        _asyncSemaphore->notify();
     }
+}
+
+void DispatchQueue::maybeDispatchWorker() {
+    _mutex.lock();
+
+    _tempJobs = std::move(_jobs);
+
+    _jobs.clear();
+
+    _mutex.unlock();
+
+    if (_finished) return;
+
+    while (!_tempJobs.empty())
+    {
+        auto worker = _tempJobs.begin();
+        worker->work();
+
+        if (auto syncSemaphore = worker->syncSemaphore)
+            syncSemaphore->notify();
+
+        _tempJobs.pop_front();
+    }
+
+    _asyncSemaphore->wait();
+
 }

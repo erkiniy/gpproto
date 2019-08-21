@@ -5,9 +5,8 @@
 #ifndef GPPROTO_NATIVEFILESYSTEM_H
 #define GPPROTO_NATIVEFILESYSTEM_H
 
-#include "FileSystem.h"
-
-struct DIR;
+#include "gp/utils/filesystem/FileSystem.h"
+#include <dirent.h>
 
 namespace gpproto {
 

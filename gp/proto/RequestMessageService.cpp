@@ -14,6 +14,7 @@
 #include "gp/utils/OutputStream.h"
 #include "gp/network/IncomingMessage.h"
 #include "gp/network/OutgoingMessage.h"
+#include "gp/utils/DispatchQueue.h"
 #include <algorithm>
 
 using namespace gpproto;

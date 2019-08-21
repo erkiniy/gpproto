@@ -5,7 +5,6 @@
 #ifndef GPPROTO_CONTEXT_H
 #define GPPROTO_CONTEXT_H
 
-#include "gp/utils/DispatchQueue.h"
 #include "gp/proto/AuthKeyInfo.h"
 #include "gp/proto/DatacenterAddress.h"
 #include "gp/proto/DatacenterAuthAction.h"
@@ -20,6 +19,7 @@ namespace gpproto
 {
     class TransportScheme;
     class ProtoInternalMessage;
+    class DispatchQueue;
     class SecureKeychain;
 
     class ContextChangeListener {
@@ -47,10 +47,7 @@ class Context final : public std::enable_shared_from_this<Context>, public Datac
 
         Context(const Context&) = delete;
 
-        static std::shared_ptr<DispatchQueue> queue() {
-            static std::shared_ptr<DispatchQueue> q = std::make_shared<DispatchQueue>("uz.gpproto.context");
-            return q;
-        }
+        static std::shared_ptr<DispatchQueue> queue();
 
         double getGlobalTime();
 

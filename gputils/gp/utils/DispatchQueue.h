@@ -13,26 +13,21 @@
 #include <condition_variable>
 #include <deque>
 
-#include "gp/utils/Semaphore.h"
-
+class Semaphore;
 namespace gpproto {
     class DispatchQueue {
         typedef std::function<void()> DispatchWork;
 
         class DispatchWorker {
         public:
-            DispatchWorker(DispatchWork && work, std::shared_ptr<Semaphore> semaphore = nullptr): work(std::move(work)), syncSemaphore(semaphore) {};
+            DispatchWorker(DispatchWork && work, std::shared_ptr<Semaphore> semaphore = nullptr);
             const DispatchWork work;
             const std::shared_ptr<Semaphore> syncSemaphore;
 
             DispatchWorker(const DispatchWorker &) = delete;
         };
     public:
-        explicit DispatchQueue(std::string name) : _name(std::move(name)),
-                                          _finished(false),
-                                          _asyncSemaphore() {
-            this->_thread = std::thread(&DispatchQueue::threadWorker, this);
-        }
+        explicit DispatchQueue(std::string name);
 
         DispatchQueue(const DispatchQueue&) = delete;
 
@@ -62,7 +57,7 @@ namespace gpproto {
         std::atomic_bool started;
 
         volatile bool _finished;
-        Semaphore _asyncSemaphore;
+        std::shared_ptr<Semaphore> _asyncSemaphore;
 
         void _async(DispatchWork && work, bool force);
 
@@ -73,35 +68,9 @@ namespace gpproto {
             while (!_finished) {
                 maybeDispatchWorker();
             }
-
-            printf("Thread worker finished");
         }
 
-        void maybeDispatchWorker()
-        {
-            _mutex.lock();
-
-            _tempJobs = std::move(_jobs);
-
-            _jobs.clear();
-
-            _mutex.unlock();
-
-            if (_finished) return;
-
-            while (!_tempJobs.empty())
-            {
-                auto worker = _tempJobs.begin();
-                worker->work();
-
-                if (auto syncSemaphore = worker->syncSemaphore)
-                    syncSemaphore->notify();
-
-                _tempJobs.pop_front();
-            }
-
-            _asyncSemaphore.wait();
-        }
+        void maybeDispatchWorker();
 
     };
 }

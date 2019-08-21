@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 #cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DPLATFORM=SIMULATOR64 -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
 
-#cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/iOS.cmake -DIOS_PLATFORM=SIMULATOR -DOPENSSL_ROOT_DIR=../example/ios/third_party/openssl -DOPENSSL_CRYPTO_LIBRARY=../example/ios/third_party/openssl/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/ios/third_party/openssl/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/ios/third_party/openssl/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/ios/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Debug
-
 #cmake .. -DCMAKE_TOOLCHAIN_FILE=../example/android/ndk/android-ndk-r20/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_NATIVE_API_LEVEL=16 -DOPENSSL_ROOT_DIR=../example/android/openssl-1.1.1a-clang/ -DOPENSSL_CRYPTO_LIBRARY=../example/android/openssl-1.1.1a-clang/arm64-v8a/lib/libcrypto.a -DOPENSSL_SSL_LIBRARY=../example/android/openssl-1.1.1a-clang/arm64-v8a/lib/libssl.a -DOPENSSL_INCLUDE_DIR=../example/android/openssl-1.1.1a-clang/include/ -DCMAKE_INSTALL_PREFIX:PATH=../example/android/GPProtoImpl/gp -DCMAKE_BUILD_TYPE=Release
 
 #/Users/jalol/CLionProjects/gpproto/example/ios/third_party/openssl
@@ -321,8 +319,8 @@ target_include_directories(gpclient PUBLIC
 add_library(GPStatic INTERFACE)
 target_link_libraries(GPStatic INTERFACE gpclient)
 
-#add_executable(clientInternal gp/proto/clientExecutable.cpp)
-#target_link_libraries(clientInternal gpclient)
+add_executable(clientInternal gp/proto/clientExecutable.cpp)
+target_link_libraries(clientInternal gpclient)
 
 install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib

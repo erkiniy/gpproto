@@ -6,6 +6,7 @@
 #include "gp/proto/Proto.h"
 #include "gp/network/IncomingMessage.h"
 #include "gp/proto/ProtoInternalMessage.h"
+#include "gp/utils/DispatchQueue.h"
 
 using namespace gpproto;
 
