@@ -39,4 +39,4 @@
 #  endif
 #endif
 
-#endif
+#endif /* GPCLIENT_EXPORT_H */

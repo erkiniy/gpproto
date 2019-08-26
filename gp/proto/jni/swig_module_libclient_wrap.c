@@ -207,7 +207,6 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 
 
 #include "gp/proto/gp_client_data.h"
-#include "gp/proto/gp_client_export.h"
 #include "gp/proto/gp_client.h"
 
 
@@ -1267,6 +1266,16 @@ SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_gp_1client_1cancel_1r
   arg1 = (int)jarg1; 
   arg2 = (int)jarg2; 
   gp_client_cancel_request(arg1,arg2);
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_gp_1client_1set_1log_1level(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  int arg1 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  gp_client_set_log_level(arg1);
 }
 
 

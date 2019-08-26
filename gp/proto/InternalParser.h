@@ -212,7 +212,7 @@ namespace gpproto::InternalParser {
                 return std::make_shared<BadServerSaltNotificationMessage>(badMessageId, badSeqNo, errorCode, validServerSalt);
             }
             default: {
-                LOGE("[InternalParser parseMessage] -> cannot parse incoming message with signature %du", signature);
+                LOGE("[InternalParser parseMessage] -> cannot parse incoming message with signature %x, decimal = %d", signature, signature);
                 return nullptr;
             }
         }

@@ -16,8 +16,10 @@ void gp_log_file_set_path(const char* path);
 void gp_log_file_printf(char level, const char* msg, ...);
 void gp_log_file_write_header(FILE* file);
 void gp_log_printf(char level, const char* msg, ...);
+void gp_log_set_log_level(int level);
 
 static std::mutex log_mtx;
+static int gp_log_level = 10000;
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -73,22 +75,27 @@ static std::mutex log_mtx;
 
 #ifdef GPPROTO_LOG_VERBOSITY
 #if GPPROTO_LOG_VERBOSITY < 5
+gp_log_level = 5;
 #undef LOGV
 #define LOGV(msg, ...)
 #endif
 #if GPPROTO_LOG_VERBOSITY < 4
+gp_log_level = 4;
 #undef LOGD
 #define LOGD(msg, ...)
 #endif
 #if GPPROTO_LOG_VERBOSITY < 3
+gp_log_level = 3;
 #undef LOGI
 #define LOGI(msg, ...)
 #endif
 #if GPPROTO_LOG_VERBOSITY < 2
+gp_log_level = 2;
 #undef LOGW
 #define LOGW(msg, ...)
 #endif
 #if GPPROTO_LOG_VERBOSITY < 1
+gp_log_level = 1;
 #undef LOGE
 #define LOGE(msg, ...)
 #endif

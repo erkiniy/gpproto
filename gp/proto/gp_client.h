@@ -7,7 +7,12 @@
 
 #include <stdio.h>
 #include "gp/proto/gp_client_data.h"
+
+#if defined(__ANDROID__) || defined(SWIG)
+#define GPCLIENT_EXPORT
+#else
 #include "gp/proto/gp_client_export.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +38,7 @@ GPCLIENT_EXPORT double gp_client_get_global_time(int client);
 
 GPCLIENT_EXPORT void gp_client_cancel_request(int client, int id);
 
+GPCLIENT_EXPORT void gp_client_set_log_level(int level);
 
 #ifdef __cplusplus
 } //extern "C"

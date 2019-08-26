@@ -7,6 +7,7 @@
 #include "gp_client_data.h"
 
 #include <unordered_map>
+#include <gputils/gp/utils/Logging.h>
 
 static std::unordered_map<int, std::shared_ptr<gpproto::ClientSync>> clients;
 static std::mutex mutex;
@@ -114,4 +115,8 @@ double gp_client_get_global_time(int client) {
 void gp_client_cancel_request(int client, int id) {
     if (auto clientSync = clientForId(client))
         clientSync->cancel(id);
+}
+
+void gp_client_set_log_level(int level) {
+    gp_log_set_log_level(level);
 }

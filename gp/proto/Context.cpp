@@ -39,9 +39,15 @@ std::shared_ptr<ProtoInternalMessage> Context::parseSupportedMessage(const std::
     memcpy(&signature, data->rbegin(), 4);
 
     auto it = appSupportedIds.find(signature);
-    if (it == appSupportedIds.end()) return nullptr;
+    if (it == appSupportedIds.end()) {
+        LOGE("Cannot parse signature %x", signature);
+        for(auto id : appSupportedIds) {
+            LOGE("Id: %x", id);
+        }
+        return nullptr;
+    }
 
-    return std::make_shared<AppSupportedMessage>(std::move(data));
+    return std::make_shared<AppSupportedMessage>(data);
 }
 
 double Context::getGlobalTime() {
@@ -95,7 +101,7 @@ std::shared_ptr<AuthKeyInfo> Context::getAuthKeyInfoForDatacenterId(int32_t id) 
         return infoPtr;
     }
 
-    LOGV("[Context getAuthKeyInfoForDatacenterId] -> auth info not found");
+    LOGI("[Context getAuthKeyInfoForDatacenterId] -> auth info not found");
 
     return nullptr;
 }

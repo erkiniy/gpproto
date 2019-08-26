@@ -51,6 +51,21 @@ void gp_log_file_printf(char level, const char* msg, ...) {
 
 void gp_log_printf(char level, const char* msg, ...) {
 
+    if (gp_log_level < 5 && level == 'V')
+        return;
+
+    if (gp_log_level < 4 && level == 'D')
+        return;
+
+    if (gp_log_level < 3 && level == 'I')
+        return;
+
+    if (gp_log_level < 2 && level == 'W')
+        return;
+
+    if (gp_log_level < 1 && level == 'E')
+        return;
+
     va_list argptr;
     va_start(argptr, msg);
     time_t t = time(nullptr);
@@ -66,8 +81,13 @@ void gp_log_printf(char level, const char* msg, ...) {
         ms = 0;
 
     struct tm *now = localtime(&t);
-    printf("gpproto: ");
+    printf("gpproto-%d: ", gp_log_level);
     printf("%02d-%02d %02d:%02d:%02d:%03d %c: ", now->tm_mday, now->tm_mon + 1, now->tm_hour, now->tm_min, now->tm_sec, (int)ms, level);
     vprintf(msg, argptr);
     printf("\n");
+}
+
+void gp_log_set_log_level(int level) {
+    std::unique_lock lock(log_mtx);
+    gp_log_level = level;
 }

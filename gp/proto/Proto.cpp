@@ -472,7 +472,7 @@ std::shared_ptr<ProtoInternalMessage> Proto::parseMessage(const std::shared_ptr<
     auto internalMessage = InternalParser::parseMessage(unwrappedData);
 
     if (internalMessage == nullptr)
-        internalMessage = context->parseSupportedMessage(data);
+        internalMessage = context->parseSupportedMessage(unwrappedData);
 
     return internalMessage;
 }

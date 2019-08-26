@@ -299,14 +299,6 @@ add_library(gpclient SHARED ${GPCLIENT_SOURCE})
 target_include_directories(gpclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(gpclient PRIVATE gpcore)
 
-if (ANDROID)
-    set(GP_JNI_SOURCES
-            gp/proto/jni/swig_module_libclient_wrap.c)
-
-    add_library(gpjniclient SHARED ${GP_JNI_SOURCES})
-    target_link_libraries(gpjniclient PRIVATE gpclient)
-endif()
-
 message(STATUS "Current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
 
 generate_export_header(gpclient EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/gp/proto/gp_client_export.h)
@@ -319,8 +311,10 @@ target_include_directories(gpclient PUBLIC
 add_library(GPStatic INTERFACE)
 target_link_libraries(GPStatic INTERFACE gpclient)
 
-add_executable(clientInternal gp/proto/clientExecutable.cpp)
-target_link_libraries(clientInternal gpclient)
+if (NOT ANDROID)
+    add_executable(clientInternal gp/proto/clientExecutable.cpp)
+    target_link_libraries(clientInternal gpclient)
+endif()
 
 install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
@@ -329,6 +323,12 @@ install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
         INCLUDES DESTINATION include)
 
 if (ANDROID)
+    set(GP_JNI_SOURCES
+            gp/proto/jni/swig_module_libclient_wrap.c)
+
+    add_library(gpjniclient SHARED ${GP_JNI_SOURCES})
+    target_link_libraries(gpjniclient PRIVATE gpclient)
+
     install(TARGETS gpjniclient
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib
