@@ -119,8 +119,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/Users/jaloliddinerkiniy/Projects/Cpp/gpproto/example/ios/OpenSSL-for-iPhone/bin/iPhoneOS12.2-armv7s.sdk/lib/engines"
-#define OPENSSLDIR "/Users/jaloliddinerkiniy/Projects/Cpp/gpproto/example/ios/OpenSSL-for-iPhone/bin/iPhoneOS12.2-armv7s.sdk"
+#define ENGINESDIR "/Users/jaloliddinerkiniy/Projects/Cpp/gpproto/example/ios/OpenSSL-for-iPhone/bin/iPhoneOS12.4-armv7s.sdk/lib/engines"
+#define OPENSSLDIR "/Users/jaloliddinerkiniy/Projects/Cpp/gpproto/example/ios/OpenSSL-for-iPhone/bin/iPhoneOS12.4-armv7s.sdk"
 #endif
 #endif
 

@@ -47,8 +47,8 @@ int gp_client_create(gp_environment *environment) {
     envPtr->lang_code = environment->lang_code;
     envPtr->supported_types_count = environment->supported_types_count;
 
-    envPtr->supported_types = (unsigned int *)malloc(4 * environment->supported_types_count);
-    memcpy(envPtr->supported_types, environment->supported_types, 4 * environment->supported_types_count);
+    envPtr->supported_types = (long long *)malloc(sizeof(long long) * environment->supported_types_count);
+    memcpy(envPtr->supported_types, environment->supported_types, sizeof(long long) * environment->supported_types_count);
 
     auto client = std::make_shared<gpproto::ClientSync>(std::shared_ptr<gp_environment>(envPtr));
     client->initialize();

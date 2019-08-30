@@ -282,7 +282,7 @@ set(GPCORE_SOURCE
 add_library(gpcore STATIC ${GPCORE_SOURCE})
 target_include_directories(gpcore PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(gpcore SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(gpcore PUBLIC gputils gpnet PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
+target_link_libraries(gpcore PRIVATE gputils gpnet PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${CMAKE_DL_LIBS} ${ZLIB_LIBRARIES})
 
 if (ANDROID)
     target_link_libraries(gpcore PRIVATE android log)
@@ -306,6 +306,13 @@ target_include_directories(gpclient PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
+add_library(gpclientstatic STATIC ${GPCLIENT_SOURCE})
+target_include_directories(gpclientstatic PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(gpclientstatic PRIVATE gpcore)
+target_include_directories(gpclientstatic PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
 #set_target_properties(gpclient PROPERTIES VERSION ${PROJECT_VERSION})
 
 add_library(GPStatic INTERFACE)
@@ -313,10 +320,10 @@ target_link_libraries(GPStatic INTERFACE gpclient)
 
 if (NOT ANDROID)
     add_executable(clientInternal gp/proto/clientExecutable.cpp)
-    target_link_libraries(clientInternal gpclient)
+    target_link_libraries(clientInternal gpclientstatic)
 endif()
 
-install(TARGETS gpclient #gpcore GPStatic EXPORT GPTargets
+install(TARGETS gpclient gpclientstatic gpcore GPStatic EXPORT GPTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
@@ -337,10 +344,12 @@ if (ANDROID)
 endif()
 
 
-#install(EXPORT GPTargets
-#        FILE GPTargets.cmake
-#        NAMESPACE gpproto::
-#        DESTINATION lib/cmake/gp)
+install(EXPORT GPTargets
+        FILE GPTargets.cmake
+        NAMESPACE gpproto::
+        DESTINATION lib/cmake/gp)
+
+install(FILES ${OPENSSL_CRYPTO_LIBRARY} DESTINATION lib)
 
 install(FILES gp/proto/gp_client.h gp/proto/gp_client_data.h DESTINATION include/gp/proto)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gp/proto/gp_client_export.h DESTINATION include/gp/proto)

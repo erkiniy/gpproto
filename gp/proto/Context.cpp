@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <tuple>
+#include <example/android/openssl-1.1.1a-clang/include/openssl/e_os2.h>
 #include "gp/proto/Context.h"
 #include "gp/network/TransportScheme.h"
 #include "gp/utils/Common.h"
@@ -26,7 +27,7 @@ Context::Context(std::shared_ptr<gp_environment> & environment): environment(env
     appSupportedIds.clear();
 
     for (int i = 0; i < environment->supported_types_count; i++)
-        appSupportedIds.insert(environment->supported_types[i]);
+        appSupportedIds.insert((uint32_t) environment->supported_types[i]);
 }
 
 std::shared_ptr<DispatchQueue> Context::queue() {

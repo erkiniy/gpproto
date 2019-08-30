@@ -206,6 +206,54 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 #define SWIG_contract_assert(nullreturn, expr, msg) if (!(expr)) {SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, msg); return nullreturn; } else
 
 
+static int *new_intArray(int nelements) { 
+  return (int *) calloc(nelements,sizeof(int)); 
+}
+
+static void delete_intArray(int *ary) { 
+  free(ary); 
+}
+
+static int intArray_getitem(int *ary, int index) {
+    return ary[index];
+}
+static void intArray_setitem(int *ary, int index, int value) {
+    ary[index] = value;
+}
+
+
+static long *new_longArray(int nelements) { 
+  return (long *) calloc(nelements,sizeof(long)); 
+}
+
+static void delete_longArray(long *ary) { 
+  free(ary); 
+}
+
+static long longArray_getitem(long *ary, int index) {
+    return ary[index];
+}
+static void longArray_setitem(long *ary, int index, long value) {
+    ary[index] = value;
+}
+
+
+static unsigned int *new_unsigendIntArray(int nelements) { 
+  return (unsigned int *) calloc(nelements,sizeof(unsigned int)); 
+}
+
+static void delete_unsigendIntArray(unsigned int *ary) { 
+  free(ary); 
+}
+
+static unsigned int unsigendIntArray_getitem(unsigned int *ary, int index) {
+    return ary[index];
+}
+static void unsigendIntArray_setitem(unsigned int *ary, int index, unsigned int value) {
+    ary[index] = value;
+}
+
+
 #include "gp/proto/gp_client_data.h"
 #include "gp/proto/gp_client.h"
 
@@ -213,6 +261,168 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SWIGEXPORT jlong JNICALL Java_org_gp_libclient_libclientJNI_new_1intArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  jlong jresult = 0 ;
+  int arg1 ;
+  int *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  result = (int *)new_intArray(arg1);
+  *(int **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_delete_1intArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  int *arg1 = (int *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(int **)&jarg1; 
+  delete_intArray(arg1);
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_gp_libclient_libclientJNI_intArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+  jint jresult = 0 ;
+  int *arg1 = (int *) 0 ;
+  int arg2 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(int **)&jarg1; 
+  arg2 = (int)jarg2; 
+  result = (int)intArray_getitem(arg1,arg2);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_intArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3) {
+  int *arg1 = (int *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(int **)&jarg1; 
+  arg2 = (int)jarg2; 
+  arg3 = (int)jarg3; 
+  intArray_setitem(arg1,arg2,arg3);
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_gp_libclient_libclientJNI_new_1longArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  jlong jresult = 0 ;
+  int arg1 ;
+  long *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  result = (long *)new_longArray(arg1);
+  *(long **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_delete_1longArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  long *arg1 = (long *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(long **)&jarg1; 
+  delete_longArray(arg1);
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_gp_libclient_libclientJNI_longArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+  jint jresult = 0 ;
+  long *arg1 = (long *) 0 ;
+  int arg2 ;
+  long result;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(long **)&jarg1; 
+  arg2 = (int)jarg2; 
+  result = (long)longArray_getitem(arg1,arg2);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_longArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3) {
+  long *arg1 = (long *) 0 ;
+  int arg2 ;
+  long arg3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(long **)&jarg1; 
+  arg2 = (int)jarg2; 
+  arg3 = (long)jarg3; 
+  longArray_setitem(arg1,arg2,arg3);
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_gp_libclient_libclientJNI_new_1unsigendIntArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  jlong jresult = 0 ;
+  int arg1 ;
+  unsigned int *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  result = (unsigned int *)new_unsigendIntArray(arg1);
+  *(unsigned int **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_delete_1unsigendIntArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  unsigned int *arg1 = (unsigned int *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(unsigned int **)&jarg1; 
+  delete_unsigendIntArray(arg1);
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_gp_libclient_libclientJNI_unsigendIntArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+  jlong jresult = 0 ;
+  unsigned int *arg1 = (unsigned int *) 0 ;
+  int arg2 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(unsigned int **)&jarg1; 
+  arg2 = (int)jarg2; 
+  result = (unsigned int)unsigendIntArray_getitem(arg1,arg2);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_unsigendIntArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+  unsigned int *arg1 = (unsigned int *) 0 ;
+  int arg2 ;
+  unsigned int arg3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(unsigned int **)&jarg1; 
+  arg2 = (int)jarg2; 
+  arg3 = (unsigned int)jarg3; 
+  unsigendIntArray_setitem(arg1,arg2,arg3);
+}
+
 
 SWIGEXPORT jint JNICALL Java_org_gp_libclient_libclientJNI_RESPONSE_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
@@ -1097,13 +1307,13 @@ SWIGEXPORT jint JNICALL Java_org_gp_libclient_libclientJNI_gp_1environment_1supp
 
 SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_gp_1environment_1supported_1types_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   struct gp_environment *arg1 = (struct gp_environment *) 0 ;
-  unsigned int *arg2 = (unsigned int *) 0 ;
+  long *arg2 = (long *) 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(struct gp_environment **)&jarg1; 
-  arg2 = *(unsigned int **)&jarg2; 
+  arg2 = *(long **)&jarg2; 
   if (arg1) (arg1)->supported_types = arg2;
 }
 
@@ -1111,14 +1321,14 @@ SWIGEXPORT void JNICALL Java_org_gp_libclient_libclientJNI_gp_1environment_1supp
 SWIGEXPORT jlong JNICALL Java_org_gp_libclient_libclientJNI_gp_1environment_1supported_1types_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   struct gp_environment *arg1 = (struct gp_environment *) 0 ;
-  unsigned int *result = 0 ;
+  long *result = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(struct gp_environment **)&jarg1; 
-  result = (unsigned int *) ((arg1)->supported_types);
-  *(unsigned int **)&jresult = result; 
+  result = (long *) ((arg1)->supported_types);
+  *(long **)&jresult = result; 
   return jresult;
 }
 

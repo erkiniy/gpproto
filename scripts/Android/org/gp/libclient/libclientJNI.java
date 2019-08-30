@@ -9,6 +9,18 @@
 package org.gp.libclient;
 
 public class libclientJNI {
+  public final static native long new_intArray(int jarg1);
+  public final static native void delete_intArray(long jarg1);
+  public final static native int intArray_getitem(long jarg1, int jarg2);
+  public final static native void intArray_setitem(long jarg1, int jarg2, int jarg3);
+  public final static native long new_longArray(int jarg1);
+  public final static native void delete_longArray(long jarg1);
+  public final static native int longArray_getitem(long jarg1, int jarg2);
+  public final static native void longArray_setitem(long jarg1, int jarg2, int jarg3);
+  public final static native long new_unsigendIntArray(int jarg1);
+  public final static native void delete_unsigendIntArray(long jarg1);
+  public final static native long unsigendIntArray_getitem(long jarg1, int jarg2);
+  public final static native void unsigendIntArray_setitem(long jarg1, int jarg2, long jarg3);
   public final static native int RESPONSE_get();
   public final static native int UPDATE_get();
   public final static native int PROTO_STATE_get();

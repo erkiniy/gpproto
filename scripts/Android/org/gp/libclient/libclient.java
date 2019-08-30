@@ -9,6 +9,57 @@
 package org.gp.libclient;
 
 public class libclient {
+  public static SWIGTYPE_p_int new_intArray(int nelements) {
+    long cPtr = libclientJNI.new_intArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_int(cPtr, false);
+  }
+
+  public static void delete_intArray(SWIGTYPE_p_int ary) {
+    libclientJNI.delete_intArray(SWIGTYPE_p_int.getCPtr(ary));
+  }
+
+  public static int intArray_getitem(SWIGTYPE_p_int ary, int index) {
+    return libclientJNI.intArray_getitem(SWIGTYPE_p_int.getCPtr(ary), index);
+  }
+
+  public static void intArray_setitem(SWIGTYPE_p_int ary, int index, int value) {
+    libclientJNI.intArray_setitem(SWIGTYPE_p_int.getCPtr(ary), index, value);
+  }
+
+  public static SWIGTYPE_p_long new_longArray(int nelements) {
+    long cPtr = libclientJNI.new_longArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_long(cPtr, false);
+  }
+
+  public static void delete_longArray(SWIGTYPE_p_long ary) {
+    libclientJNI.delete_longArray(SWIGTYPE_p_long.getCPtr(ary));
+  }
+
+  public static int longArray_getitem(SWIGTYPE_p_long ary, int index) {
+    return libclientJNI.longArray_getitem(SWIGTYPE_p_long.getCPtr(ary), index);
+  }
+
+  public static void longArray_setitem(SWIGTYPE_p_long ary, int index, int value) {
+    libclientJNI.longArray_setitem(SWIGTYPE_p_long.getCPtr(ary), index, value);
+  }
+
+  public static SWIGTYPE_p_unsigned_int new_unsigendIntArray(int nelements) {
+    long cPtr = libclientJNI.new_unsigendIntArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_unsigned_int(cPtr, false);
+  }
+
+  public static void delete_unsigendIntArray(SWIGTYPE_p_unsigned_int ary) {
+    libclientJNI.delete_unsigendIntArray(SWIGTYPE_p_unsigned_int.getCPtr(ary));
+  }
+
+  public static long unsigendIntArray_getitem(SWIGTYPE_p_unsigned_int ary, int index) {
+    return libclientJNI.unsigendIntArray_getitem(SWIGTYPE_p_unsigned_int.getCPtr(ary), index);
+  }
+
+  public static void unsigendIntArray_setitem(SWIGTYPE_p_unsigned_int ary, int index, long value) {
+    libclientJNI.unsigendIntArray_setitem(SWIGTYPE_p_unsigned_int.getCPtr(ary), index, value);
+  }
+
   public static int gp_client_create(gp_environment environment) {
     return libclientJNI.gp_client_create(gp_environment.getCPtr(environment), environment);
   }
