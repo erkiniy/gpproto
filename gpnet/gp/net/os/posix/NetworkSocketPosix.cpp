@@ -49,7 +49,7 @@ void NetworkSocketPosix::Open() {
             return;
         }
 
-        self->fd = socket(AF_INET, SOCK_STREAM, 0);
+        self->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         self->reading = false;
 
         timeval timeout;
@@ -77,10 +77,10 @@ void NetworkSocketPosix::Open() {
             return;
         }
 
-        if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
-            LOGE("setsockopt error SO_REUSEPORT");
-            return;
-        }
+//        if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
+//            LOGE("setsockopt error SO_REUSEPORT");
+//            return;
+//        }
 
         flag = 1;
         if (setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&flag), sizeof(flag)) < 0) {
