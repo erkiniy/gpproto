@@ -9,6 +9,12 @@
 package org.gp.libclient;
 
 public class libclientJNI {
+  public final static native void gp_data_length_set(long jarg1, gp_data jarg1_, long jarg2);
+  public final static native long gp_data_length_get(long jarg1, gp_data jarg1_);
+  public final static native void gp_data_value_set(long jarg1, gp_data jarg1_, long jarg2);
+  public final static native long gp_data_value_get(long jarg1, gp_data jarg1_);
+  public final static native long new_gp_data();
+  public final static native void delete_gp_data(long jarg1);
   public final static native long new_intArray(int jarg1);
   public final static native void delete_intArray(long jarg1);
   public final static native int intArray_getitem(long jarg1, int jarg2);
@@ -21,6 +27,16 @@ public class libclientJNI {
   public final static native void delete_unsigendIntArray(long jarg1);
   public final static native long unsigendIntArray_getitem(long jarg1, int jarg2);
   public final static native void unsigendIntArray_setitem(long jarg1, int jarg2, long jarg3);
+  public final static native long new_longLongArray(int jarg1);
+  public final static native void delete_longLongArray(long jarg1);
+  public final static native long longLongArray_getitem(long jarg1, int jarg2);
+  public final static native void longLongArray_setitem(long jarg1, int jarg2, long jarg3);
+  public final static native long new_UnsignedCharArray(int jarg1);
+  public final static native void delete_UnsignedCharArray(long jarg1);
+  public final static native short UnsignedCharArray_getitem(long jarg1, UnsignedCharArray jarg1_, int jarg2);
+  public final static native void UnsignedCharArray_setitem(long jarg1, UnsignedCharArray jarg1_, int jarg2, short jarg3);
+  public final static native long UnsignedCharArray_cast(long jarg1, UnsignedCharArray jarg1_);
+  public final static native long UnsignedCharArray_frompointer(long jarg1);
   public final static native int RESPONSE_get();
   public final static native int UPDATE_get();
   public final static native int PROTO_STATE_get();
@@ -32,12 +48,6 @@ public class libclientJNI {
   public final static native String gp_error_desc_get(long jarg1, gp_error jarg1_);
   public final static native long new_gp_error();
   public final static native void delete_gp_error(long jarg1);
-  public final static native void gp_data_length_set(long jarg1, gp_data jarg1_, long jarg2);
-  public final static native long gp_data_length_get(long jarg1, gp_data jarg1_);
-  public final static native void gp_data_value_set(long jarg1, gp_data jarg1_, long jarg2);
-  public final static native long gp_data_value_get(long jarg1, gp_data jarg1_);
-  public final static native long new_gp_data();
-  public final static native void delete_gp_data(long jarg1);
   public final static native void gp_rx_data_id_set(long jarg1, gp_rx_data jarg1_, int jarg2);
   public final static native int gp_rx_data_id_get(long jarg1, gp_rx_data jarg1_);
   public final static native void gp_rx_data_error_set(long jarg1, gp_rx_data jarg1_, long jarg2, gp_error jarg2_);

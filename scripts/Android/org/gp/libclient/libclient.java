@@ -60,6 +60,23 @@ public class libclient {
     libclientJNI.unsigendIntArray_setitem(SWIGTYPE_p_unsigned_int.getCPtr(ary), index, value);
   }
 
+  public static SWIGTYPE_p_long_long new_longLongArray(int nelements) {
+    long cPtr = libclientJNI.new_longLongArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_long_long(cPtr, false);
+  }
+
+  public static void delete_longLongArray(SWIGTYPE_p_long_long ary) {
+    libclientJNI.delete_longLongArray(SWIGTYPE_p_long_long.getCPtr(ary));
+  }
+
+  public static long longLongArray_getitem(SWIGTYPE_p_long_long ary, int index) {
+    return libclientJNI.longLongArray_getitem(SWIGTYPE_p_long_long.getCPtr(ary), index);
+  }
+
+  public static void longLongArray_setitem(SWIGTYPE_p_long_long ary, int index, long value) {
+    libclientJNI.longLongArray_setitem(SWIGTYPE_p_long_long.getCPtr(ary), index, value);
+  }
+
   public static int gp_client_create(gp_environment environment) {
     return libclientJNI.gp_client_create(gp_environment.getCPtr(environment), environment);
   }

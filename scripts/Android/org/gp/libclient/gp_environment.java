@@ -116,13 +116,13 @@ public class gp_environment {
     return libclientJNI.gp_environment_supported_types_count_get(swigCPtr, this);
   }
 
-  public void setSupported_types(SWIGTYPE_p_long value) {
-    libclientJNI.gp_environment_supported_types_set(swigCPtr, this, SWIGTYPE_p_long.getCPtr(value));
+  public void setSupported_types(SWIGTYPE_p_long_long value) {
+    libclientJNI.gp_environment_supported_types_set(swigCPtr, this, SWIGTYPE_p_long_long.getCPtr(value));
   }
 
-  public SWIGTYPE_p_long getSupported_types() {
+  public SWIGTYPE_p_long_long getSupported_types() {
     long cPtr = libclientJNI.gp_environment_supported_types_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_long(cPtr, false);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_long_long(cPtr, false);
   }
 
   public gp_environment() {

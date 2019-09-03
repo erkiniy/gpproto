@@ -92,21 +92,25 @@ mkdir "$DEFAULT_LIBS_PATH"
 echo "Installing arm64-v8a"
 ARM_64_V8A_DIR="$DEFAULT_LIBS_PATH/arm64-v8a/"
 mkdir $ARM_64_V8A_DIR
-cp -Rv arm64-v8a/lib/ "$ARM_64_V8A_DIR"
+cp -Rv arm64-v8a/lib/libgpclient.so "$ARM_64_V8A_DIR"
+cp -Rv arm64-v8a/lib/libgpjniclient.so "$ARM_64_V8A_DIR"
 
 echo "Installing armeabi-v7a"
 ARMEABI_V7A_DIR="$DEFAULT_LIBS_PATH/armeabi-v7a/"
 mkdir $ARMEABI_V7A_DIR
-cp -Rv armeabi-v7a/lib/ "$ARMEABI_V7A_DIR"
+cp -Rv armeabi-v7a/lib/libgpclient.so "$ARMEABI_V7A_DIR"
+cp -Rv armeabi-v7a/lib/libgpjniclient.so "$ARMEABI_V7A_DIR"
 
 echo "Installing x86_64"
 X86_64_DIR="$DEFAULT_LIBS_PATH/x86_64/"
 mkdir $X86_64_DIR
-cp -Rv x86_64/lib/ "$X86_64_DIR"
+cp -Rv x86_64/lib/libgpclient.so "$X86_64_DIR"
+cp -Rv x86_64/lib/libgpjniclient.so "$X86_64_DIR"
 
 echo "Installing x86"
 X86_DIR="$DEFAULT_LIBS_PATH/x86/"
 mkdir $X86_DIR
-cp -Rv x86/lib/ "$X86_DIR"
+cp -Rv x86/lib/libgpclient.so "$X86_DIR"
+cp -Rv x86/lib/libgpjniclient.so "$X86_DIR"
 
 
