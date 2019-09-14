@@ -281,9 +281,10 @@ void TcpTransport::connectionClosed(const Connection &connection) {
         strongSelf->transportContext->currentServerPingId = 0;
         strongSelf->transportContext->currentServerPingMessageId = 0;
 
-        if (auto strongDelegate = strongSelf->delegate.lock())
+        if (auto strongDelegate = strongSelf->delegate.lock()) {
             strongDelegate->transportNetworkConnectionStateChanged(*strongSelf, false);
-
+            strongDelegate->transportTransactionsMayHaveFailed(*strongSelf, strongSelf->internalId);
+        }
     });
 }
 

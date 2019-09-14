@@ -255,6 +255,17 @@ void Proto::allTransactionsMayHaveFailed() {
     });
 }
 
+void Proto::transportTransactionsMayHaveFailed(const Transport& transport, int transactiondId) {
+    Proto::queue()->async([self = shared_from_this(), transactiondId] {
+        if (self->isStopped())
+            return;
+
+        for (const auto & service : self->messageServices)
+            service.second->protoTransactionsMayHaveFailed(self, {transactiondId});
+
+    });
+}
+
 void Proto::updateConnectionState() {
     LOGD("updateConnectionState");
     Proto::queue()->async([self = shared_from_this()] {
@@ -308,14 +319,23 @@ void Proto::transportHasIncomingData(const Transport &transport, std::shared_ptr
 
             if (parseError) {
                 LOGE("[Proto transportHasIncomingData] -> parse error");
-                return;
+
+                strongSelf->transportTransactionsMayHaveFailed(transport, transport.internalId);
+                strongSelf->resetSessionInfo();
             }
             else {
                 strongSelf->transportTransactionsSucceeded(transport.internalId);
-            }
 
-            for (const auto & incomingMessage : parsedMessages)
-                strongSelf->processIncomingMessage(incomingMessage);
+                for (const auto & incomingMessage : parsedMessages)
+                    strongSelf->processIncomingMessage(incomingMessage);
+            }
+        }
+        else
+        {
+            LOGE("[Proto transportHasIncomingData] -> cannot decrypt incoming data");
+            decodeResult(false);
+
+            strongSelf->transportTransactionsMayHaveFailed(transport, transport.internalId);
         }
     });
 }

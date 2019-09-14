@@ -12,6 +12,7 @@
 #include "gp/proto/TimeSyncMessageService.h"
 #include "gp/network/TransportDelegate.h"
 #include "gp/utils/Logging.h"
+#include "../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/memory"
 
 #include <string>
 #include <unordered_set>
@@ -72,6 +73,8 @@ namespace gpproto
 
         void transportNetworkAvailabilityChanged(const Transport& transport, bool networkIsAvailable) override;
         void transportNetworkConnectionStateChanged(const Transport& transport, bool networkIsConnected) override;
+        void transportTransactionsMayHaveFailed(const Transport& transport, int transactiondId) override;
+
         void transportReadyForTransaction(const Transport& transport, std::shared_ptr<MessageTransaction> transportSpecificTransaction, std::function<void(std::vector<std::shared_ptr<TransportTransaction>>)> transactionsReady) override;
 
         void transportHasIncomingData(const Transport& transport, std::shared_ptr<StreamSlice> data, bool requestTransactionAfterProcessing, std::function<void(bool)> decodeResult) override;
@@ -113,7 +116,6 @@ namespace gpproto
         void resetTransport();
 
         void allTransactionsMayHaveFailed();
-
         void updateConnectionState();
 
         bool isStopped();
