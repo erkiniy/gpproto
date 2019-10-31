@@ -38,13 +38,13 @@ int gp_client_create(gp_environment *environment) {
     envPtr->api_id = environment->api_id;
     envPtr->layer = environment->layer;
     envPtr->disable_updates = environment->disable_updates;
-    envPtr->encryption_password = environment->encryption_password;
-    envPtr->device_model = environment->device_model;
-    envPtr->system_version = environment->system_version;
-    envPtr->app_version = environment->app_version;
-    envPtr->documents_folder = environment->documents_folder;
-    envPtr->encryption_password = environment->encryption_password;
-    envPtr->lang_code = environment->lang_code;
+    envPtr->encryption_password = strdup(environment->encryption_password);
+    envPtr->device_model = strdup(environment->device_model);
+    envPtr->system_version = strdup(environment->system_version);
+    envPtr->app_version = strdup(environment->app_version);
+    envPtr->documents_folder = strdup(environment->documents_folder);
+    envPtr->encryption_password = strdup(environment->encryption_password);
+    envPtr->lang_code = strdup(environment->lang_code);
     envPtr->supported_types_count = environment->supported_types_count;
 
     envPtr->supported_types = (long long *)malloc(sizeof(long long) * environment->supported_types_count);
