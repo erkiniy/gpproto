@@ -19,10 +19,10 @@
 
 using namespace gpproto;
 
-static std::unordered_map<std::string, std::shared_ptr<Context>> contextsByPath;
-static std::mutex mtx;
-
 static std::shared_ptr<Context> obtainContext(std::shared_ptr<gp_environment> environment) {
+    static std::unordered_map<std::string, std::shared_ptr<Context>> contextsByPath;
+    static std::mutex mtx;
+
     std::unique_lock<std::mutex> lock(mtx);
 
     auto it = contextsByPath.find(environment->documents_folder);
